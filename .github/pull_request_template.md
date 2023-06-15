@@ -1,6 +1,6 @@
 ## Description
 
-> what does this pr do in short?
+> What does this pr do in short?
 
 ## CL
 
