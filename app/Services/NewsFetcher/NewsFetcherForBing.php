@@ -1,13 +1,26 @@
+<!-- IMP! Bing is rejected due to the reason that it only sends short description of the whole news and not the full article. -->
+
 <?php
 
 use Illuminate\Support\Facades\Http;
-require_once __DIR__.'/../../../vendor/autoload.php';
 
-class BingNewsFetcher{
-    private $url = 'https://api.bing.microsoft.com/v7.0/news/search';
+class NewsFetcherForBingApiFetcher{
+    private string $url = 'https://api.bing.microsoft.com/v7.0/news/search';
     private $headers;
     private $params;
     public $response;
+    
+    public function __construct($searchQuery = '', $articleCount = 1000){
+        $this->setHeaders();
+        $this->setParams($searchQuery, $articleCount);
+
+        $result = $this->fetchResults();
+        if ($result->successful()) {
+            $this->response = $result->json();
+        } else {
+            $this->handleError($result);
+        }
+    }
 
     private function setHeaders(){
         $this->headers = [
@@ -38,19 +51,8 @@ class BingNewsFetcher{
         echo "Error message: $errorMessage\n";
     }
 
-    public function __construct($searchQuery = '', $count = 1000){
-        $this->setHeaders();
-        $this->setParams($searchQuery, $count);
-
-        $result = $this->fetchResults();
-        if ($result->successful()) {
-            $this->response = $result->json();
-        } else {
-            $this->handleError($result);
-        }
-    }
 }
 
-$fetcher = new BingNewsFetcher();
+$fetcher = new NewsFetcherForBingApiFetcher('', 5);
 
 var_dump($fetcher->response);
