@@ -9,8 +9,8 @@
 
 ## Related Issues
 
--   Resolves [TN-]
--   Works on [TN-]
+-   Resolves [SN-]
+-   Works on [SN-]
 
 ## Test Plan
 
