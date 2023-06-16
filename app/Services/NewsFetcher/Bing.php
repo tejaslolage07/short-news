@@ -1,18 +1,19 @@
 <?php
 
-include 'headers.php'; include 'params.php';
+include 'headers.php'; include 'params.php'; include 'parser.php';
 
-require_once __DIR__.'/../../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__."/../../");
-$dotenv->load();
+// class API{
+//     function __construct($url, $headers, $params){
+//         $this->url = $url;
+//         $this->headers = $headers;
+//         $this->params = $params;
+//     }
+// }
 
 function callAPI($url, $headers, $params)
 {
     $curl = curl_init();
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($curl, CURLOPT_MAXREDIRS, 5);
-    curl_setopt($curl, CURLOPT_TIMEOUT, 5);
     curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
 
     $query = http_build_query($params);
@@ -29,4 +30,4 @@ function callAPI($url, $headers, $params)
 }
 
 $url = "https://api.bing.microsoft.com/v7.0/news/search";
-echo callAPI($url, getBingHeaders() , getBingParams('', 'jp', 1000, 'Day', 'Off'));
+var_dump(parseBingData(callAPI($url, getBingHeaders() , getBingParams('', 'jp', 1000, 'Day', 'Off'))));
