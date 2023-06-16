@@ -1,5 +1,6 @@
 import socket
-from ChatGPTSummarizer import chatGPTSummarizer
+
+from  ChatGPTSummarizer import chatGPTSummarizer
 
 server = None
 client = None
