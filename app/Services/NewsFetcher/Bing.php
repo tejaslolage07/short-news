@@ -1,6 +1,6 @@
 <?php
 
-include 'headers.php'; include 'params.php'; include 'parser.php';
+include 'Headers.php'; include 'Params.php'; include 'Parser.php';
 
 // class API{
 //     function __construct($url, $headers, $params){
