@@ -12,17 +12,26 @@ class NewsFetcherForBingApiFetcher{
     
     public function __construct($searchQuery = '', $articleCount = 1000){
         $this->setHeaders();
+<<<<<<< HEAD
         $this->setParams($searchQuery, $articleCount);   
     }
 
     public function fetchResults(){
         $result = Http::withHeaders($this->headers)->get($this->url, $this->params);
+=======
+        $this->setParams($searchQuery, $articleCount);
+
+        $result = $this->fetchResults();
+>>>>>>> a0e502d (Implemented newsdata.io API fetcher and rejected Bing API)
         if ($result->successful()) {
             $this->response = $result->json();
         } else {
             $this->handleError($result);
         }
+<<<<<<< HEAD
         return $result;
+=======
+>>>>>>> a0e502d (Implemented newsdata.io API fetcher and rejected Bing API)
     }
 
     private function setHeaders(){
@@ -42,6 +51,13 @@ class NewsFetcherForBingApiFetcher{
         );
     }
 
+<<<<<<< HEAD
+=======
+    private function fetchResults(){
+        return Http::withHeaders($this->headers)->get($this->url, $this->params);
+    }
+
+>>>>>>> a0e502d (Implemented newsdata.io API fetcher and rejected Bing API)
     private function handleError($response){
         $errorCode = $response->status();
         $errorMessage = $response->body();
