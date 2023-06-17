@@ -1,3 +1,5 @@
+<!-- TODO: Add pagination facility for the API -->
+
 <?php
 
 use Illuminate\Support\Facades\Http;
@@ -33,7 +35,7 @@ class NewsFetcherForNewsDataIoApiFetcher{
         $this->params = array(
             "language" => 'jp',
             "country" => "jp",
-            // 'page' => '',
+            // 'page' => '168698396828f059c3263412d3d70015283d863acb',
         );
         if($category !== ''){
             $this->params['category'] = $category;
@@ -51,9 +53,4 @@ class NewsFetcherForNewsDataIoApiFetcher{
         echo "Error code: $errorCode\n";
         echo "Error message: $errorMessage\n";
     }
-
 }
-
-$fetcher = new NewsFetcherForNewsDataIoApiFetcher();
-
-var_dump($fetcher->fetchResults());
