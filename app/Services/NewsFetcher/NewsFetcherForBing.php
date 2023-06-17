@@ -12,14 +12,17 @@ class NewsFetcherForBingApiFetcher{
     
     public function __construct($searchQuery = '', $articleCount = 1000){
         $this->setHeaders();
-        $this->setParams($searchQuery, $articleCount);
+        $this->setParams($searchQuery, $articleCount);   
+    }
 
-        $result = $this->fetchResults();
+    public function fetchResults(){
+        $result = Http::withHeaders($this->headers)->get($this->url, $this->params);
         if ($result->successful()) {
             $this->response = $result->json();
         } else {
             $this->handleError($result);
         }
+        return $result;
     }
 
     private function setHeaders(){
@@ -37,10 +40,6 @@ class NewsFetcherForBingApiFetcher{
             "freshness" => $freshness, 
             "safeSearch" => $safeSearch
         );
-    }
-
-    private function fetchResults(){
-        return Http::withHeaders($this->headers)->get($this->url, $this->params);
     }
 
     private function handleError($response){
