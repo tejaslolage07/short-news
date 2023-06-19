@@ -1,6 +1,6 @@
 import socket
 
-from  ChatGPTSummarizer import chatGPTSummarizer
+from  ChatGptSummarizer import ChatGptSummarizer
 
 server = None
 client = None
@@ -25,7 +25,7 @@ def main():
 def createSocket():
     global server
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind(('localhost', 8080))
+    server.bind(('localhost', 6001))
     server.listen(5)
     print("Server is listening on port 8080")
 
@@ -46,7 +46,7 @@ def handleClient():
     
     try:
         data = recvData().decode('utf-8')
-        summarizedData = bytes(chatGPTSummarizer(data), "utf-8")
+        summarizedData = bytes(ChatGptSummarizer().summarize(data), "utf-8")
     except Exception as e:
         summarizedData = b''
         print(f"Error in handling client request to summarize: ${e}")
