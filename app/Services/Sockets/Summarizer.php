@@ -2,85 +2,73 @@
 
 namespace App\Services\Sockets;
 
-
-#Throws exception if anything goes wrong, and it is the responsibility of the caller to handle the exceptions.
-#If all goes well, then the summary is returned as a string.
 class Summarizer
 {
     private $socket;
 
-    /**
-     * @param string $data
-     * @param string $prompt
-     * @return string
-     * @throws \Exception
-     */
-    public function summarizeOverSocket(string $data, string $prompt): string
+    public function summarizeOverSocket(string $prompt, int $maxInputTokens): string
     {
-        
-        #create connection
-        $this->createSocketConnection();
-        #send data and prompt over the socket
-        $this->sendToSocket($data, $prompt);
-        #read the response
+        $this->createSocket();
+        $this->connectToSocket();
+        $this->formatAndSendToSocket($prompt, $maxInputTokens);
         $output = $this->readFromSocket();
-        #close the connection
         $this->closeConnection();
-        #throw exception if no summary is returned
-        if($output === '') {
+        if ('' === $output) {
             throw new \Exception('No summary returned, check the summarizer logs for errors!');
         }
+
         return $output;
     }
 
-    private function closeConnection(): void {
-        socket_close($this->socket);
+    private function createSocket(): void
+    {
+        $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        if (false === $this->socket) {
+            throw new \Exception('Failed to create socket: '.socket_strerror(socket_last_error()));
+        }
     }
 
-    private function createSocketConnection(): void
+    private function connectToSocket(): void
     {
-        # Create a TCP socket
-        $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-        if ($this->socket === false) {
-            print("Failed to create socket: " . socket_strerror(socket_last_error()));
-            throw new \Exception('Could not create socket');
-        }
+        $host = config('app.summarizer_socket_host');
+        $port = config('app.summarizer_socket_port');
 
-        # Connect the socket to the address:port
-        if(false === socket_connect($this->socket, config('app.summarizer_socket_host'), config('app.summarizer_socket_port'))) {
-            print("Failed to connect to socket: " . socket_strerror(socket_last_error()));
-            throw new \Exception('Could not connect to socket');
+        $status = socket_connect($this->socket, $host, $port);
+        if (false === $status) {
+            throw new \Exception('Failed to connect to socket: '.socket_strerror(socket_last_error()));
         }
+    }
+
+    private function formatAndSendToSocket(string $prompt, int $maxInputTokens) : void
+    {
+        $data = $this->formatData($prompt, $maxInputTokens);
+        $status = socket_write($this->socket, $data);
+        if (false === $status) {
+            throw new \Exception('Failed to write to socket: '.socket_strerror(socket_last_error()));
+        }
+    }
+
+    private function formatData(string $prompt, int $maxInputTokens): string
+    {
+        return json_encode([
+            'prompt' => $prompt,
+            'max_input_tokens' => $maxInputTokens,
+        ]);
     }
 
     private function readFromSocket(): string
     {
-        #The summary will fit within 4096 bytes
+        // The summary will fit within 4096 bytes (since it is max 300 tokens)
         $out = socket_read($this->socket, 4096);
-        if($out === false) {
-            print("Failed to read from socket: " . socket_strerror(socket_last_error()));
-            throw new \Exception('Could not read from socket');
+        if (false === $out) {
+            throw new \Exception('Failed to read from socket: '.socket_strerror(socket_last_error()));
         }
+
         return $out;
     }
 
-    private function formatData(string $data, string $prompt): string
+    private function closeConnection(): void
     {
-        $dataArray = [
-            'data' => $data,
-            'prompt' => $prompt
-        ];
-
-        return json_encode($dataArray);
+        socket_close($this->socket);
     }
-
-    private function sendToSocket(string $data, string $prompt)
-    {
-        $formattedData = $this->formatData($data, $prompt);
-        if (false === socket_write($this->socket, $formattedData)) {
-            print("Failed to write to socket: " . socket_strerror(socket_last_error()));
-            throw new \Exception('Could not write to socket');
-        }
-    }
-
 }
