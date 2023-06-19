@@ -25,9 +25,11 @@ def main():
 def createSocket():
     global server
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind(('localhost', 6001))
+    port = 6001
+    ip = 'localhost'
+    server.bind((ip,port))
     server.listen(5)
-    print("Server is listening on port 8080")
+    print(f"Server is listening on {ip}:{port}")
 
 def listenForConnections():
     global server
@@ -43,7 +45,6 @@ def listenForConnections():
         print("Connection closed")
     
 def handleClient():
-    
     try:
         data = recvData().decode('utf-8')
         summarizedData = bytes(ChatGptSummarizer().summarize(data), "utf-8")
