@@ -1,61 +1,56 @@
 <?php
 
-include 'NewsFetcherForBing.php';
+namespace App\Services\NewsFetcher;
 
-class ParserForBing{
-    private $response = array();
-    private $parsedData = array();  // This is the data that will be returned to the controller. // $response['results']
-    
-    public function __construct($response){
-        $this->response = $response;
-    }
-    
-    public function getParsedData(){
-        $articles = $this->getJsonData();
-        $this->parsedData = $this->parseBingData($articles);
-        return $this->parsedData;
-    }
+use DateTime;
 
-    private function parseBingData($articles){
+class ParserForBing
+{
+    public function getParsedData(string $response): array
+    {
+        $articles = $this->getJsonData($response);
         $result = [];
-        foreach($articles as $article){
+        foreach($articles as $article) {
             $formattedDate = $this->formatDate($article['datePublished']);
-            if(isset($article['image']['thumbnail']['contentUrl'])){ // This is to prevent errors when the image is not available.
-                $imageURL = $article['image']['thumbnail']['contentUrl'];
-            }else{
-                $imageURL = null;
-            }
-            $result[] = [
-                'headline' => $article['name'],
-                'url' => $article['url'],
-                'author' => null,   // The Bing API doesn't send author data.
-                'description' => $article['description'],
-                'imageURL' => $imageURL,
-                'sourceWebsite' => $article['provider'][0]['name'],
-                'publishedAt' => $formattedDate,
-                'fetchedAt' => date('Y-m-d H:i:s')
-            ];
+            $imageURL = $this->getImageUrlFromData($article);
+            $currentTime = date('Y-m-d H:i:s');
+            array_push($result, $this->parseArticle($article, $imageURL, $formattedDate, $currentTime));
         }
         return $result;
     }
-    
-    private function formatDate($date){
+
+    private function parseArticle(array $article, string $imageURL, string $formattedDate, string $currentTime): array
+    {
+        return [
+            'headline' => $article['name'],
+            'url' => $article['url'],
+            'author' => null,                                       // The Bing API doesn't send author data, only the source website.
+            'content' => $article['description'],
+            'imageURL' => $imageURL,
+            'sourceWebsite' => $article['provider'][0]['name'],
+            'publishedAt' => $formattedDate,
+            'publishedAt' => $article['datePublished'],
+            'fetchedAt' => $currentTime
+        ];
+    }
+
+    private function getImageUrlFromData(array $article): ?string   // This is to ensure that errors are not caused when image is missing from the data.
+    {
+        if(isset($article['image']['thumbnail']['contentUrl'])) {
+            return $article['image']['thumbnail']['contentUrl'];
+        }
+        return null;
+    }
+
+    private function formatDate(string $date): string
+    {
         $formattedDate = new DateTime($date);
         return $formattedDate->format('Y-m-d H:i:s');
     }
 
-    public function getJsonData(){
-        $data = json_decode($this->response, true);
+    public function getJsonData(string $response): array
+    {
+        $data = json_decode($response, true);
         return $data['value'];
     }
 }
-
-// Below lines are for testing purposes only.
-
-$fetcher = new NewsFetcherForBingApiFetcher();
-$response = $fetcher->fetchResults();
-$parser = new ParserForBing($response);
-$parsedData = $parser->getParsedData();
-var_dump($parsedData);
-
-/// IMP : MAKE PRIVATE AND REVIEW THE CODE.

@@ -1,57 +1,47 @@
 <?php
 
-include 'NewsFetcherForNewsDataIo.php';
+namespace App\Services\NewsFetcher;
 
-class ParserForNewsDataIo{
-    private $response = array();
-    private $parsedData = array();  // This is the data that will be returned to the controller.
-    
-    public function __construct($response){
-        $this->response = $response;
-    }
-    
-    public function getParsedData(){
-        $articles = $this->getJsonData();
-        $this->parsedData = $this->parseNewsDataIoData($articles);
-        return $this->parsedData;
-    }
+use DateTime;
 
-    private function parseNewsDataIoData($articles){
+class ParserForNewsDataIo
+{
+    public function getParsedData(string $response): array
+    {
+        $articles = $this->getJsonData($response);
         $parsedData = [];
-        foreach($articles as $article){
+        foreach($articles as $article) {
             $formattedDate = $this->formatDate($article['pubDate']);
-            $parsedData[] = [
-                'headline' => $article['title'],
-                'url' => $article['link'],
-                'author' => null,                   // The NewsDataIo API doesn't send author data, only the source website.
-                'content' => $article['content'],
-                'imageURL' => $article['image_url'],
-                'sourceWebsite' => $article['creator'],
-                'publishedAt' => $formattedDate,
-                'fetchedAt' => date('Y-m-d H:i:s')  // This is not the exact time the article was fetched, but rather the time when it was parsed. (Close enough to be acceptable)
-            ];
+            $currentTime = date('Y-m-d H:i:s');
+            $parsedArticle = $this->parseArticle($article, $formattedDate, $currentTime);
+            array_unshift($parsedData, $parsedArticle); // unshift is used so that latest news is at last. This can help to write data to database easily.
         }
         return $parsedData;
     }
 
-    private function getJsonData(){
-        $data = json_decode($this->response, true);
+    private function parseArticle(array $article, string $formattedDate, string $currentTime): array
+    {
+        return [
+            'headline' => $article['title'],
+            'url' => $article['link'],
+            'author' => null,                   // The NewsDataIo API doesn't send author data, only the source website.
+            'content' => $article['content'],
+            'imageURL' => $article['image_url'],
+            'sourceWebsite' => $article['creator'],
+            'publishedAt' => $formattedDate,
+            'fetchedAt' => $currentTime         // This is not the exact time the article was fetched, but rather the time when it was parsed. (Close enough to be acceptable)
+        ];
+    }
+
+    private function getJsonData(string $response): array
+    {
+        $data = json_decode($response, true);
         return $data['results'];
     }
 
-    private function formatDate($date){
+    private function formatDate(string $date): string
+    {
         $formattedDate = new DateTime($date);
         return $formattedDate->format('Y-m-d H:i:s');
     }
 }
-
-// Below lines are for testing purposes only.
-
-$fetcher = new NewsFetcherForNewsDataIoApiFetcher();
-$response = $fetcher->fetchResults();
-$parser = new ParserForNewsDataIo($response);
-$parsedData = $parser->getParsedData();
-var_dump($parsedData);
-
-
-// TODO: Add pagination facility to the NewsDataIo API fetcher.
