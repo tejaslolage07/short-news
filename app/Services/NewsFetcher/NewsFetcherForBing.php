@@ -1,57 +1,42 @@
-<!-- IMP! Bing is rejected due to the reason that it only sends short description of the whole news and not the full article. -->
-
 <?php
 
+namespace App\Services\NewsFetcher;
+
 use Illuminate\Support\Facades\Http;
+use Exception;
 
-class NewsFetcherForBingApiFetcher{
-    private string $url = 'https://api.bing.microsoft.com/v7.0/news/search';
-    private $headers;
-    private $params;
-    public $response;
-    
-    public function __construct($searchQuery = '', $articleCount = 1000){
-        $this->setHeaders();
-        $this->setParams($searchQuery, $articleCount);   
-    }
+// IMP! Bing is rejected due to the reason that it only sends short description of the whole news and not the full article.
 
-    public function fetchResults(){
-        $result = Http::withHeaders($this->headers)->get($this->url, $this->params);
-        if ($result->successful()) {
-            $this->response = $result->json();
-        } else {
-            $this->handleError($result);
+class NewsFetcherForBing
+{
+    public function fetch(string $searchQuery = '', int $articleCount = 1000)
+    {
+        $url = 'https://api.bing.microsoft.com/v7.0/news/search';
+        $headers = $this->getHeaders();
+        $params = $this->getParams($searchQuery, $articleCount);
+        $response = Http::withHeaders($headers)->get($url, $params);
+        if (!$response->successful()) {
+            throw new Exception('Bing API returned an error: ' . $response->body());
         }
-        return $result;
+        return $response;
     }
 
-    private function setHeaders(){
-        $this->headers = [
-            'Ocp-Apim-Subscription-Key' => env('BING_API_KEY'),
+    private function getHeaders(): array
+    {
+        return [
+            'Ocp-Apim-Subscription-Key' => config('services.bing.key'),
             "mkt" => "ja-JP"
         ];
     }
 
-    private function setParams($searchQuery, $count = 1000, $language = 'jp', $freshness = 'Day', $safeSearch = "Off"){
-        $this->params = array(
+    private function getParams(string $searchQuery, int $count): array
+    {
+        return array(
             "q" => $searchQuery,
-            "setLang" => $language, 
-            "count" => $count, 
-            "freshness" => $freshness, 
-            "safeSearch" => $safeSearch
+            "count" => $count,
+            "setLang" => 'jp',
+            "freshness" => 'Day',
+            "safeSearch" => 'Off'
         );
     }
-
-    private function handleError($response){
-        $errorCode = $response->status();
-        $errorMessage = $response->body();
-        // Handle the error
-        echo "Error code: $errorCode\n";
-        echo "Error message: $errorMessage\n";
-    }
-
 }
-
-$fetcher = new NewsFetcherForBingApiFetcher('', 5);
-
-var_dump($fetcher->response);

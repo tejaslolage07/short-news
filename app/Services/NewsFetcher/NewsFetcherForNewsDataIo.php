@@ -1,59 +1,44 @@
 <?php
 
+namespace App\Services\NewsFetcher;
+
 use Illuminate\Support\Facades\Http;
+use Exception;
 
-class NewsFetcherForNewsDataIoApiFetcher{
-    private string $url = 'https://newsdata.io/api/1/news';
-    private $headers = array();
-    private $params = array();
-    public $response = array();
-    
-    public function __construct(string $searchQuery = '', string $category = ''){
-        $this->setHeaders();
-        $this->setParams($searchQuery, $category);
-    }
-    
-    public function fetchResults(){
-        $result = Http::withHeaders($this->headers)->get($this->url, $this->params);
-        if ($result->successful()) {
-            $this->response = $result->json();
-        } else {
-            $this->handleError($result);
+class NewsFetcherForNewsDataIo
+{
+    public function fetch(string $searchQuery = '', string $category = '', string $page = '')
+    {
+        $url = 'https://newsdata.io/api/1/news';
+        $headers = $this->getHeaders();
+        $params = $this->getParams($searchQuery, $category, $page);
+        $response = Http::withHeaders($headers)->get($url, $params);
+        if (!$response->successful()) {
+            throw new Exception('NewsDataIO API returned an error: ' . $response->body());
         }
-        return $result;
+        return $response;
     }
 
-    private function setHeaders(){
-        $this->headers = [
-            'X-ACCESS-KEY' => env('NEWS_DATA_IO_KEY')
+    private function getHeaders(): array
+    {
+        return [
+            'X-ACCESS-KEY' => config('services.newsdataio.key')
         ];
     }
 
-    private function setParams(string $searchQuery, string $category){
-        $this->params = array(
-            "language" => 'jp',
-            "country" => "jp",
-            // 'page' => '',
-        );
-        if($category !== ''){
-            $this->params['category'] = $category;
+    private function getParams(string $searchQuery, string $category, string $page): array
+    {
+        $params = array();
+        if($searchQuery !== '') {
+            $params += ['q' => $searchQuery];
         }
-        if($searchQuery !== ''){
-            $this->params['q'] = $searchQuery;
+        if($category !== '') {
+            $params += ['category' => $category];
         }
+        if($page !== '') {
+            $params += ['page' => $page];
+        }
+        $params += ["language" => 'jp', "country" => 'jp'];
+        return $params;
     }
-
-
-    private function handleError($response){
-        $errorCode = $response->status();
-        $errorMessage = $response->body();
-        // Handle the error
-        echo "Error code: $errorCode\n";
-        echo "Error message: $errorMessage\n";
-    }
-
 }
-
-$fetcher = new NewsFetcherForNewsDataIoApiFetcher();
-
-var_dump($fetcher->fetchResults());
