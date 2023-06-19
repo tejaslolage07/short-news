@@ -20,6 +20,10 @@ class Summarizer
         $output = $this->readFromSocket();
         #close the connection
         $this->closeConnection();
+        #throw exception if no summary is returned
+        if($output === '') {
+            throw new \Exception('No summary returned, check the summarizer logs for errors!');
+        }
         return $output;
     }
 
