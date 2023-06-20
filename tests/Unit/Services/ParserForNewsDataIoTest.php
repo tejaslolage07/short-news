@@ -15,6 +15,7 @@ class ParserForNewsDataIoTest extends TestCase
         $response = $this->getMockedResponse();
 
         $parsedData = $parser->getParsedData($response);
+        $nextPage = $parser->getNextPage($response);
 
         $this->assertCount(2, $parsedData);
 
@@ -46,6 +47,8 @@ class ParserForNewsDataIoTest extends TestCase
         $this->assertEquals('Example News', $secondArticle['sourceWebsite']);
         $this->assertDateTimeFormat($secondArticle['publishedAt']);
         $this->assertDateTimeFormat($secondArticle['fetchedAt']);
+
+        $this->assertEquals('next_page_id', $nextPage);
     }
 
     private function assertDateTimeFormat($dateTimeString)
@@ -61,42 +64,43 @@ class ParserForNewsDataIoTest extends TestCase
         $response = [
             "status" => "success",
             "totalResults"=> 821,
-            "results"=> [
-                            [
-                                "title"=> "Article 1",
-                                "link"=> "https://example.com/article1",
-                                "keywords"=> [
-                                    "プロ野球",
-                                    "オールスター"
-                                ],
-                                "creator"=> "Example News",
-                                "video_url"=> null,
-                                "description"=> "Article 2 description",
-                                "content"=> "Article 1 content",
-                                "pubDate"=> "2023-06-19 06:22:45",
-                                "image_url"=> "https://example.com/image1.jpg",
-                                "source_id"=> "full_count",
-                                "category"=> ["sports"],
-                                "country"=> ["japan"],
-                                "language"=> "japanese"
-                            ],
-                            [
-                                "title"=> "Article 2",
-                                "link"=> "https://example.com/article2",
-                                "keywords"=> ["千葉ロッテマリーンズ"],
-                                "creator"=> "Example News",
-                                "video_url"=> null,
-                                "description"=> "Article 2 description",
-                                "content"=> "Article 2 content",
-                                "pubDate"=> "2023-06-19 06:19:47",
-                                "image_url"=> "https://example.com/image2.jpg",
-                                "source_id"=> "full_count",
-                                "category"=> ["sports"],
-                                "country"=> ["japan"],
-                                "language"=> "japanese"
-                            ]
-                        ],
-                        "nextPage"=> "16871454007e049d1b98aefab703130569eb04393c"
+            "results"=> 
+            [
+                [
+                    "title"=> "Article 1",
+                    "link"=> "https://example.com/article1",
+                    "keywords"=> [
+                        "プロ野球",
+                        "オールスター"
+                    ],
+                    "creator"=> "Example News",
+                    "video_url"=> null,
+                    "description"=> "Article 2 description",
+                    "content"=> "Article 1 content",
+                    "pubDate"=> "2023-06-19 06:22:45",
+                    "image_url"=> "https://example.com/image1.jpg",
+                    "source_id"=> "full_count",
+                    "category"=> ["sports"],
+                    "country"=> ["japan"],
+                    "language"=> "japanese"
+                ],
+                [
+                    "title"=> "Article 2",
+                    "link"=> "https://example.com/article2",
+                    "keywords"=> ["千葉ロッテマリーンズ"],
+                    "creator"=> "Example News",
+                    "video_url"=> null,
+                    "description"=> "Article 2 description",
+                    "content"=> "Article 2 content",
+                    "pubDate"=> "2023-06-19 06:19:47",
+                    "image_url"=> "https://example.com/image2.jpg",
+                    "source_id"=> "full_count",
+                    "category"=> ["sports"],
+                    "country"=> ["japan"],
+                    "language"=> "japanese"
+                ]
+            ],
+            "nextPage"=> "next_page_id"
         ];
 
         return json_encode($response);

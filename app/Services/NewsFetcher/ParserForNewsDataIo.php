@@ -19,6 +19,12 @@ class ParserForNewsDataIo
         return $parsedData;
     }
 
+    public function getNextPage(string $response): string
+    {
+        $data = json_decode($response, true);
+        return $data['nextPage'];
+    }
+
     private function parseArticle(array $article, string $formattedDate, string $currentTime): array
     {
         return [
