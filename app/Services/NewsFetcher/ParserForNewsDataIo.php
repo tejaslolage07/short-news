@@ -11,10 +11,8 @@ class ParserForNewsDataIo
         $articles = $this->getJsonData($response);
         $parsedData = [];
         foreach($articles as $article) {
-            $formattedDate = $this->formatDate($article['pubDate']);
-            $currentTime = date('Y-m-d H:i:s');
-            $parsedArticle = $this->parseArticle($article, $formattedDate, $currentTime);
-            array_push($parsedData, $parsedArticle);
+            $parsedArticle = $this->parseArticle($article);
+            $parsedData[] = $parsedArticle;
         }
         return $parsedData;
     }
@@ -33,8 +31,10 @@ class ParserForNewsDataIo
         return $parsedDate;
     }
 
-    private function parseArticle(array $article, string $formattedDate, string $currentTime): array
+    private function parseArticle(array $article): array
     {
+        $formattedDate = $this->formatDate($article['pubDate']);
+        $currentTime = date('Y-m-d H:i:s');
         return [
             'headline' => $article['title'],
             'article_url' => $article['link'],

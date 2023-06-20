@@ -11,17 +11,17 @@ class ParserForBing
         $articles = $this->getJsonData($response);
         $result = [];
         foreach($articles as $article) {
-            $formattedDate = $this->formatDate($article['datePublished']);
-            $imageURL = $this->getImageUrlFromData($article);
-            $currentTime = date('Y-m-d H:i:s');
-            $parsedArticle = $this->parseArticle($article, $imageURL, $formattedDate, $currentTime);
-            array_push($result, $parsedArticle);
+            $parsedArticle = $this->parseArticle($article);
+            $result[] = $parsedArticle;
         }
         return $result;
     }
 
-    private function parseArticle(array $article, string $imageURL, string $formattedDate, string $currentTime): array
+    private function parseArticle(array $article): array
     {
+        $formattedDate = $this->formatDate($article['datePublished']);
+        $imageURL = $this->getImageUrlFromData($article);
+        $currentTime = date('Y-m-d H:i:s');
         return [
             'headline' => $article['name'],
             'article_url' => $article['url'],
