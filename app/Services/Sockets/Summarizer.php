@@ -9,6 +9,12 @@ class Summarizer
 {
     private $socket;
 
+    /**
+     * @param string $data
+     * @param string $prompt
+     * @return string
+     * @throws \Exception
+     */
     public function summarizeOverSocket(string $data, string $prompt): string
     {
         

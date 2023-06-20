@@ -18,7 +18,7 @@ class ArticleFactory extends Factory
     public function definition(): array
     {
         return [
-            'short_news' => fake()->text(),
+            'short_news' => '',
             'headline' => fake()->text(),
             'news_website_id' => NewsWebsite::all()->random()->id,
             'author' => fake()->text(),
