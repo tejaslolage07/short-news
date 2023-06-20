@@ -14,7 +14,7 @@ class ParserForNewsDataIo
             $formattedDate = $this->formatDate($article['pubDate']);
             $currentTime = date('Y-m-d H:i:s');
             $parsedArticle = $this->parseArticle($article, $formattedDate, $currentTime);
-            array_unshift($parsedData, $parsedArticle); // unshift is used so that latest news is at last. This can help to write data to database easily.
+            array_push($parsedData, $parsedArticle);
         }
         return $parsedData;
     }

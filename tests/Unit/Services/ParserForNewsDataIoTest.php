@@ -31,21 +31,21 @@ class ParserForNewsDataIoTest extends TestCase
         $this->assertArrayHasKey('publishedAt', $firstArticle);
         $this->assertArrayHasKey('fetchedAt', $firstArticle);
 
-        $this->assertEquals('Article 2', $firstArticle['headline']);    // Article 2 will come first because we are using array_unshift in the ParserForNewsDataIo class. (Needed for writing latest news to database at last)
-        $this->assertEquals('https://example.com/article2', $firstArticle['url']);
+        $this->assertEquals('Article 1', $firstArticle['headline']);
+        $this->assertEquals('https://example.com/article1', $firstArticle['url']);
         $this->assertNull($firstArticle['author']);
-        $this->assertEquals('Article 2 content', $firstArticle['content']);
-        $this->assertEquals('https://example.com/image2.jpg', $firstArticle['imageURL']);
+        $this->assertEquals('Article 1 content', $firstArticle['content']);
+        $this->assertEquals('https://example.com/image1.jpg', $firstArticle['imageURL']);
         $this->assertEquals('Example News', $firstArticle['sourceWebsite']);
         $this->assertDateTimeFormat($firstArticle['publishedAt']);
         $this->assertDateTimeFormat($firstArticle['fetchedAt']);
 
         $secondArticle = $parsedData[1];
-        $this->assertEquals('Article 1', $secondArticle['headline']);
-        $this->assertEquals('https://example.com/article1', $secondArticle['url']);
+        $this->assertEquals('Article 2', $secondArticle['headline']);
+        $this->assertEquals('https://example.com/article2', $secondArticle['url']);
         $this->assertNull($secondArticle['author']);
-        $this->assertEquals('Article 1 content', $secondArticle['content']);
-        $this->assertEquals('https://example.com/image1.jpg', $secondArticle['imageURL']);
+        $this->assertEquals('Article 2 content', $secondArticle['content']);
+        $this->assertEquals('https://example.com/image2.jpg', $secondArticle['imageURL']);
         $this->assertEquals('Example News', $secondArticle['sourceWebsite']);
         $this->assertDateTimeFormat($secondArticle['publishedAt']);
         $this->assertDateTimeFormat($secondArticle['fetchedAt']);
