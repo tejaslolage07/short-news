@@ -25,6 +25,14 @@ class ParserForNewsDataIo
         return $data['nextPage'];
     }
 
+    public function getPublishedAt(string $response, int $newsIndex): string
+    {
+        $data = json_decode($response, true);
+        $date = $data['results'][$newsIndex]['pubDate'];
+        $parsedDate = $this->formatDate($date);
+        return $parsedDate;
+    }
+
     private function parseArticle(array $article, string $formattedDate, string $currentTime): array
     {
         return [

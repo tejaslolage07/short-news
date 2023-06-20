@@ -16,6 +16,8 @@ class ParserForNewsDataIoTest extends TestCase
 
         $parsedData = $parser->getParsedData($response);
         $nextPage = $parser->getNextPage($response);
+        $date1 = $parser->getPublishedAt($response, 0);
+        $date2 = $parser->getPublishedAt($response, 1);
 
         $this->assertCount(2, $parsedData);
 
@@ -49,6 +51,9 @@ class ParserForNewsDataIoTest extends TestCase
         $this->assertDateTimeFormat($secondArticle['fetchedAt']);
 
         $this->assertEquals('next_page_id', $nextPage);
+
+        $this->assertEquals('2023-06-19 06:22:45', $date1);
+        $this->assertEquals('2023-06-19 06:19:47', $date2);
     }
 
     private function assertDateTimeFormat($dateTimeString)
