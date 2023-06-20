@@ -7,12 +7,12 @@ use Exception;
 
 class NewsFetcherForNewsDataIo
 {
+    const url = 'https://newsdata.io/api/1/news';
     public function fetch(string $searchQuery = '', string $category = '', string $page = '')
     {
-        $url = 'https://newsdata.io/api/1/news';
         $headers = $this->getHeaders();
         $params = $this->getParams($searchQuery, $category, $page);
-        $response = Http::withHeaders($headers)->get($url, $params);
+        $response = Http::withHeaders($headers)->get(self::url, $params);
         if (!$response->successful()) {
             throw new Exception('NewsDataIO API returned an error: ' . $response->body());
         }
@@ -30,15 +30,16 @@ class NewsFetcherForNewsDataIo
     {
         $params = array();
         if($searchQuery !== '') {
-            $params += ['q' => $searchQuery];
+            $params['q'] = $searchQuery;
         }
         if($category !== '') {
-            $params += ['category' => $category];
+            $params['category'] = $category;
         }
         if($page !== '') {
-            $params += ['page' => $page];
+            $params['page'] = $page;
         }
-        $params += ["language" => 'jp', "country" => 'jp'];
+        $params['language'] = 'jp';
+        $params['country'] = 'jp';
         return $params;
     }
 }

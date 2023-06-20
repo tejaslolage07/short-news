@@ -6,9 +6,11 @@ use App\Services\NewsFetcher\NewsFetcherForBing;
 use Exception;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class NewsFetcherForBingTest extends TestCase
 {
+    use RefreshDatabase;
     public function testFetch()
     {
         Http::fake([
@@ -16,7 +18,8 @@ class NewsFetcherForBingTest extends TestCase
         ]);
         $newsFetcher = new NewsFetcherForBing();
         $response = $newsFetcher->fetch('search query', 10);
-        $this->assertTrue($response->successful());
+        // $this->assertTrue($response->successful());
+        $response->assertOk();
         $this->assertEquals(['data' => 'mocked data'], $response->json());
     }
 

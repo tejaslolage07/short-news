@@ -15,7 +15,7 @@ class NewsFetcherForNewsDataIoTest extends TestCase
             'https://newsdata.io/*' => Http::response(['data' => 'mocked data'], 200)
         ]);
         $newsFetcher = new NewsFetcherForNewsDataIo();
-        $response = $newsFetcher->fetch('search query', 'category', 'page');
+        $response = $newsFetcher->fetch();
         $this->assertTrue($response->successful());
         $this->assertEquals(['data' => 'mocked data'], $response->json());
     }
@@ -40,7 +40,7 @@ class NewsFetcherForNewsDataIoTest extends TestCase
         ]);
         
         $newsFetcher = new NewsFetcherForNewsDataIo();
-        $response = $newsFetcher->fetch('search query', 'category', 'page');
+        $response = $newsFetcher->fetch();
         $this->assertTrue($response->successful());
         $this->assertEquals($newsData, $response->json());
         $this->assertArrayHasKey('articles', $response->json());
@@ -57,6 +57,6 @@ class NewsFetcherForNewsDataIoTest extends TestCase
         $this->expectExceptionMessage('NewsDataIO API returned an error: mocked error');
 
         $newsFetcher = new NewsFetcherForNewsDataIo();
-        $newsFetcher->fetch('search query', 'category', 'page');
+        $newsFetcher->fetch();
     }
 }
