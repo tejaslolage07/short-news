@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\NewsWebsite;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,6 +20,7 @@ class ArticleFactory extends Factory
         return [
             'short_news' => fake()->text(),
             'headline' => fake()->text(),
+            'news_website_id' => NewsWebsite::all()->random()->id,
             'author' => fake()->text(),
             'article_url' => fake()->url(),
             'image_url' => fake()->url(),
