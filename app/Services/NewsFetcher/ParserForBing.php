@@ -14,7 +14,8 @@ class ParserForBing
             $formattedDate = $this->formatDate($article['datePublished']);
             $imageURL = $this->getImageUrlFromData($article);
             $currentTime = date('Y-m-d H:i:s');
-            array_push($result, $this->parseArticle($article, $imageURL, $formattedDate, $currentTime));
+            $parsedArticle = $this->parseArticle($article, $imageURL, $formattedDate, $currentTime);
+            array_push($result, $parsedArticle);
         }
         return $result;
     }
@@ -29,7 +30,6 @@ class ParserForBing
             'imageURL' => $imageURL,
             'sourceWebsite' => $article['provider'][0]['name'],
             'publishedAt' => $formattedDate,
-            'publishedAt' => $article['datePublished'],
             'fetchedAt' => $currentTime
         ];
     }
