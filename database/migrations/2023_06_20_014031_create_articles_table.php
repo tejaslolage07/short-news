@@ -16,7 +16,7 @@ return new class () extends Migration {
             $table->text('headline')->nullable(false);
             $table->string('author', 256)->nullable(true);
             $table->foreignId('news_website_id')->nullable(true)->constrained('news_websites')->on('news_websites')->onDelete('set null');
-            $table->text('article_url')->nullable(false);
+            $table->text('article_url', 512)->nullable(false);
             $table->text('image_url')->nullable(true);
             $table->text('article_s3_filename')->nullable(false);
             $table->timestamp('published_at')->nullable(false);
