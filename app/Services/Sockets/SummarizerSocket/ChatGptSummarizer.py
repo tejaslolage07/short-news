@@ -59,3 +59,4 @@ class ChatGptSummarizer:
         
 #Call this function with the article body as the argument
 #ChatGptSummarizer().summarize("「R―1ぐらんぷり2018」王者で、視覚障がいを持つピン芸人・濱田祐太郎（33）が16日、自身のツイッターを更新。秘書だった男性を殴ったことを明らかにした自民党の高野光二郎参院議員について指摘した。 高野氏は昨年末に当時秘書だった20代男性を殴打し、鼻血を出させたと14日、国会内で記者団に説明。「飲み会で気合を入れるつもりで胸の辺りをたたくつもりが、鼻に当たった」と語っていた。 これについて濱田は")
+
