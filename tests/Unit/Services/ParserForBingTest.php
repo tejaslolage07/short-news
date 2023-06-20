@@ -12,7 +12,7 @@ class ParserForBingTest extends TestCase
     {
         $parser = new ParserForBing();
 
-        $response = $this->getMockedResponse(); // Create a mocked response for testing
+        $response = $this->getMockedResponse();
 
         $parsedData = $parser->getParsedData($response);
 
@@ -44,8 +44,8 @@ class ParserForBingTest extends TestCase
         $this->assertEquals('Article 2 content', $secondArticle['content']);
         $this->assertEquals('https://example.com/image2.jpg', $secondArticle['imageURL']);
         $this->assertEquals('Example News', $secondArticle['sourceWebsite']);
-        $this->assertDateTimeFormat($firstArticle['publishedAt']);
-        $this->assertDateTimeFormat($firstArticle['fetchedAt']);
+        $this->assertDateTimeFormat($secondArticle['publishedAt']);
+        $this->assertDateTimeFormat($secondArticle['fetchedAt']);
     }
 
     private function assertDateTimeFormat($dateTimeString)
