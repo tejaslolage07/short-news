@@ -15,13 +15,13 @@ class Summarizer
      * @return string
      * @throws \Exception
      */
-    public function summarizeOverSocket(string $data, string $prompt): string
+    public function summarizeOverSocket($prompt): string
     {
         
         #create connection
         $this->createSocketConnection();
         #send data and prompt over the socket
-        $this->sendToSocket($data, $prompt);
+        $this->sendToSocket($prompt);
         #read the response
         $output = $this->readFromSocket();
         #close the connection
@@ -64,20 +64,9 @@ class Summarizer
         return $out;
     }
 
-    private function formatData(string $data, string $prompt): string
+    private function sendToSocket(string $prompt)
     {
-        $dataArray = [
-            'data' => $data,
-            'prompt' => $prompt
-        ];
-
-        return json_encode($dataArray);
-    }
-
-    private function sendToSocket(string $data, string $prompt)
-    {
-        $formattedData = $this->formatData($data, $prompt);
-        if (false === socket_write($this->socket, $formattedData)) {
+        if (false === socket_write($this->socket, $prompt)) {
             print("Failed to write to socket: " . socket_strerror(socket_last_error()));
             throw new \Exception('Could not write to socket');
         }

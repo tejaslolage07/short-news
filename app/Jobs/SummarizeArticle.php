@@ -56,7 +56,7 @@ class SummarizeArticle implements ShouldQueue
     {
         // Summarize the article
         try {
-            $summary = $summarizer->summarizeOverSocket($this->articleBody, $this->prompt);
+            $summary = $summarizer->summarizeOverSocket($this->prompt);
             $articleController->update($this->article, ['short_news' => $summary]);
             print('Summary: '.$summary."\n");
             return;
