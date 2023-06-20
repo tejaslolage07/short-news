@@ -37,13 +37,13 @@ class ParserForNewsDataIo
     {
         return [
             'headline' => $article['title'],
-            'url' => $article['link'],
+            'article_url' => $article['link'],
             'author' => null,                   // The NewsDataIo API doesn't send author data, only the source website.
             'content' => $article['content'],
-            'imageURL' => $article['image_url'],
-            'sourceWebsite' => $article['creator'],
-            'publishedAt' => $formattedDate,
-            'fetchedAt' => $currentTime         // This is not the exact time the article was fetched, but rather the time when it was parsed. (Close enough to be acceptable)
+            'image_url' => $article['image_url'],
+            'news_website' => $article['creator'],
+            'published_at' => $formattedDate,
+            'fetched_at' => $currentTime         // This is not the exact time the article was fetched, but rather the time when it was parsed. (Close enough to be acceptable)
         ];
     }
 

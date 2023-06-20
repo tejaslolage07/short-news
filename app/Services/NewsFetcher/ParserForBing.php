@@ -24,13 +24,13 @@ class ParserForBing
     {
         return [
             'headline' => $article['name'],
-            'url' => $article['url'],
+            'article_url' => $article['url'],
             'author' => null,                                       // The Bing API doesn't send author data, only the source website.
             'content' => $article['description'],
-            'imageURL' => $imageURL,
-            'sourceWebsite' => $article['provider'][0]['name'],
-            'publishedAt' => $formattedDate,
-            'fetchedAt' => $currentTime
+            'image_url' => $imageURL,
+            'news_website' => $article['provider'][0]['name'],
+            'published_at' => $formattedDate,
+            'fetched_at' => $currentTime
         ];
     }
 
