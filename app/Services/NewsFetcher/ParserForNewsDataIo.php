@@ -6,9 +6,9 @@ use Carbon\Carbon;
 
 class ParserForNewsDataIo
 {
-    public function getParsedData(string $response): array
+    public function getParsedData(array $response): array
     {
-        $articles = $this->getJsonData($response);
+        $articles = $response['results'];
         $parsedData = [];
         foreach($articles as $article) {
             $parsedArticle = $this->parseArticle($article);
@@ -21,14 +21,6 @@ class ParserForNewsDataIo
     {
         $data = json_decode($response, true);
         return $data['nextPage'];
-    }
-
-    public function getPublishedAt(string $response, int $newsIndex): string
-    {
-        $data = json_decode($response, true);
-        $date = $data['results'][$newsIndex]['pubDate'];
-        $parsedDate = $this->formatDate($date);
-        return $parsedDate;
     }
 
     private function parseArticle(array $article): array
@@ -53,12 +45,6 @@ class ParserForNewsDataIo
         if($article['creator'])
         return $article['creator'][0];
         return null;
-    }
-
-    private function getJsonData(string $response): array
-    {
-        $data = json_decode($response, true);
-        return $data['results'];
     }
 
     private function formatDate(string $date): string

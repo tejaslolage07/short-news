@@ -57,8 +57,7 @@ class ParserForNewsDataIoTest extends TestCase
 
     private function getMockedResponse()
     {
-        // Create a mocked response for testing
-        $response = [
+        return [
             "status" => "success",
             "totalResults"=> 821,
             "results"=> 
@@ -99,7 +98,5 @@ class ParserForNewsDataIoTest extends TestCase
             ],
             "nextPage"=> "next_page_id"
         ];
-
-        return json_encode($response);
     }
 }

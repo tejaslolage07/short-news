@@ -6,9 +6,9 @@ use Carbon\Carbon;
 
 class ParserForBing
 {
-    public function getParsedData(string $response): array
+    public function getParsedData(array $response): array
     {
-        $articles = $this->getJsonData($response);
+        $articles = $response['value'];
         $result = [];
         foreach($articles as $article) {
             $parsedArticle = $this->parseArticle($article);
@@ -46,11 +46,5 @@ class ParserForBing
     {
         $formattedDate = new Carbon($date);
         return $formattedDate->addHours(9)->format('Y-m-d H:i:s');
-    }
-
-    private function getJsonData(string $response): array
-    {
-        $data = json_decode($response, true);
-        return $data['value'];
     }
 }

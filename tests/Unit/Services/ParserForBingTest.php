@@ -57,8 +57,7 @@ class ParserForBingTest extends TestCase
 
     private function getMockedResponse()
     {
-        // Create a mocked response for testing
-        $response = [
+        return [
             'value' => [
                 [
                   "name"=> "Article 1",
@@ -114,7 +113,5 @@ class ParserForBingTest extends TestCase
                 ],
             ]
         ];
-
-        return json_encode($response);
     }
 }
