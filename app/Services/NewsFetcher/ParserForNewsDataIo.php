@@ -17,34 +17,28 @@ class ParserForNewsDataIo
         return $parsedData;
     }
 
-    public function getNextPage(string $response): string
-    {
-        $data = json_decode($response, true);
-        return $data['nextPage'];
-    }
-
-    public function getPublishedAt(string $response, int $newsIndex): string
-    {
-        $data = json_decode($response, true);
-        $date = $data['results'][$newsIndex]['pubDate'];
-        $parsedDate = $this->formatDate($date);
-        return $parsedDate;
-    }
-
     private function parseArticle(array $article): array
     {
         $formattedDate = $this->formatDate($article['pubDate']);
         $currentTime = date('Y-m-d H:i:s');
+        $newsWebsite = $this->getNewsWebsiteName($article);
         return [
             'headline' => $article['title'],
             'article_url' => $article['link'],
             'author' => null,                   // The NewsDataIo API doesn't send author data, only the source website.
             'content' => $article['content'],
             'image_url' => $article['image_url'],
-            'news_website' => $article['creator'],
+            'news_website' => $newsWebsite,
             'published_at' => $formattedDate,
             'fetched_at' => $currentTime         // This is not the exact time the article was fetched, but rather the time when it was parsed. (Close enough to be acceptable)
         ];
+    }
+
+    private function getNewsWebsiteName(array $article): ?string
+    {
+        if($article['creator'])
+        return $article['creator'][0];
+        return null;
     }
 
     private function getJsonData(string $response): array

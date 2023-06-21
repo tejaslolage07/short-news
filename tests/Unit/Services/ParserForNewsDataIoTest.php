@@ -15,9 +15,6 @@ class ParserForNewsDataIoTest extends TestCase
         $response = $this->getMockedResponse();
 
         $parsedData = $parser->getParsedData($response);
-        $nextPage = $parser->getNextPage($response);
-        $date1 = $parser->getPublishedAt($response, 0);
-        $date2 = $parser->getPublishedAt($response, 1);
 
         $this->assertCount(2, $parsedData);
 
@@ -49,11 +46,6 @@ class ParserForNewsDataIoTest extends TestCase
         $this->assertEquals('Example News', $secondArticle['news_website']);
         $this->assertDateTimeFormat($secondArticle['published_at']);
         $this->assertDateTimeFormat($secondArticle['fetched_at']);
-
-        $this->assertEquals('next_page_id', $nextPage);
-
-        $this->assertEquals('2023-06-19 06:22:45', $date1);
-        $this->assertEquals('2023-06-19 06:19:47', $date2);
     }
 
     private function assertDateTimeFormat($dateTimeString)
@@ -78,7 +70,7 @@ class ParserForNewsDataIoTest extends TestCase
                         "プロ野球",
                         "オールスター"
                     ],
-                    "creator"=> "Example News",
+                    "creator"=> ["Example News"],
                     "video_url"=> null,
                     "description"=> "Article 2 description",
                     "content"=> "Article 1 content",
@@ -93,7 +85,7 @@ class ParserForNewsDataIoTest extends TestCase
                     "title"=> "Article 2",
                     "link"=> "https://example.com/article2",
                     "keywords"=> ["千葉ロッテマリーンズ"],
-                    "creator"=> "Example News",
+                    "creator"=> ["Example News"],
                     "video_url"=> null,
                     "description"=> "Article 2 description",
                     "content"=> "Article 2 content",
