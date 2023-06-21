@@ -14,7 +14,7 @@ use App\Jobs\SummarizeArticle;
 
 class NewsFetcherService
 {
-    public function fetchAndStoreNewsFromBing()
+    public function fetchAndStoreNewsFromBing(): void
     {
         $newsFetcher = new NewsFetcherForBing();
         $parser = new ParserForBing();
@@ -31,7 +31,7 @@ class NewsFetcherService
     }
 
 
-    public function fetchAndStoreNewsFromNewsDataIo()
+    public function fetchAndStoreNewsFromNewsDataIo(): void
     {
         $newsFetcher = new NewsFetcherForNewsDataIo();
         $parser = new ParserForNewsDataIo();
@@ -50,7 +50,7 @@ class NewsFetcherService
                     $articleUrl = $parsedNewsArticle['article_url'];
                     $articlePublishedAt = $parsedNewsArticle['published_at'];
                     if ($this->isNewArticle($existingUrl, $existingArticleDateTime, $articleUrl, $articlePublishedAt)) {
-                        if ($parsedNewsArticle['content'] && $parsedNewsArticle['news_website']) {
+                        if ($parsedNewsArticle['content']) {
                             $this->storeParsedNewsArticle($parsedNewsArticle);
                         }
                     } else {
@@ -65,7 +65,7 @@ class NewsFetcherService
         echo Carbon::now()->addHour(9)->format('Y-m-d H:i:s') . "\tTotal queries used in this session: " . $queriesUsed . "\n";
     }
 
-    private function storeArticle(array $parsedNewsArticle, int $newsWebsiteId): Article
+    private function storeArticle(array $parsedNewsArticle, ?int $newsWebsiteId): Article
     {
         $article = new Article();
         $article->headline = $parsedNewsArticle['headline'];
@@ -88,8 +88,9 @@ class NewsFetcherService
         $this->pushToQueue($savedArticle, $parsedNewsArticle['content']);
     }
 
-    private function getNewsWebsiteId(string $newsWebsiteName): int
+    private function getNewsWebsiteId(?string $newsWebsiteName): ?int
     {
+        if(!$newsWebsiteName) return null;
         $newsWebsiteController = new NewsWebsiteController();
         $newsWebsite = $newsWebsiteController->getNewsWebsiteFromNameOrCreate($newsWebsiteName);
         return $newsWebsite->id;
