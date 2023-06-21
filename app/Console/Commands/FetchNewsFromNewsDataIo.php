@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Services\NewsFetcherService;
+use Illuminate\Support\Facades\Log;
 
 class FetchNewsFromNewsDataIo extends Command
 {
@@ -28,5 +29,6 @@ class FetchNewsFromNewsDataIo extends Command
     {
         $service = new NewsFetcherService();
         $service->fetchAndStoreNewsFromNewsDataIo();
+        Log::info('News fetched from NewsData.io');
     }
 }

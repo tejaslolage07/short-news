@@ -36,7 +36,7 @@ class NewsFetcherService
         $newsFetcher = new NewsFetcherForNewsDataIo();
         $parser = new ParserForNewsDataIo();
         $existingUrl = $this->getLatestUrlFromDB();
-        $existingArticleDateTime = $this->getCappedExistingArticleDateTime(1); // 1 day cap. (Give negative values for no cap) (Warning: All query points will be used.)
+        $existingArticleDateTime = $this->getCappedExistingArticleDateTime(1); // Give negative values for no cap (Warning: All query points will be used.)
         $page = '';
         $queriesUsed = 0;
 
@@ -57,12 +57,12 @@ class NewsFetcherService
                         break 2;
                     }
                 }
-                $page = $parser->getNextPage($fetchedNews);
+                $page = $this->getNextPage($fetchedNews);
             } while ($page);
         } catch (\Exception $e) {
             echo "An error occurred: " . $e->getMessage();
         }
-        echo "Total queries used in this session: " . $queriesUsed;
+        echo Carbon::now()->addHour(9)->format('Y-m-d H:i:s') . "\tTotal queries used in this session: " . $queriesUsed . "\n";
     }
 
     private function storeArticle(array $parsedNewsArticle, int $newsWebsiteId): Article
@@ -110,11 +110,17 @@ class NewsFetcherService
     private function getCappedExistingArticleDateTime(int $daysCap): string
     {
         $existingArticleDateTime = DB::table('articles')->orderBy('published_at', 'desc')->value('published_at');
-        $capDaysAgo = Carbon::now()->subHour(24 * $daysCap - 9)->format('Y-m-d H:i:s'); // 24-9 is to adjust for the time difference between UTC and JST. (Carbon gives UTC time, News come in JST)
-        if ($existingArticleDateTime && $capDaysAgo < $existingArticleDateTime) {
+        $cappedAt = Carbon::now()->subHour(24 * $daysCap - 9)->format('Y-m-d H:i:s'); // 24-9 is to adjust for the time difference between UTC and JST. (Carbon gives UTC time, News come in JST)
+        if ($existingArticleDateTime && $cappedAt < $existingArticleDateTime) {
             return $existingArticleDateTime;
         }
-        return $capDaysAgo;
+        return $cappedAt;
+    }
+
+    private function getNextPage(string $response): string
+    {
+        $data = json_decode($response, true);
+        return $data['nextPage'];
     }
 
     private function isNewArticle(string $existingUrl, string $existingArticleDateTime, string $articleUrl, string $articlePublishedAt): bool
