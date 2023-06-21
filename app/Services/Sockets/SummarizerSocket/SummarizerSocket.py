@@ -1,6 +1,6 @@
 import socket
 
-from  ChatGptSummarizer import ChatGptSummarizer
+from ChatGptSummarizer import ChatGptSummarizer
 
 server = None
 client = None
@@ -13,7 +13,7 @@ def main():
     except Exception as e:
         print(f"Error in opening socket: ${e}")
         raise e
-    
+
     try:
         listenForConnections()
     except Exception as e:
@@ -27,9 +27,10 @@ def createSocket():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     port = 8100
     ip = 'localhost'
-    server.bind((ip,port))
+    server.bind((ip, port))
     server.listen(5)
     print(f"Server is listening on {ip}:{port}")
+
 
 def listenForConnections():
     global server
@@ -43,7 +44,8 @@ def listenForConnections():
         client.close()
 
         print("Connection closed")
-    
+
+
 def handleClient():
     try:
         data = recvData().decode('utf-8')
@@ -53,6 +55,7 @@ def handleClient():
         print(f"Error in handling client request to summarize: ${e}")
     finally:
         sendData(summarizedData)
+
 
 def recvData() -> bytes:
     data = b''
@@ -64,10 +67,11 @@ def recvData() -> bytes:
             break
     return data
 
+
 def sendData(data):
     global client
     client.sendall(data)
 
+
 if __name__ == "__main__":
     main()
-    
