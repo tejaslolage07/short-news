@@ -3,49 +3,56 @@
 namespace App\Services;
 
 use App\Models\Article;
+use App\Http\Controllers\NewsWebsiteController;
 use App\Services\NewsFetcher\NewsFetcherForBing;
 use App\Services\NewsFetcher\NewsFetcherForNewsDataIo;
 use App\Services\NewsFetcher\ParserForBing;
 use App\Services\NewsFetcher\ParserForNewsDataIo;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Jobs\SummarizeArticle;
 
 class NewsFetcherService
 {
     public function fetchAndStoreNewsFromBing()
     {
         $newsFetcher = new NewsFetcherForBing();
-        $response = $newsFetcher->fetch('', 100);
         $parser = new ParserForBing();
-        $parsedData = $parser->getParsedData($response->body());
-        foreach ($parsedData as $data) {
-            $this->storeBingArticle($data);
+
+        try {
+            $response = $newsFetcher->fetch('', 1000);
+            $parsedNewsArticles = $parser->getParsedData($response->body());
+            foreach ($parsedNewsArticles as $parsedNewsArticle) {
+                $this->storeParsedNewsArticle($parsedNewsArticle);
+            }
+        } catch (\Exception $e) {
+            echo $e->getMessage();
         }
     }
+
 
     public function fetchAndStoreNewsFromNewsDataIo()
     {
         $newsFetcher = new NewsFetcherForNewsDataIo();
         $parser = new ParserForNewsDataIo();
         $existingUrl = $this->getLatestUrlFromDB();
-        $existingArticleDateTime = $this->getCappedExistingArticleDateTime();
+        $existingArticleDateTime = $this->getCappedExistingArticleDateTime(1); // 1 day cap. (Give negative values for no cap) (Warning: All query points will be used.)
         $page = '';
-        $queries_used = 0;
+        $queriesUsed = 0;
+
         try {
             do {
                 $fetchedNews = $newsFetcher->fetch('', '', $page);
                 $parsedNewsArticles = $parser->getParsedData($fetchedNews);
-                $queries_used++;
+                $queriesUsed++;
 
                 foreach ($parsedNewsArticles as $parsedNewsArticle) {
                     $articleUrl = $parsedNewsArticle['article_url'];
                     $articlePublishedAt = $parsedNewsArticle['published_at'];
-
-                    echo $articlePublishedAt;   // FOR DEBUG ONLY ***********************
-                    echo "\n";
-
-                    if ($existingUrl !== $articleUrl && $articlePublishedAt > $existingArticleDateTime) {
-                        $this->writeToDatabase($parsedNewsArticle);
+                    if ($this->isNewArticle($existingUrl, $existingArticleDateTime, $articleUrl, $articlePublishedAt)) {
+                        if ($parsedNewsArticle['content'] && $parsedNewsArticle['news_website']) {
+                            $this->storeParsedNewsArticle($parsedNewsArticle);
+                        }
                     } else {
                         break 2;
                     }
@@ -53,63 +60,65 @@ class NewsFetcherService
                 $page = $parser->getNextPage($fetchedNews);
             } while ($page);
         } catch (\Exception $e) {
-            echo $e->getMessage();
+            echo "An error occurred: " . $e->getMessage();
         }
-            echo "Total queries used in this session: " . $queries_used;
+        echo "Total queries used in this session: " . $queriesUsed;
     }
 
-    private function getLatestUrlFromDB()
+    private function storeArticle(array $parsedNewsArticle, int $newsWebsiteId): Article
+    {
+        $article = new Article();
+        $article->headline = $parsedNewsArticle['headline'];
+        $article->article_url = $parsedNewsArticle['article_url'];
+        $article->author = $parsedNewsArticle['author'];
+        $article->image_url = $parsedNewsArticle['image_url'];
+        $article->article_s3_filename = '';
+        $article->short_news = '';
+        $article->news_website_id = $newsWebsiteId;
+        $article->published_at = $parsedNewsArticle['published_at'];
+        $article->fetched_at = $parsedNewsArticle['fetched_at'];
+        $article->save();
+        return $article;
+    }
+    
+    private function storeParsedNewsArticle(array $parsedNewsArticle): void
+    {
+        $newsWebsiteId = $this->getNewsWebsiteId($parsedNewsArticle['news_website']);
+        $savedArticle = $this->storeArticle($parsedNewsArticle, $newsWebsiteId);
+        $this->pushToQueue($savedArticle, $parsedNewsArticle['content']);
+    }
+
+    private function getNewsWebsiteId(string $newsWebsiteName): int
+    {
+        $newsWebsiteController = new NewsWebsiteController();
+        $newsWebsite = $newsWebsiteController->getNewsWebsiteFromNameOrCreate($newsWebsiteName);
+        return $newsWebsite->id;
+    }
+
+    private function pushToQueue(Article $savedArticle, string $parsedNewsArticleContent): void
+    {
+        SummarizeArticle::dispatch($savedArticle, $parsedNewsArticleContent);
+    }
+
+
+    private function getLatestUrlFromDB(): string
     {
         $latestUrl = DB::table('articles')->orderBy('published_at', 'desc')->value('article_url');
         return $latestUrl ?: '';
     }
 
-    private function writeToDatabase($articleData)
-    {
-        $article = new Article();
-        $article->headline = $articleData['headline'];
-        $article->article_url = $articleData['article_url'];
-        $article->author = $articleData['author'];
-        $article->image_url = $articleData['image_url'];
-
-        $article->article_s3_filename = 'testArticle.com';
-        if($articleData['content']) {
-            $article->short_news = $articleData['content'];
-        } // Not for production. Only for testing.
-        else {
-            $article->short_news = 'No content available';
-        }
-
-        // $article->news_website = $articleData['news_website'];
-        $article->published_at = $articleData['published_at'];
-        $article->fetched_at = $articleData['fetched_at'];
-        $article->save();
-    }
-
-    private function getCappedExistingArticleDateTime() // Capped at 24 hours ago
+    private function getCappedExistingArticleDateTime(int $daysCap): string
     {
         $existingArticleDateTime = DB::table('articles')->orderBy('published_at', 'desc')->value('published_at');
-        $twentyFourHoursAgo = Carbon::now()->subHour(24-9)->format('Y-m-d H:i:s');  // 24-9 is to adjust for the time difference between UTC and JST. (Carbon gives UTC time, News come in JST)
-        if($existingArticleDateTime && $twentyFourHoursAgo < $existingArticleDateTime) {
+        $capDaysAgo = Carbon::now()->subHour(24 * $daysCap - 9)->format('Y-m-d H:i:s'); // 24-9 is to adjust for the time difference between UTC and JST. (Carbon gives UTC time, News come in JST)
+        if ($existingArticleDateTime && $capDaysAgo < $existingArticleDateTime) {
             return $existingArticleDateTime;
         }
-        return $twentyFourHoursAgo;
+        return $capDaysAgo;
     }
 
-    private function storeBingArticle($data)
+    private function isNewArticle(string $existingUrl, string $existingArticleDateTime, string $articleUrl, string $articlePublishedAt): bool
     {
-        $article = new Article();
-        $article->headline = $data['headline'];
-        $article->article_url = $data['article_url'];
-        $article->author = $data['author'];
-        $article->image_url = $data['image_url'];
-
-        $article->article_s3_filename = 'testArticle.com';
-        $article->short_news = $data['content']; // Not for production. Only for testing.
-
-        // $article->news_website = $data['news_website'];
-        $article->published_at = $data['published_at'];
-        $article->fetched_at = $data['fetched_at'];
-        $article->save();
+        return $existingUrl !== $articleUrl && $articlePublishedAt > $existingArticleDateTime;
     }
 }
