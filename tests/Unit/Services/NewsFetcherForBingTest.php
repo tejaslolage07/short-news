@@ -4,13 +4,14 @@ namespace Tests\Unit\Services\NewsFetcher;
 
 use App\Services\NewsFetcher\NewsFetcherForBing;
 use Exception;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class NewsFetcherForBingTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
     public function testFetch()
     {
         Http::fake([
@@ -18,23 +19,15 @@ class NewsFetcherForBingTest extends TestCase
         ]);
         $newsFetcher = new NewsFetcherForBing();
         $response = $newsFetcher->fetch('search query', 10);
-        // $this->assertTrue($response->successful());
-        $response->assertOk();
-        $this->assertEquals(['data' => 'mocked data'], $response->json());
+        $this->assertEquals(['data' => 'mocked data'], $response);
     }
 
     public function testFetchReturnsValidResponse()
     {
         $newsData = [
             'articles' => [
-                [
-                    'title' => 'Sample News 1',
-                    'link' => 'Sample news link 1',
-                ],
-                [
-                    'title' => 'Sample News 2',
-                    'link' => 'Sample news link 2',
-                ],
+                ['title' => 'Sample News 1', 'link' => 'Sample news link 1'],
+                ['title' => 'Sample News 2', 'link' => 'Sample news link 2'],
             ]
         ];
 
@@ -43,13 +36,12 @@ class NewsFetcherForBingTest extends TestCase
         ]);
 
         $newsFetcher = new NewsFetcherForBing();
-        $response = $newsFetcher->fetch('search query', 10);
-        $this->assertTrue($response->successful());
-        $this->assertEquals($newsData, $response->json());
-        $this->assertArrayHasKey('articles', $response->json());
-        $this->assertNotEmpty($response->json()['articles']);
-    }
+        $response = $newsFetcher->fetch('', 10);
 
+        $this->assertEquals($newsData, $response);
+        $this->assertArrayHasKey('articles', $response);
+        $this->assertNotEmpty($response['articles']);
+    }
 
     public function testFetchThrowsExceptionOnError()
     {

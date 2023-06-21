@@ -9,7 +9,7 @@ use Exception;
 class NewsFetcherForBing
 {
     private const url = 'https://api.bing.microsoft.com/v7.0/news/search';
-    public function fetch(string $searchQuery = '', int $articleCount = 1000): object
+    public function fetch(string $searchQuery = '', int $articleCount = 1000): array
     {
         $headers = $this->getHeaders();
         $params = $this->getParams($searchQuery, $articleCount);
@@ -17,7 +17,7 @@ class NewsFetcherForBing
         if (!$response->successful()) {
             throw new Exception('Bing API returned an error: ' . $response->body());
         }
-        return $response;
+        return $response->json();
     }
 
     private function getHeaders(): array

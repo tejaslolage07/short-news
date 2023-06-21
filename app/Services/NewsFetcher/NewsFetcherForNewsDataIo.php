@@ -8,7 +8,7 @@ use Exception;
 class NewsFetcherForNewsDataIo
 {
     private const url = 'https://newsdata.io/api/1/news';
-    public function fetch(string $searchQuery = '', string $category = '', string $page = ''): object
+    public function fetch(string $searchQuery = '', string $category = '', string $page = ''): array
     {
         $headers = $this->getHeaders();
         $params = $this->getParams($searchQuery, $category, $page);
@@ -16,7 +16,7 @@ class NewsFetcherForNewsDataIo
         if (!$response->successful()) {
             throw new Exception('NewsDataIO API returned an error: ' . $response->body());
         }
-        return $response;
+        return $response->json();
     }
 
     private function getHeaders(): array

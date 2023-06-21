@@ -16,22 +16,15 @@ class NewsFetcherForNewsDataIoTest extends TestCase
         ]);
         $newsFetcher = new NewsFetcherForNewsDataIo();
         $response = $newsFetcher->fetch();
-        $this->assertTrue($response->successful());
-        $this->assertEquals(['data' => 'mocked data'], $response->json());
+        $this->assertEquals(['data' => 'mocked data'], $response);
     }
 
     public function testFetchReturnsValidResponse()
     {
         $newsData = [
             'articles' => [
-                [
-                    'title' => 'Sample News 1',
-                    'link' => 'Sample news link 1',
-                ],
-                [
-                    'title' => 'Sample News 2',
-                    'link' => 'Sample news link 2',
-                ],
+                ['title' => 'Sample News 1', 'link' => 'Sample news link 1'],
+                ['title' => 'Sample News 2', 'link' => 'Sample news link 2'],
             ]
         ];
 
@@ -41,10 +34,9 @@ class NewsFetcherForNewsDataIoTest extends TestCase
         
         $newsFetcher = new NewsFetcherForNewsDataIo();
         $response = $newsFetcher->fetch();
-        $this->assertTrue($response->successful());
-        $this->assertEquals($newsData, $response->json());
-        $this->assertArrayHasKey('articles', $response->json());
-        $this->assertNotEmpty($response->json()['articles']);
+        $this->assertEquals($newsData, $response);
+        $this->assertArrayHasKey('articles', $response);
+        $this->assertNotEmpty($response['articles']);
     }
 
     public function testFetchThrowsExceptionOnError()
