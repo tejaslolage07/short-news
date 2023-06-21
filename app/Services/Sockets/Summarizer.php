@@ -9,13 +9,13 @@ class Summarizer
 {
     private $socket;
 
-    public function summarizeOverSocket($prompt): string
+    public function summarizeOverSocket(string $prompt, int $maxInputTokens): string
     {
         
         #create connection
         $this->createSocketConnection();
         #send data and prompt over the socket
-        $this->sendToSocket($prompt);
+        $this->sendToSocket($prompt, $maxInputTokens);
         #read the response
         $output = $this->readFromSocket();
         #close the connection
@@ -58,9 +58,17 @@ class Summarizer
         return $out;
     }
 
-    private function sendToSocket(string $prompt)
+    private function formatData(string $prompt, int $maxInputTokens){
+        return json_encode([
+            'prompt' => $prompt,
+            'max_input_tokens' => $maxInputTokens
+        ]);
+    }
+
+    private function sendToSocket(string $prompt, int $maxInputTokens)
     {
-        if (false === socket_write($this->socket, $prompt)) {
+        $data = $this->formatData($prompt, $maxInputTokens);
+        if (false === socket_write($this->socket, $data)) {
             print("Failed to write to socket: " . socket_strerror(socket_last_error()));
             throw new \Exception('Could not write to socket');
         }
