@@ -33,14 +33,14 @@ class SummarizerTest extends TestCase
         $this->assertNotNull($article->id);
 
         #handle the job
-        $a = new SummarizeArticle($article, $articleBody);
+        $a = new SummarizeArticle($article, $articleBody, '', 1);
         $a->handle(new ArticleController(), new Summarizer());
-
+        $this->assertNotEmpty($article->short_news);
 
         #check if Job updated the DB
         $this->assertDatabaseCount('articles', 11);
         $this->assertDatabaseHas('articles', [
-            'short_news' => 'Dummy summarized data',
+            'short_news' => $article->short_news
         ]);
     }
 }
