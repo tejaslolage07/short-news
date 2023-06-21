@@ -2,7 +2,7 @@
 
 namespace App\Services\NewsFetcher;
 
-use DateTime;
+use Carbon\Carbon;
 
 class ParserForBing
 {
@@ -44,11 +44,11 @@ class ParserForBing
 
     private function formatDate(string $date): string
     {
-        $formattedDate = new DateTime($date);
-        return $formattedDate->format('Y-m-d H:i:s');
+        $formattedDate = new Carbon($date);
+        return $formattedDate->addHours(9)->format('Y-m-d H:i:s');
     }
 
-    public function getJsonData(string $response): array
+    private function getJsonData(string $response): array
     {
         $data = json_decode($response, true);
         return $data['value'];

@@ -2,7 +2,7 @@
 
 namespace App\Services\NewsFetcher;
 
-use DateTime;
+use Carbon\Carbon;
 
 class ParserForNewsDataIo
 {
@@ -15,6 +15,20 @@ class ParserForNewsDataIo
             $parsedData[] = $parsedArticle;
         }
         return $parsedData;
+    }
+
+    public function getNextPage(string $response): string
+    {
+        $data = json_decode($response, true);
+        return $data['nextPage'];
+    }
+
+    public function getPublishedAt(string $response, int $newsIndex): string
+    {
+        $data = json_decode($response, true);
+        $date = $data['results'][$newsIndex]['pubDate'];
+        $parsedDate = $this->formatDate($date);
+        return $parsedDate;
     }
 
     private function parseArticle(array $article): array
@@ -49,7 +63,7 @@ class ParserForNewsDataIo
 
     private function formatDate(string $date): string
     {
-        $formattedDate = new DateTime($date);
-        return $formattedDate->format('Y-m-d H:i:s');
+        $formattedDate = new Carbon($date);
+        return $formattedDate->addHours(9)->format('Y-m-d H:i:s');
     }
 }
