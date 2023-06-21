@@ -18,6 +18,8 @@ class NewsWebsite extends Model
         'website',
     ];
 
+    protected $table = 'news_websites';
+
     /**
      * Get the articles for the news website.
      */
