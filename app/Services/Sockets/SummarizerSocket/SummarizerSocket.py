@@ -25,7 +25,7 @@ def main():
 def createSocket():
     global server
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    port = 6001
+    port = 8100
     ip = 'localhost'
     server.bind((ip,port))
     server.listen(5)
