@@ -7,8 +7,8 @@ use Exception;
 
 class NewsFetcherForNewsDataIo
 {
-    const url = 'https://newsdata.io/api/1/news';
-    public function fetch(string $searchQuery = '', string $category = '', string $page = '')
+    private const url = 'https://newsdata.io/api/1/news';
+    public function fetch(string $searchQuery = '', string $category = '', string $page = ''): object
     {
         $headers = $this->getHeaders();
         $params = $this->getParams($searchQuery, $category, $page);
