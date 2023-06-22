@@ -18,9 +18,6 @@ class NewsWebsite extends Model
         'website',
     ];
 
-    /**
-     * Get the articles for the news website.
-     */
     public function articles()
     {
         return $this->hasMany(Article::class);
