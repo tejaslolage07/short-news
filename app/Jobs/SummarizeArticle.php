@@ -25,7 +25,7 @@ class SummarizeArticle implements ShouldQueue
 
     /**
      * The number of seconds the job can run before timing out.
-     * Default is 60 sec.
+     * If we do not set it, it will default to 60 seconds.
      */
     public $timeout = 90;
 
@@ -54,14 +54,12 @@ class SummarizeArticle implements ShouldQueue
      */
     public function handle(ArticleController $articleController, Summarizer $summarizer): void
     {
-        // Summarize the article
         try {
             $summary = $summarizer->summarizeOverSocket($this->prompt, $this->maxInputTokens);
             $articleController->update($this->article, ['short_news' => $summary]);
-            print('Summary: '.$summary."\n");
+
             return;
         } catch (\Exception $e) {
-            // fail job
             $this->fail($e);
         }
     }

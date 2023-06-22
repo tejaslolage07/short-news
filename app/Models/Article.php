@@ -29,9 +29,6 @@ class Article extends Model
         'fetched_at' => 'datetime',
     ];
 
-    /**
-     * Get the news website that owns the article.
-     */
     public function newsWebsite()
     {
         return $this->belongsTo(NewsWebsite::class);
