@@ -25,31 +25,30 @@ class ParserForNewsDataIo
 
     private function parseArticle(array $article): array
     {
-        $formattedDate = $this->formatDate($article['pubDate']);
+        $formattedDate = $this->checkIfExistsAndFormatDate($article['pubDate']);
         $currentTime = date('Y-m-d H:i:s');
         $newsWebsite = $this->getNewsWebsiteName($article);
         return [
             'headline' => $article['title'],
             'article_url' => $article['link'],
-            'author' => null,                   // The NewsDataIo API doesn't send author data, only the source website.
+            // The NewsDataIo API doesn't send author data
+            'author' => null,
             'content' => $article['content'],
             'image_url' => $article['image_url'],
             'news_website' => $newsWebsite,
             'published_at' => $formattedDate,
-            'fetched_at' => $currentTime         // This is not the exact time the article was fetched, but rather the time when it was parsed. (Close enough to be acceptable)
+            'fetched_at' => $currentTime
         ];
     }
 
     private function getNewsWebsiteName(array $article): ?string
     {
-        if($article['creator'])
-        return $article['creator'][0];
-        return null;
+        return $article['creator'][0] ?? null;
     }
 
-    private function formatDate(string $date): string
+    private function checkIfExistsAndFormatDate(?string $date): ?string
     {
-        $formattedDate = new Carbon($date);
-        return $formattedDate->addHours(9)->format('Y-m-d H:i:s');
+        $date ? $formattedDate = (new Carbon($date))->addHours(9)->format('Y-m-d H:i:s') : $formattedDate = null;
+        return $formattedDate;
     }
 }
