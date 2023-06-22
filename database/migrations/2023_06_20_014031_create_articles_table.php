@@ -23,7 +23,7 @@ return new class() extends Migration {
             $table->timestamps();
             $table->timestamp('fetched_at')->nullable(false);
             $table->enum('source', ['api', 'scraper'])->nullable(false);
-            $table->index(['published_at'], 'published_at_index');
+            $table->unique(['published_at', 'id']);
         });
     }
 
