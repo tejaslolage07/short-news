@@ -7,13 +7,13 @@ use Illuminate\Support\Facades\Http;
 // IMP! Bing is rejected due to the reason that it only sends short description of the whole news and not the full article.
 class NewsFetcherForBing
 {
-    private const url = 'https://api.bing.microsoft.com/v7.0/news/search';
+    private const URL = 'https://api.bing.microsoft.com/v7.0/news/search';
 
     public function fetch(string $searchQuery = '', int $articleCount = 1000): array
     {
         $headers = $this->getHeaders();
         $params = $this->getParams($searchQuery, $articleCount);
-        $response = Http::withHeaders($headers)->get(self::url, $params)->throw();
+        $response = Http::withHeaders($headers)->get(self::URL, $params)->throw();
 
         return $response->json();
     }
