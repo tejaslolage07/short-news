@@ -3,100 +3,134 @@
 namespace Tests\Unit\Services\NewsFetcher;
 
 use App\Services\NewsFetcher\ParserForNewsDataIo;
-use DateTime;
 use Tests\TestCase;
 
+/**
+ * @internal
+ *
+ * @coversNothing
+ */
 class ParserForNewsDataIoTest extends TestCase
 {
-    public function testGetParsedData()
+    /**
+     * @dataProvider getMockedResponse
+     */
+    public function testGetParsedData(array $response): void
     {
         $parser = new ParserForNewsDataIo();
-
-        $response = $this->getMockedResponse();
-
         $parsedData = $parser->getParsedData($response);
-
-        $this->assertCount(2, $parsedData);
-
-        $firstArticle = $parsedData[0];
-        $this->assertArrayHasKey('headline', $firstArticle);
-        $this->assertArrayHasKey('article_url', $firstArticle);
-        $this->assertArrayHasKey('author', $firstArticle);
-        $this->assertArrayHasKey('content', $firstArticle);
-        $this->assertArrayHasKey('image_url', $firstArticle);
-        $this->assertArrayHasKey('news_website', $firstArticle);
-        $this->assertArrayHasKey('published_at', $firstArticle);
-        $this->assertArrayHasKey('fetched_at', $firstArticle);
-
-        $this->assertEquals('Article 1', $firstArticle['headline']);
-        $this->assertEquals('https://example.com/article1', $firstArticle['article_url']);
-        $this->assertNull($firstArticle['author']);
-        $this->assertEquals('Article 1 content', $firstArticle['content']);
-        $this->assertEquals('https://example.com/image1.jpg', $firstArticle['image_url']);
-        $this->assertEquals('Example News', $firstArticle['news_website']);
-        $this->assertDateTimeFormat($firstArticle['published_at']);
-        $this->assertDateTimeFormat($firstArticle['fetched_at']);
-
-        $secondArticle = $parsedData[1];
-        $this->assertEquals('Article 2', $secondArticle['headline']);
-        $this->assertEquals('https://example.com/article2', $secondArticle['article_url']);
-        $this->assertNull($secondArticle['author']);
-        $this->assertEquals('Article 2 content', $secondArticle['content']);
-        $this->assertEquals('https://example.com/image2.jpg', $secondArticle['image_url']);
-        $this->assertEquals('Example News', $secondArticle['news_website']);
-        $this->assertDateTimeFormat($secondArticle['published_at']);
-        $this->assertDateTimeFormat($secondArticle['fetched_at']);
+        $this->assertCount(3, $parsedData);
+        foreach ($parsedData as $index => $article) {
+            $this->testSingleArticle(parsedArticle: $article, mockedArticle: $response['results'][$index]);
+        }
     }
 
-    private function assertDateTimeFormat($dateTimeString)
+    private function testSingleArticle(array $parsedArticle, array $mockedArticle): void
     {
-        $dateTime = DateTime::createFromFormat('Y-m-d H:i:s', $dateTimeString);
-        $this->assertInstanceOf(DateTime::class, $dateTime);
+        $this->testKeys($parsedArticle);
+        $this->testDataFiltering(parsedArticle: $parsedArticle, mockedArticle: $mockedArticle);
+        $this->testDateTimeFormat($parsedArticle);
+    }
+
+    private function testKeys(array $parsedArticle): void
+    {
+        $this->assertArrayHasKey('headline', $parsedArticle);
+        $this->assertArrayHasKey('article_url', $parsedArticle);
+        $this->assertArrayHasKey('author', $parsedArticle);
+        $this->assertArrayHasKey('content', $parsedArticle);
+        $this->assertArrayHasKey('image_url', $parsedArticle);
+        $this->assertArrayHasKey('news_website', $parsedArticle);
+        $this->assertArrayHasKey('published_at', $parsedArticle);
+        $this->assertArrayHasKey('fetched_at', $parsedArticle);
+    }
+
+    private function testDataFiltering(array $parsedArticle, array $mockedArticle): void
+    {
+        $this->assertEquals($mockedArticle['title'], $parsedArticle['headline']);
+        $this->assertEquals($mockedArticle['link'], $parsedArticle['article_url']);
+        $this->assertNull($parsedArticle['author']);
+        $this->assertEquals($mockedArticle['content'], $parsedArticle['content']);
+        $this->assertEquals($mockedArticle['image_url'], $parsedArticle['image_url']);
+        $this->assertEquals($this->getCreator($mockedArticle), $parsedArticle['news_website']);
+    }
+
+    private function getCreator($mockedArticle): ?string
+    {
+        return $mockedArticle['creator'][0] ?? null;
+    }
+
+    private function testDateTimeFormat(array $parsedArticle): void
+    {
+        $this->assertDateTimeFormat($parsedArticle['published_at']);
+        $this->assertDateTimeFormat($parsedArticle['fetched_at']);
+    }
+
+    private function assertDateTimeFormat(?string $dateTimeString): void
+    {
+        if (!$dateTimeString) {
+            return;
+        }
+        $dateTime = \DateTime::createFromFormat('Y-m-d H:i:s', $dateTimeString);
+        $this->assertInstanceOf(\DateTime::class, $dateTime);
         $this->assertEquals($dateTimeString, $dateTime->format('Y-m-d H:i:s'));
     }
 
-    private function getMockedResponse()
+    private function getMockedResponse(): array
     {
-        return [
-            "status" => "success",
-            "totalResults"=> 821,
-            "results"=> 
-            [
+        return [[[
+            'status' => 'success',
+            'totalResults' => 821,
+            'results' => [
                 [
-                    "title"=> "Article 1",
-                    "link"=> "https://example.com/article1",
-                    "keywords"=> [
-                        "プロ野球",
-                        "オールスター"
+                    'title' => 'Article 1',
+                    'link' => 'https://example.com/article1',
+                    'keywords' => [
+                        'プロ野球',
+                        'オールスター',
                     ],
-                    "creator"=> ["Example News"],
-                    "video_url"=> null,
-                    "description"=> "Article 2 description",
-                    "content"=> "Article 1 content",
-                    "pubDate"=> "2023-06-19 06:22:45",
-                    "image_url"=> "https://example.com/image1.jpg",
-                    "source_id"=> "full_count",
-                    "category"=> ["sports"],
-                    "country"=> ["japan"],
-                    "language"=> "japanese"
+                    'creator' => ['Example News'],
+                    'video_url' => null,
+                    'description' => 'Article 2 description',
+                    'content' => 'Article 1 content',
+                    'pubDate' => '2023-06-19 06:22:45',
+                    'image_url' => 'https://example.com/image1.jpg',
+                    'source_id' => 'full_count',
+                    'category' => ['sports'],
+                    'country' => ['japan'],
+                    'language' => 'japanese',
                 ],
                 [
-                    "title"=> "Article 2",
-                    "link"=> "https://example.com/article2",
-                    "keywords"=> ["千葉ロッテマリーンズ"],
-                    "creator"=> ["Example News"],
-                    "video_url"=> null,
-                    "description"=> "Article 2 description",
-                    "content"=> "Article 2 content",
-                    "pubDate"=> "2023-06-19 06:19:47",
-                    "image_url"=> "https://example.com/image2.jpg",
-                    "source_id"=> "full_count",
-                    "category"=> ["sports"],
-                    "country"=> ["japan"],
-                    "language"=> "japanese"
-                ]
+                    'title' => 'Article 2',
+                    'link' => 'https://example.com/article2',
+                    'keywords' => ['千葉ロッテマリーンズ'],
+                    'creator' => null,
+                    'video_url' => null,
+                    'description' => 'Article 2 description',
+                    'content' => 'Article 2 content',
+                    'pubDate' => '2023-06-19 06:19:47',
+                    'image_url' => 'https://example.com/image2.jpg',
+                    'source_id' => 'full_count',
+                    'category' => ['sports'],
+                    'country' => ['japan'],
+                    'language' => 'japanese',
+                ],
+                [
+                    'title' => 'Article 3',
+                    'link' => 'https://example.com/article3',
+                    'keywords' => null,
+                    'creator' => null,
+                    'video_url' => null,
+                    'description' => 'Article 3 description',
+                    'content' => 'Article 3 content',
+                    'pubDate' => null,
+                    'image_url' => 'https://example.com/image3.jpg',
+                    'source_id' => 'full_count',
+                    'category' => ['sports'],
+                    'country' => ['japan'],
+                    'language' => 'japanese',
+                ],
             ],
-            "nextPage"=> "next_page_id"
-        ];
+            'nextPage' => 'next_page_id',
+        ]]];
     }
 }

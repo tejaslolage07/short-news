@@ -19,32 +19,36 @@ class ParserForBing
 
     private function parseArticle(array $article): array
     {
-        $formattedDate = $this->formatDate($article['datePublished']);
+        $formattedDate = $this->checkIfExistsAndFormatDate($article['datePublished']);
         $imageURL = $this->getImageUrlFromData($article);
+        $newsWebsiteName = $this->getNewsWebsiteName($article);
         $currentTime = date('Y-m-d H:i:s');
         return [
             'headline' => $article['name'],
             'article_url' => $article['url'],
-            'author' => null,                                       // The Bing API doesn't send author data, only the source website.
+            // The Bing API doesn't send author data
+            'author' => null,
             'content' => $article['description'],
             'image_url' => $imageURL,
-            'news_website' => $article['provider'][0]['name'],
+            'news_website' => $newsWebsiteName,
             'published_at' => $formattedDate,
             'fetched_at' => $currentTime
         ];
     }
 
-    private function getImageUrlFromData(array $article): ?string   // This is to ensure that errors are not caused when image is missing from the data.
+
+    private function getNewsWebsiteName(array $article): ?string
     {
-        if(isset($article['image']['thumbnail']['contentUrl'])) {
-            return $article['image']['thumbnail']['contentUrl'];
-        }
-        return null;
+        return $article['provider'][0]['name'] ?? null;
     }
 
-    private function formatDate(string $date): string
+    private function getImageUrlFromData(array $article): ?string
     {
-        $formattedDate = new Carbon($date);
-        return $formattedDate->addHours(9)->format('Y-m-d H:i:s');
+        return $article['image']['thumbnail']['contentUrl'] ?? null;
+    }
+
+    private function checkIfExistsAndFormatDate(?string $date): ?string
+    {
+        return $date ? (new Carbon($date))->addHours(9)->format('Y-m-d H:i:s') : null;
     }
 }
