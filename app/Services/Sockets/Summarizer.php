@@ -2,7 +2,6 @@
 
 namespace App\Services\Sockets;
 
-// Throws exception if anything goes wrong, so it is the responsibility of the caller to handle the exceptions.
 class Summarizer
 {
     private $socket;
@@ -25,6 +24,14 @@ class Summarizer
         socket_close($this->socket);
     }
 
+    private function connectSocket(): bool
+    {
+        $host = config('app.summarizer_socket_host');
+        $port = config('app.summarizer_socket_port');
+
+        return socket_connect($this->socket, $host, $port);
+    }
+
     private function createSocketConnection(): void
     {
         $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
@@ -34,7 +41,7 @@ class Summarizer
             throw new \Exception('Could not create socket');
         }
 
-        if (false === socket_connect($this->socket, config('app.summarizer_socket_host'), config('app.summarizer_socket_port'))) {
+        if (false === $this->connectSocket()) {
             echo 'Failed to connect to socket: '.socket_strerror(socket_last_error());
 
             throw new \Exception('Could not connect to socket');
@@ -54,7 +61,7 @@ class Summarizer
         return $out;
     }
 
-    private function formatData(string $prompt, int $maxInputTokens)
+    private function formatData(string $prompt, int $maxInputTokens): string
     {
         return json_encode([
             'prompt' => $prompt,
