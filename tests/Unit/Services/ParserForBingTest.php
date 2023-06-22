@@ -20,7 +20,7 @@ class ParserForBingTest extends TestCase
         $parser = new ParserForBing();
         $parsedData = $parser->getParsedData($response);
         $this->assertCount(2, $parsedData);
-        foreach($parsedData as $index => $parsedArticle) {
+        foreach ($parsedData as $index => $parsedArticle) {
             $this->testSingleArticle(parsedArticle: $parsedArticle, index: $index, mockedArticle: $response['value'][$index]);
         }
     }
