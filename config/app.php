@@ -192,6 +192,6 @@ return [
     */
 
     'summarizer_socket_host' => env('SUMMARIZER_SOCKET_HOST', 'localhost'),
-    'summarizer_socket_port' => env('SUMMARIZER_SOCKET_PORT', 6001),
+    'summarizer_socket_port' => env('SUMMARIZER_SOCKET_PORT', 8100),
 
 ];
