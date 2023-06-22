@@ -6,13 +6,13 @@ use Illuminate\Support\Facades\Http;
 
 class NewsFetcherForNewsDataIo
 {
-    private const url = 'https://newsdata.io/api/1/news';
+    private const URL = 'https://newsdata.io/api/1/news';
 
     public function fetch(string $searchQuery = '', string $category = '', string $page = ''): array
     {
         $headers = $this->getHeaders();
         $params = $this->getParams($searchQuery, $category, $page);
-        $response = Http::withHeaders($headers)->get(self::url, $params)->throw();
+        $response = Http::withHeaders($headers)->get(self::URL, $params)->throw();
 
         return $response->json();
     }
