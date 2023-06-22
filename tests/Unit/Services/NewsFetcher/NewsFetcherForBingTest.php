@@ -14,8 +14,6 @@ use Tests\TestCase;
  */
 class NewsFetcherForBingTest extends TestCase
 {
-    use DatabaseTransactions;
-
     public function testFetch(): void
     {
         Http::fake([
