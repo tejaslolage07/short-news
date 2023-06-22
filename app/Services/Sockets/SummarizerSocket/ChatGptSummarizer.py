@@ -11,12 +11,11 @@ class ChatGptSummarizer:
     MODEL = "gpt-3.5-turbo"
 
     def _tokenized_prompt(self, text):
-        # get the number of tokens in the article body
         encoding = tiktoken.get_encoding("cl100k_base")
         return encoding.encode(text)
 
     def _format_prompt(self, prompt: str):
-        # Strip the prompt of whitespaces.
+
         return prompt.strip()
 
     def _api_call(self, prompt, max_tokens: int, temperature: float):
@@ -35,12 +34,10 @@ class ChatGptSummarizer:
             jsonData = json.loads(data)
             chatGptPrompt = jsonData["prompt"]
             maxInputTokens = jsonData["max_input_tokens"]
-            # get the environment variables
+
             openai.api_key = os.getenv("OPENAI_API_KEY")
 
             textPrompt = self._format_prompt(chatGptPrompt)
-            # textPrompt = self._generate_prompt(articleBody)
-            print(textPrompt)
 
             tokenArray = self._tokenized_prompt(
                 textPrompt)[0:maxInputTokens]
@@ -48,7 +45,7 @@ class ChatGptSummarizer:
 
             response = self._api_call(prompt=textPrompt, max_tokens=min(
                 300, 2048-num_tokens, num_tokens), temperature=0.0)
-            print(response)
+
             summarizedText = response["choices"][0].message["content"]
             return summarizedText
         except Exception as e:
