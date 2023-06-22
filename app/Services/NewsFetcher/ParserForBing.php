@@ -10,10 +10,11 @@ class ParserForBing
     {
         $articles = $response['value'];
         $result = [];
-        foreach($articles as $article) {
+        foreach ($articles as $article) {
             $parsedArticle = $this->parseArticle($article);
             $result[] = $parsedArticle;
         }
+
         return $result;
     }
 
@@ -23,6 +24,7 @@ class ParserForBing
         $imageURL = $this->getImageUrlFromData($article);
         $newsWebsiteName = $this->getNewsWebsiteName($article);
         $currentTime = date('Y-m-d H:i:s');
+
         return [
             'headline' => $article['name'],
             'article_url' => $article['url'],
@@ -32,10 +34,9 @@ class ParserForBing
             'image_url' => $imageURL,
             'news_website' => $newsWebsiteName,
             'published_at' => $formattedDate,
-            'fetched_at' => $currentTime
+            'fetched_at' => $currentTime,
         ];
     }
-
 
     private function getNewsWebsiteName(array $article): ?string
     {

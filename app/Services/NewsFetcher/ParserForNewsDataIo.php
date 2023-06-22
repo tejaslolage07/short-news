@@ -10,16 +10,18 @@ class ParserForNewsDataIo
     {
         $articles = $response['results'];
         $parsedData = [];
-        foreach($articles as $article) {
+        foreach ($articles as $article) {
             $parsedArticle = $this->parseArticle($article);
             $parsedData[] = $parsedArticle;
         }
+
         return $parsedData;
     }
 
     public function getNextPage(string $response): string
     {
         $data = json_decode($response, true);
+
         return $data['nextPage'];
     }
 
@@ -28,6 +30,7 @@ class ParserForNewsDataIo
         $formattedDate = $this->checkIfExistsAndFormatDate($article['pubDate']);
         $currentTime = date('Y-m-d H:i:s');
         $newsWebsite = $this->getNewsWebsiteName($article);
+
         return [
             'headline' => $article['title'],
             'article_url' => $article['link'],
@@ -37,7 +40,7 @@ class ParserForNewsDataIo
             'image_url' => $article['image_url'],
             'news_website' => $newsWebsite,
             'published_at' => $formattedDate,
-            'fetched_at' => $currentTime
+            'fetched_at' => $currentTime,
         ];
     }
 
@@ -49,6 +52,7 @@ class ParserForNewsDataIo
     private function checkIfExistsAndFormatDate(?string $date): ?string
     {
         $date ? $formattedDate = (new Carbon($date))->addHours(9)->format('Y-m-d H:i:s') : $formattedDate = null;
+
         return $formattedDate;
     }
 }
