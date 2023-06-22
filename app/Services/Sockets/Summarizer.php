@@ -8,8 +8,9 @@ class Summarizer
 
     public function summarizeOverSocket(string $prompt, int $maxInputTokens): string
     {
-        $this->createSocketConnection();
-        $this->sendToSocket($prompt, $maxInputTokens);
+        $this->createSocket();
+        $this->connectToSocket();
+        $this->formatAndSendToSocket($prompt, $maxInputTokens);
         $output = $this->readFromSocket();
         $this->closeConnection();
         if ('' === $output) {
@@ -19,46 +20,32 @@ class Summarizer
         return $output;
     }
 
-    private function closeConnection(): void
+    private function createSocket(): void
     {
-        socket_close($this->socket);
+        $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        if (false === $this->socket) {
+            throw new \Exception('Failed to create socket: '.socket_strerror(socket_last_error()));
+        }
     }
 
-    private function connectSocket(): bool
+    private function connectToSocket()
     {
         $host = config('app.summarizer_socket_host');
         $port = config('app.summarizer_socket_port');
 
-        return socket_connect($this->socket, $host, $port);
-    }
-
-    private function createSocketConnection(): void
-    {
-        $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-        if (false === $this->socket) {
-            echo 'Failed to create socket: '.socket_strerror(socket_last_error());
-
-            throw new \Exception('Could not create socket');
-        }
-
-        if (false === $this->connectSocket()) {
-            echo 'Failed to connect to socket: '.socket_strerror(socket_last_error());
-
-            throw new \Exception('Could not connect to socket');
+        $status = socket_connect($this->socket, $host, $port);
+        if (false === $status) {
+            throw new \Exception('Failed to connect to socket: '.socket_strerror(socket_last_error()));
         }
     }
 
-    private function readFromSocket(): string
+    private function formatAndSendToSocket(string $prompt, int $maxInputTokens)
     {
-        // The summary will fit within 4096 bytes (since it is max 300 tokens)
-        $out = socket_read($this->socket, 4096);
-        if (false === $out) {
-            echo 'Failed to read from socket: '.socket_strerror(socket_last_error());
-
-            throw new \Exception('Could not read from socket');
+        $data = $this->formatData($prompt, $maxInputTokens);
+        $status = socket_write($this->socket, $data);
+        if (false === $status) {
+            throw new \Exception('Failed to write to socket: '.socket_strerror(socket_last_error()));
         }
-
-        return $out;
     }
 
     private function formatData(string $prompt, int $maxInputTokens): string
@@ -69,13 +56,19 @@ class Summarizer
         ]);
     }
 
-    private function sendToSocket(string $prompt, int $maxInputTokens)
+    private function readFromSocket(): string
     {
-        $data = $this->formatData($prompt, $maxInputTokens);
-        if (false === socket_write($this->socket, $data)) {
-            echo 'Failed to write to socket: '.socket_strerror(socket_last_error());
-
-            throw new \Exception('Could not write to socket');
+        // The summary will fit within 4096 bytes (since it is max 300 tokens)
+        $out = socket_read($this->socket, 4096);
+        if (false === $out) {
+            throw new \Exception('Failed to read from socket: '.socket_strerror(socket_last_error()));
         }
+
+        return $out;
+    }
+
+    private function closeConnection(): void
+    {
+        socket_close($this->socket);
     }
 }
