@@ -61,4 +61,4 @@ class SummarizeArticle implements ShouldQueue
     {
         $this->prompt = 'Summarize the news article below that is delimited by triple quotes. Respond in Japanese and in no more than 60 words. Article: ```'.$this->articleBody.'```';
     }
-}
+}`
