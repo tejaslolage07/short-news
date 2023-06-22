@@ -2,15 +2,15 @@
 
 namespace App\Services;
 
-use App\Models\Article;
 use App\Http\Controllers\NewsWebsiteController;
+use App\Jobs\SummarizeArticle;
+use App\Models\Article;
 use App\Services\NewsFetcher\NewsFetcherForBing;
 use App\Services\NewsFetcher\NewsFetcherForNewsDataIo;
 use App\Services\NewsFetcher\ParserForBing;
 use App\Services\NewsFetcher\ParserForNewsDataIo;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use App\Jobs\SummarizeArticle;
+use Illuminate\Support\Facades\DB;
 
 class NewsFetcherService
 {
@@ -21,7 +21,7 @@ class NewsFetcherService
 
         try {
             $response = $newsFetcher->fetch('', 1000);
-            $parsedNewsArticles = $parser->getParsedData($response->body());
+            $parsedNewsArticles = $parser->getParsedData($response);
             foreach ($parsedNewsArticles as $parsedNewsArticle) {
                 $this->storeParsedNewsArticle($parsedNewsArticle);
             }
@@ -29,7 +29,6 @@ class NewsFetcherService
             echo $e->getMessage();
         }
     }
-
 
     public function fetchAndStoreNewsFromNewsDataIo(): void
     {
@@ -44,7 +43,7 @@ class NewsFetcherService
             do {
                 $fetchedNews = $newsFetcher->fetch('', '', $page);
                 $parsedNewsArticles = $parser->getParsedData($fetchedNews);
-                $queriesUsed++;
+                ++$queriesUsed;
 
                 foreach ($parsedNewsArticles as $parsedNewsArticle) {
                     $articleUrl = $parsedNewsArticle['article_url'];
@@ -57,12 +56,12 @@ class NewsFetcherService
                         break 2;
                     }
                 }
-                $page = $this->getNextPage($fetchedNews);
+                $page = $fetchedNews['next_page'];
             } while ($page);
         } catch (\Exception $e) {
-            echo "An error occurred: " . $e->getMessage();
+            echo 'An error occurred: '.$e->getMessage();
         }
-        echo Carbon::now()->addHour(9)->format('Y-m-d H:i:s') . "\tTotal queries used in this session: " . $queriesUsed . "\n";
+        echo Carbon::now()->addHour(9)->format('Y-m-d H:i:s')."\tTotal queries used in this session: ".$queriesUsed."\n";
     }
 
     private function storeArticle(array $parsedNewsArticle, ?int $newsWebsiteId): Article
@@ -78,9 +77,10 @@ class NewsFetcherService
         $article->published_at = $parsedNewsArticle['published_at'];
         $article->fetched_at = $parsedNewsArticle['fetched_at'];
         $article->save();
+
         return $article;
     }
-    
+
     private function storeParsedNewsArticle(array $parsedNewsArticle): void
     {
         $newsWebsiteId = $this->getNewsWebsiteId($parsedNewsArticle['news_website']);
@@ -90,9 +90,12 @@ class NewsFetcherService
 
     private function getNewsWebsiteId(?string $newsWebsiteName): ?int
     {
-        if(!$newsWebsiteName) return null;
+        if (!$newsWebsiteName) {
+            return null;
+        }
         $newsWebsiteController = new NewsWebsiteController();
         $newsWebsite = $newsWebsiteController->getNewsWebsiteFromNameOrCreate($newsWebsiteName);
+
         return $newsWebsite->id;
     }
 
@@ -101,10 +104,10 @@ class NewsFetcherService
         SummarizeArticle::dispatch($savedArticle, $parsedNewsArticleContent);
     }
 
-
     private function getLatestUrlFromDB(): string
     {
         $latestUrl = DB::table('articles')->orderBy('published_at', 'desc')->value('article_url');
+
         return $latestUrl ?: '';
     }
 
@@ -115,13 +118,8 @@ class NewsFetcherService
         if ($existingArticleDateTime && $cappedAt < $existingArticleDateTime) {
             return $existingArticleDateTime;
         }
-        return $cappedAt;
-    }
 
-    private function getNextPage(string $response): string
-    {
-        $data = json_decode($response, true);
-        return $data['nextPage'];
+        return $cappedAt;
     }
 
     private function isNewArticle(string $existingUrl, string $existingArticleDateTime, string $articleUrl, string $articlePublishedAt): bool
