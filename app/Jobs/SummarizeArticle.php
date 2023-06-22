@@ -18,9 +18,6 @@ class SummarizeArticle implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    /**
-     * The number of times the job may be attempted.
-     */
     public $tries = 3;
 
     /**
@@ -29,9 +26,6 @@ class SummarizeArticle implements ShouldQueue
      */
     public $timeout = 90;
 
-    /**
-     * Create a new job instance.
-     */
     public function __construct(public Article $article, public string $articleBody, public string $prompt = '', public int $maxInputTokens = 1024)
     {
         if ('' == $prompt) {
@@ -49,9 +43,6 @@ class SummarizeArticle implements ShouldQueue
         return [5, 10, 20];
     }
 
-    /**
-     * Execute the job.
-     */
     public function handle(ArticleController $articleController, Summarizer $summarizer): void
     {
         // Summarize the article
