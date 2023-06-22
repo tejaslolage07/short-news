@@ -40,7 +40,7 @@ class ParserForNewsDataIo
             'image_url' => $article['image_url'],
             'news_website' => $newsWebsite,
             'published_at' => $formattedDate,
-            'fetched_at' => $currentTime
+            'fetched_at' => $currentTime,
         ];
     }
 
@@ -52,6 +52,7 @@ class ParserForNewsDataIo
     private function checkIfExistsAndFormatDate(?string $date): ?string
     {
         $date ? $formattedDate = (new Carbon($date))->addHours(9)->format('Y-m-d H:i:s') : $formattedDate = null;
+
         return $formattedDate;
     }
 }
