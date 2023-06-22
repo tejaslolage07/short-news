@@ -3,7 +3,6 @@
 namespace Tests\Unit\Services\NewsFetcher;
 
 use App\Services\NewsFetcher\NewsFetcherForBing;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -15,8 +14,6 @@ use Tests\TestCase;
  */
 class NewsFetcherForBingTest extends TestCase
 {
-    use DatabaseTransactions;
-
     public function testFetch(): void
     {
         Http::fake([
