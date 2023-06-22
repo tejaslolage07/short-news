@@ -30,7 +30,6 @@ class ArticleController extends Controller
             ->orderByDesc('published_at')
             ->orderByDesc('id')
             ->cursorPaginate(perPage: $request->count ?? 100)
-            ->appends('count', $request->count ?? 100)
         ;
     }
 }
