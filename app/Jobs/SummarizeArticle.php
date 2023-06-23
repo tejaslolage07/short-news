@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Http\Controllers\ArticleController;
 use App\Models\Article;
 use App\Services\Sockets\Summarizer;
 use Illuminate\Bus\Queueable;
@@ -26,8 +25,10 @@ class SummarizeArticle implements ShouldQueue
      */
     public $timeout = 90;
 
-    public function __construct(public Article $article, public string $articleBody, public string $prompt = '', public int $maxInputTokens = 1024)
+    public function __construct(public Article $article, public string $articleBody = '', public string $prompt = '', public int $maxInputTokens = 1024)
     {
+        assert(('' != $articleBody) || ('' != $prompt));
+        assert($maxInputTokens > 0);
         if ('' == $prompt) {
             $this->prompt = 'Summarize the news article below that is delimited by triple quotes. Respond in Japanese and in no more than 60 words. Article: ```'.$articleBody.'```';
         }
@@ -43,11 +44,12 @@ class SummarizeArticle implements ShouldQueue
         return [5, 10, 20];
     }
 
-    public function handle(ArticleController $articleController, Summarizer $summarizer): void
+    public function handle(Summarizer $summarizer): void
     {
         try {
             $summary = $summarizer->summarizeOverSocket($this->prompt, $this->maxInputTokens);
-            $articleController->update($this->article, ['short_news' => $summary]);
+            $this->article->short_news = $summary;
+            $this->article->save();
 
             return;
         } catch (\Exception $e) {

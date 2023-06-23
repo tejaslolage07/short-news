@@ -34,7 +34,7 @@ class SummarizerTest extends TestCase
 
         #handle the job
         $a = new SummarizeArticle($article, $articleBody, '', 1);
-        $a->handle(new ArticleController(), new Summarizer());
+        $a->handle(new Summarizer());
         $this->assertNotEmpty($article->short_news);
 
         #check if Job updated the DB
