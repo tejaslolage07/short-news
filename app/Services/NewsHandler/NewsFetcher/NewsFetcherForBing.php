@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\NewsFetcher;
+namespace App\Services\NewsHandler\NewsFetcher;
 
 use Illuminate\Support\Facades\Http;
 
@@ -13,7 +13,10 @@ class NewsFetcherForBing
     {
         $headers = $this->getHeaders();
         $params = $this->getParams($searchQuery, $articleCount);
-        $response = Http::withHeaders($headers)->get(self::URL, $params)->throw();
+        $response = Http::withHeaders($headers)
+            ->get(self::URL, $params)
+            ->throw()
+        ;
 
         return $response->json();
     }

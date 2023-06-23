@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Services\NewsFetcher;
 
-use App\Services\NewsFetcher\NewsFetcherForNewsDataIo;
+use App\Services\NewsHandler\NewsFetcher\NewsFetcherForNewsDataIo;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;

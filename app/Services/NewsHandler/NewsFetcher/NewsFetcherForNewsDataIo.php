@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\NewsFetcher;
+namespace App\Services\NewsHandler\NewsFetcher;
 
 use Illuminate\Support\Facades\Http;
 
@@ -12,7 +12,10 @@ class NewsFetcherForNewsDataIo
     {
         $headers = $this->getHeaders();
         $params = $this->getParams($searchQuery, $category, $page);
-        $response = Http::withHeaders($headers)->get(self::URL, $params)->throw();
+        $response = Http::withHeaders($headers)
+            ->get(self::URL, $params)
+            ->throw()
+        ;
 
         return $response->json();
     }
