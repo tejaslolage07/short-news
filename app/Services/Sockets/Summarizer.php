@@ -28,7 +28,7 @@ class Summarizer
         }
     }
 
-    private function connectToSocket()
+    private function connectToSocket(): void
     {
         $host = config('app.summarizer_socket_host');
         $port = config('app.summarizer_socket_port');
@@ -39,7 +39,7 @@ class Summarizer
         }
     }
 
-    private function formatAndSendToSocket(string $prompt, int $maxInputTokens)
+    private function formatAndSendToSocket(string $prompt, int $maxInputTokens) : void
     {
         $data = $this->formatData($prompt, $maxInputTokens);
         $status = socket_write($this->socket, $data);
