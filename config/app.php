@@ -185,4 +185,13 @@ return [
         // 'Example' => App\Facades\Example::class,
     ])->toArray(),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Python Summarizer Service
+    |--------------------------------------------------------------------------
+    */
+
+    'summarizer_socket_host' => env('SUMMARIZER_SOCKET_HOST', 'localhost'),
+    'summarizer_socket_port' => env('SUMMARIZER_SOCKET_PORT', 8100),
+
 ];
