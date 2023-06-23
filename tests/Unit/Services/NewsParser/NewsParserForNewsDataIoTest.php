@@ -48,13 +48,13 @@ class NewsParserForNewsDataIoTest extends TestCase
     {
         $this->assertEquals($mockedArticle['title'], $parsedArticle['headline']);
         $this->assertEquals($mockedArticle['link'], $parsedArticle['article_url']);
-        $this->assertNull($parsedArticle['author']);
+        $this->assertEquals($mockedArticle['source_id'], $parsedArticle['news_website']);
         $this->assertEquals($mockedArticle['content'], $parsedArticle['content']);
         $this->assertEquals($mockedArticle['image_url'], $parsedArticle['image_url']);
-        $this->assertEquals($this->getCreator($mockedArticle), $parsedArticle['news_website']);
+        $this->assertEquals($this->getAuthorFromMockedData($mockedArticle), $parsedArticle['author']);
     }
 
-    private function getCreator($mockedArticle): ?string
+    private function getAuthorFromMockedData(array $mockedArticle): ?string
     {
         return $mockedArticle['creator'][0] ?? null;
     }
