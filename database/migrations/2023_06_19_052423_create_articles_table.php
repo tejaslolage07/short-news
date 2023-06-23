@@ -14,18 +14,18 @@ return new class() extends Migration {
             $table->id();
             $table->text('short_news');
             $table->text('headline');
-            $table->string('author', 256)->nullable(true);
+            $table->string('author', 256)->nullable();
             $table->text('article_url');
-            $table->text('image_url')->nullable(true);
+            $table->text('image_url')->nullable();
             $table->text('article_s3_filename');
             $table->timestamp('published_at');
             $table->timestamps();
             $table->timestamp('fetched_at');
             $table->enum('source', ['api', 'scraper']);
-            $table->text('country')->nullable(true);
-            $table->enum('language', ['ja', 'en'])->nullable(true);
-            $table->text('category')->nullable(true);
-            $table->text('keywords')->nullable(true);
+            $table->text('country')->nullable();
+            $table->enum('language', ['ja', 'en'])->nullable();
+            $table->text('category')->nullable();
+            $table->text('keywords')->nullable();
         });
     }
 
