@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Services\NewsFetcher;
+namespace App\Services\NewsHandler\NewsParser;
 
 use Carbon\Carbon;
 
-class ParserForNewsDataIo
+class NewsParserForNewsDataIo
 {
     public function getParsedData(array $response): array
     {
@@ -27,6 +27,7 @@ class ParserForNewsDataIo
 
     private function parseArticle(array $article): array
     {
+        // The NewsDataIo API doesn't send author data
         $formattedDate = $this->checkIfExistsAndFormatDate($article['pubDate']);
         $currentTime = date('Y-m-d H:i:s');
         $newsWebsite = $this->getNewsWebsiteName($article);
@@ -34,7 +35,6 @@ class ParserForNewsDataIo
         return [
             'headline' => $article['title'],
             'article_url' => $article['link'],
-            // The NewsDataIo API doesn't send author data
             'author' => null,
             'content' => $article['content'],
             'image_url' => $article['image_url'],

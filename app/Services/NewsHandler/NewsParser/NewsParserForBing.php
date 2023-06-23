@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Services\NewsFetcher;
+namespace App\Services\NewsHandler\NewsParser;
 
 use Carbon\Carbon;
 
-class ParserForBing
+class NewsParserForBing
 {
     public function getParsedData(array $response): array
     {
@@ -20,6 +20,7 @@ class ParserForBing
 
     private function parseArticle(array $article): array
     {
+        // The Bing API doesn't send author data
         $formattedDate = $this->checkIfExistsAndFormatDate($article['datePublished']);
         $imageURL = $this->getImageUrlFromData($article);
         $newsWebsiteName = $this->getNewsWebsiteName($article);
@@ -28,7 +29,6 @@ class ParserForBing
         return [
             'headline' => $article['name'],
             'article_url' => $article['url'],
-            // The Bing API doesn't send author data
             'author' => null,
             'content' => $article['description'],
             'image_url' => $imageURL,
