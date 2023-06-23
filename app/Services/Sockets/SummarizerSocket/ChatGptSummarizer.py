@@ -15,14 +15,14 @@ class ChatGptSummarizer:
         return min(
             300, 2048-num_tokens, num_tokens)
 
-    def _tokenized_prompt(self, text):
+    def _tokenized_prompt(self, text: str):
         encoding = tiktoken.get_encoding("cl100k_base")
         return encoding.encode(text)
 
     def _format_prompt(self, prompt: str):
         return prompt.strip()
 
-    def _api_call(self, prompt, max_tokens: int, temperature: float):
+    def _api_call(self, prompt: str, max_tokens: int, temperature: float):
         messages = [{"role": "user", "content": prompt}]
         response = openai.ChatCompletion.create(
             model=self.MODEL,
