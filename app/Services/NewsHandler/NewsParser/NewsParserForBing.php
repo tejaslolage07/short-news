@@ -2,7 +2,7 @@
 
 namespace App\Services\NewsHandler\NewsParser;
 
-use App\Services\Interfaces\NewsParser;
+use App\Services\NewsHandler\NewsParser\Contracts\NewsParser;
 use Carbon\Carbon;
 
 class NewsParserForBing extends NewsParser
@@ -21,7 +21,7 @@ class NewsParserForBing extends NewsParser
 
     private function parseArticle(array $article): array
     {
-        // The Bing API doesn't send author data
+        // The Bing API doesn't send author, country, language
         $formattedDate = $this->checkIfExistsAndFormatDate($article['datePublished']);
         $imageURL = $this->getImageUrlFromData($article);
         $newsWebsiteName = $this->getNewsWebsiteName($article);
@@ -36,6 +36,10 @@ class NewsParserForBing extends NewsParser
             'news_website' => $newsWebsiteName,
             'published_at' => $formattedDate,
             'fetched_at' => $currentTime,
+            'country' => null,
+            'language' => null,
+            'category' => $article['category'] ?? null,
+            'keywords' => $article['about'][0]['name'] ?? null, // Need refinements (to store array of keywords)
         ];
     }
 
