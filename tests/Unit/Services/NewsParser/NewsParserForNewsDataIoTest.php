@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\Unit\Services\NewsFetcher;
+namespace Tests\Unit\Services\NewsParser;
 
-use App\Services\NewsFetcher\ParserForNewsDataIo;
+use App\Services\NewsHandler\NewsParser\NewsParserForNewsDataIo;
 use Tests\TestCase;
 
 /**
@@ -10,14 +10,14 @@ use Tests\TestCase;
  *
  * @coversNothing
  */
-class ParserForNewsDataIoTest extends TestCase
+class NewsParserForNewsDataIoTest extends TestCase
 {
     /**
      * @dataProvider getMockedResponse
      */
     public function testGetParsedData(array $response): void
     {
-        $parser = new ParserForNewsDataIo();
+        $parser = new NewsParserForNewsDataIo();
         $parsedData = $parser->getParsedData($response);
         $this->assertCount(3, $parsedData);
         foreach ($parsedData as $index => $article) {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\Unit\Services\NewsFetcher;
+namespace Tests\Unit\Services\NewsParser;
 
-use App\Services\NewsFetcher\ParserForBing;
+use App\Services\NewsHandler\NewsParser\NewsParserForBing;
 use Tests\TestCase;
 
 /**
@@ -10,14 +10,14 @@ use Tests\TestCase;
  *
  * @coversNothing
  */
-class ParserForBingTest extends TestCase
+class NewsParserForBingTest extends TestCase
 {
     /**
      * @dataProvider getMockedResponse
      */
     public function testGetParsedData(array $response): void
     {
-        $parser = new ParserForBing();
+        $parser = new NewsParserForBing();
         $parsedData = $parser->getParsedData($response);
         $this->assertCount(2, $parsedData);
         foreach ($parsedData as $index => $parsedArticle) {
