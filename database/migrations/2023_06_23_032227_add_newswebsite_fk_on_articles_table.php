@@ -24,7 +24,7 @@ return new class() extends Migration {
     {
         if (Schema::hasTable('articles')) {
             Schema::table('articles', function (Blueprint $table) {
-                $table->dropConstrainedForeignId('news_website_id') ;
+                $table->dropConstrainedForeignId('news_website_id');
             });
         }
     }

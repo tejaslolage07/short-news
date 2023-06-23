@@ -26,6 +26,4 @@ return new class() extends Migration {
     {
         Schema::dropIfExists('news_websites');
     }
-
-    
 };

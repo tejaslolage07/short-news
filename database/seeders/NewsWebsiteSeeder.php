@@ -1,8 +1,8 @@
 <?php
 
 namespace Database\Seeders;
-use App\Models\NewsWebsite;
 
+use App\Models\NewsWebsite;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
