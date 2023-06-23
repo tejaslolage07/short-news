@@ -28,6 +28,7 @@ class Article extends Model
     protected $casts = [
         'published_at' => 'datetime',
         'fetched_at' => 'datetime',
+        'keywords' => 'array',
     ];
 
     public function newsWebsite()
