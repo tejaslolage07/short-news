@@ -28,7 +28,7 @@ class ArticleFactory extends Factory
             'country' => fake()->randomElement(['jp', 'us', 'in']),
             'language' => fake()->randomElement(['ja', 'en']),
             'category' => fake()->randomElement(['World', 'Business', 'Technology', 'Entertainment', 'Sports', 'Science', 'Health']),
-            'keywords' => fake()->randomElement(['Breaking', 'News', 'Latest', 'Headlines', 'Top', 'Stories', 'Photos', 'Video', 'CBC', 'News']),
+            'keywords' => fake()->randomElement([json_encode(['keyword1', 'keyword2', 'keyword3']), json_encode(['keyword4', 'keyword5', 'keyword6'])]),
         ];
     }
 }
