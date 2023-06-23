@@ -21,7 +21,7 @@ return new class() extends Migration {
             $table->timestamp('published_at');
             $table->timestamps();
             $table->timestamp('fetched_at');
-            $table->enum('source', ['api', 'scraper']);
+            $table->enum('source', ['bingApi', 'newsDataIoApi', 'api', 'scraper']);
             $table->text('country')->nullable();
             $table->enum('language', ['ja', 'en'])->nullable();
             $table->text('category')->nullable();
