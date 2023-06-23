@@ -28,6 +28,7 @@ class NewsParserForNewsDataIo implements NewsParser
 
     private function parseArticle(array $article): array
     {
+        // The NewsDataIo API doesn't send author data
         $formattedDate = $this->checkIfExistsAndFormatDate($article['pubDate']);
         $currentTime = $this->getCurrentDateTime();
         $keywords = $this->getKeywords($article);
