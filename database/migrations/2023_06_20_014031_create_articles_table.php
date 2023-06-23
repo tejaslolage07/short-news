@@ -23,6 +23,11 @@ return new class() extends Migration {
             $table->timestamps();
             $table->timestamp('fetched_at')->nullable(false);
             $table->enum('source', ['api', 'scraper'])->nullable(false);
+            $table->text('country')->nullable(true);
+            // https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes for lang codes
+            $table->enum('language', ['ja', 'en'])->nullable(true);
+            $table->text('category')->nullable(true);
+            $table->text('keywords')->nullable(true);
         });
     }
 

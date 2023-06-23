@@ -17,6 +17,10 @@ class Article extends Model
     protected $fillable = [
         'short_news',
         'article_s3_filename',
+        'country',
+        'language',
+        'category',
+        'keywords',
     ];
 
     /**
