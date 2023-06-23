@@ -4,9 +4,6 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
- */
 class ArticleFactory extends Factory
 {
     /**
@@ -26,6 +23,10 @@ class ArticleFactory extends Factory
             'published_at' => fake()->dateTime(),
             'fetched_at' => fake()->dateTime(),
             'source' => fake()->randomElement(['api', 'scraper']),
+            'country' => fake()->randomElement(['jp', 'us', 'in']),
+            'language' => fake()->randomElement(['ja', 'en']),
+            'category' => fake()->randomElement(['World', 'Business', 'Technology', 'Entertainment', 'Sports', 'Science', 'Health']),
+            'keywords' => fake()->randomElement(['Breaking', 'News', 'Latest', 'Headlines', 'Top', 'Stories', 'Photos', 'Video', 'CBC', 'News']),
         ];
     }
 }
