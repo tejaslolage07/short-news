@@ -21,11 +21,13 @@ class NewsParserForBing extends NewsParser
 
     private function parseArticle(array $article): array
     {
-        // The Bing API doesn't send author, country, language
+        // The Bing API doesn't send author, country, language (already specified in the request)
         $formattedDate = $this->checkIfExistsAndFormatDate($article['datePublished']);
         $imageURL = $this->getImageUrlFromData($article);
         $newsWebsiteName = $this->getNewsWebsiteName($article);
-        $currentTime = date('Y-m-d H:i:s');
+        $currentTime = $this->getCurrentDateTime();
+        $keywords = $this->getKeywords($article);
+        $category = $this->getCategory($article);
 
         return [
             'headline' => $article['name'],
@@ -38,9 +40,32 @@ class NewsParserForBing extends NewsParser
             'fetched_at' => $currentTime,
             'country' => null,
             'language' => null,
-            'category' => $article['category'] ?? null,
-            'keywords' => $article['about'][0]['name'] ?? null, // Need refinements (to store array of keywords)
+            'category' => $category,
+            'keywords' => $keywords,
         ];
+    }
+
+    private function getKeywords(array $article): ?string
+    {
+        $keywords = [];
+        if (!isset($article['about'])) {
+            return null;
+        }
+        foreach ($article['about'] as $keyword) {
+            $keywords[] = $keyword['name'];
+        }
+
+        return json_encode($keywords);
+    }
+
+    private function getCurrentDateTime(): string
+    {
+        return date('Y-m-d H-i-s');
+    }
+
+    private function getCategory(array $article): ?string
+    {
+        return $article['category'] ?? null;
     }
 
     private function getNewsWebsiteName(array $article): ?string
