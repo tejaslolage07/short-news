@@ -5,9 +5,6 @@ namespace Database\Factories;
 use App\Models\NewsWebsite;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
- */
 class ArticleFactory extends Factory
 {
     /**
@@ -27,7 +24,11 @@ class ArticleFactory extends Factory
             'article_s3_filename' => fake()->text(),
             'published_at' => fake()->dateTime(),
             'fetched_at' => fake()->dateTime(),
-            'source' => fake()->randomElement(['api', 'scraper']),
+            'source' => fake()->randomElement(['bingApi', 'newsDataIoApi', 'api', 'scraper']),
+            'country' => fake()->randomElement(['jp', 'us', 'in']),
+            'language' => fake()->randomElement(['ja', 'en']),
+            'category' => fake()->randomElement(['World', 'Business', 'Technology', 'Entertainment', 'Sports', 'Science', 'Health']),
+            'keywords' => fake()->randomElement(['Breaking', 'News', 'Latest', 'Headlines', 'Top', 'Stories', 'Photos', 'Video', 'CBC', 'News']),
         ];
     }
 }

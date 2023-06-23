@@ -11,14 +11,13 @@ class Article extends Model
 
     protected $table = 'articles';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'short_news',
         'article_s3_filename',
+        'country',
+        'language',
+        'category',
+        'keywords',
     ];
 
     /**
@@ -31,9 +30,6 @@ class Article extends Model
         'fetched_at' => 'datetime',
     ];
 
-    /**
-     * Get the news website that owns the article.
-     */
     public function newsWebsite()
     {
         return $this->belongsTo(NewsWebsite::class);
