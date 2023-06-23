@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Services\NewsFetcher;
 
-use App\Services\NewsFetcher\NewsFetcherForBing;
+use App\Services\NewsHandler\NewsFetcher\NewsFetcherForBing;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
