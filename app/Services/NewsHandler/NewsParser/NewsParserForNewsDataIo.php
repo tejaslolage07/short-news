@@ -27,24 +27,23 @@ class NewsParserForNewsDataIo
 
     private function parseArticle(array $article): array
     {
-        // The NewsDataIo API doesn't send author data
         $formattedDate = $this->checkIfExistsAndFormatDate($article['pubDate']);
         $currentTime = date('Y-m-d H:i:s');
-        $newsWebsite = $this->getNewsWebsiteName($article);
+        $author = $this->getAuthor($article);
 
         return [
             'headline' => $article['title'],
             'article_url' => $article['link'],
-            'author' => null,
+            'author' => $author,
             'content' => $article['content'],
             'image_url' => $article['image_url'],
-            'news_website' => $newsWebsite,
+            'news_website' => $article['source_id'],
             'published_at' => $formattedDate,
             'fetched_at' => $currentTime,
         ];
     }
 
-    private function getNewsWebsiteName(array $article): ?string
+    private function getAuthor(array $article): ?string
     {
         return $article['creator'][0] ?? null;
     }
