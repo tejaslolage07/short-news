@@ -2,9 +2,10 @@
 
 namespace App\Services\NewsHandler\NewsFetcher;
 
+use App\Interfaces\NewsFetcher;
 use Illuminate\Support\Facades\Http;
 
-class NewsFetcherForNewsDataIo
+class NewsFetcherForNewsDataIo extends NewsFetcher
 {
     private const URL = 'https://newsdata.io/api/1/news';
 

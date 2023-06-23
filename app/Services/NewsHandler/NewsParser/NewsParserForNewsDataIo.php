@@ -2,9 +2,10 @@
 
 namespace App\Services\NewsHandler\NewsParser;
 
+use App\Services\Interfaces\NewsParser;
 use Carbon\Carbon;
 
-class NewsParserForNewsDataIo
+class NewsParserForNewsDataIo extends NewsParser
 {
     public function getParsedData(array $response): array
     {
