@@ -3,7 +3,7 @@
 namespace Tests\Unit\Services;
 
 use App\Models\Article;
-use App\Services\NewsFetcherService;
+use App\Services\NewsHandler\NewsHandler;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
@@ -13,7 +13,7 @@ use Tests\TestCase;
  *
  * @coversNothing
  */
-class NewsFetcherServiceTest extends TestCase
+class NewsHandlerTest extends TestCase
 {
     use DatabaseTransactions;
 
@@ -22,7 +22,7 @@ class NewsFetcherServiceTest extends TestCase
         Queue::fake();
         $initialQueueSize = Queue::size();
         $initialDatabaseCount = Article::count();
-        $service = new NewsFetcherService();
+        $service = new NewsHandler();
         $service->fetchAndStoreNewsFromBing();
         $finalQueueSize = Queue::size();
         $finalDatabaseCount = Article::count();
@@ -35,7 +35,7 @@ class NewsFetcherServiceTest extends TestCase
         Queue::fake();
         $initialQueueSize = Queue::size();
         $initialDatabaseCount = Article::count();
-        $service = new NewsFetcherService();
+        $service = new NewsHandler();
         $service->fetchAndStoreNewsFromNewsDataIo();
         $finalQueueSize = Queue::size();
         $finalDatabaseCount = Article::count();
