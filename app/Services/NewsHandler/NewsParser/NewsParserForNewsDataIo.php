@@ -27,7 +27,6 @@ class NewsParserForNewsDataIo
 
     private function parseArticle(array $article): array
     {
-        // The NewsDataIo API doesn't send author data
         $formattedDate = $this->checkIfExistsAndFormatDate($article['pubDate']);
         $currentTime = date('Y-m-d H:i:s');
         $author = $this->getAuthor($article);
