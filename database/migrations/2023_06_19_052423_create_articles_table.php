@@ -15,7 +15,7 @@ return new class() extends Migration {
             $table->text('short_news');
             $table->text('headline');
             $table->string('author', 256)->nullable();
-            $table->text('article_url');
+            $table->text('article_url', 512);
             $table->text('image_url')->nullable();
             $table->text('article_s3_filename');
             $table->timestamp('published_at');
