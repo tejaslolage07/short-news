@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Services;
+namespace Tests\Feature\Services;
 
 use App\Models\Article;
 use App\Services\NewsHandler\NewsHandler;
@@ -22,6 +22,7 @@ class NewsHandlerTest extends TestCase
         Queue::fake();
         $initialQueueSize = Queue::size();
         $initialDatabaseCount = Article::count();
+        dump($initialQueueSize);
         $service = new NewsHandler();
         $service->fetchAndStoreNewsFromBing();
         $finalQueueSize = Queue::size();
