@@ -5,7 +5,7 @@ namespace App\Services\NewsHandler\NewsParser;
 use App\Services\NewsHandler\NewsParser\Contracts\NewsParser;
 use Carbon\Carbon;
 
-class NewsParserForNewsDataIo extends NewsParser
+class NewsParserForNewsDataIo implements NewsParser
 {
     public function getParsedData(array $response): array
     {
@@ -53,41 +53,29 @@ class NewsParserForNewsDataIo extends NewsParser
 
     private function getCountries(array $article): ?string
     {
-        $countries = [];
         if (!isset($article['country'])) {
             return null;
         }
-        foreach ($article['country'] as $country) {
-            $countries[] = $country;
-        }
 
-        return json_encode($countries);
+        return json_encode($article['country']);
     }
-
+    
     private function getCategories(array $article): ?string
     {
-        $categories = [];
         if (!isset($article['category'])) {
             return null;
         }
-        foreach ($article['category'] as $category) {
-            $categories[] = $category;
-        }
 
-        return json_encode($categories);
+        return json_encode($article['category']);
     }
-
+    
     private function getKeywords(array $article): ?string
     {
-        $keywords = [];
         if (!isset($article['keywords'])) {
             return null;
         }
-        foreach ($article['keywords'] as $keyword) {
-            $keywords[] = $keyword;
-        }
-
-        return json_encode($keywords);
+    
+        return json_encode($article['keywords']);
     }
 
     private function getCurrentDateTime(): string
@@ -97,7 +85,7 @@ class NewsParserForNewsDataIo extends NewsParser
 
     private function getAuthor(array $article): ?string
     {
-        return $article['author'][0] ?? null;
+        return $article['creator'][0] ?? null;
     }
 
     private function checkIfExistsAndFormatDate(?string $date): ?string

@@ -42,16 +42,28 @@ class NewsParserForNewsDataIoTest extends TestCase
         $this->assertArrayHasKey('news_website', $parsedArticle);
         $this->assertArrayHasKey('published_at', $parsedArticle);
         $this->assertArrayHasKey('fetched_at', $parsedArticle);
+        $this->assertArrayHasKey('country', $parsedArticle);
+        $this->assertArrayHasKey('language', $parsedArticle);
+        $this->assertArrayHasKey('category', $parsedArticle);
+        $this->assertArrayHasKey('keywords', $parsedArticle);
     }
-
+    
     private function testDataFiltering(array $parsedArticle, array $mockedArticle): void
     {
+        $author = $this->getAuthorFromMockedData($mockedArticle);
+        $country = $this->getCountry($mockedArticle);
+        $keywords = $this->getKeywords($mockedArticle);
+        $categories = $this->getCategories($mockedArticle);
         $this->assertEquals($mockedArticle['title'], $parsedArticle['headline']);
         $this->assertEquals($mockedArticle['link'], $parsedArticle['article_url']);
         $this->assertEquals($mockedArticle['source_id'], $parsedArticle['news_website']);
         $this->assertEquals($mockedArticle['content'], $parsedArticle['content']);
         $this->assertEquals($mockedArticle['image_url'], $parsedArticle['image_url']);
-        $this->assertEquals($this->getAuthorFromMockedData($mockedArticle), $parsedArticle['author']);
+        $this->assertEquals($author, $parsedArticle['author']);
+        $this->assertEquals($country, $parsedArticle['country']);
+        $this->assertEquals($mockedArticle['language'], $parsedArticle['language']);
+        $this->assertEquals($categories, $parsedArticle['category']);
+        $this->assertEquals($keywords, $parsedArticle['keywords']);
     }
 
     private function getAuthorFromMockedData(array $mockedArticle): ?string
@@ -73,6 +85,21 @@ class NewsParserForNewsDataIoTest extends TestCase
         $dateTime = \DateTime::createFromFormat('Y-m-d H:i:s', $dateTimeString);
         $this->assertInstanceOf(\DateTime::class, $dateTime);
         $this->assertEquals($dateTimeString, $dateTime->format('Y-m-d H:i:s'));
+    }
+
+    private function getKeywords(array $mockedArticle): ?string
+    {
+        return isset($mockedArticle['keywords']) ? json_encode($mockedArticle['keywords']) : null;
+    }
+
+    private function getCategories(array $mockedArticle): ?string
+    {
+        return isset($mockedArticle['category']) ? json_encode($mockedArticle['category']) : null;
+    }
+
+    private function getCountry(array $mockedArticle): ?string
+    {
+        return isset($mockedArticle['country']) ? json_encode($mockedArticle['country']) : null;
     }
 
     private function getMockedResponse(): array
