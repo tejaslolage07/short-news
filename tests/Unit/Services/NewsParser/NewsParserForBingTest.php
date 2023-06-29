@@ -13,7 +13,7 @@ use Tests\TestCase;
 class NewsParserForBingTest extends TestCase
 {
     /**
-     * @dataProvider getMockedResponse
+     * @dataProvider responseProvider
      */
     public function testGetParsedData(array $mockedResponse, array $expectedParsedResult): void
     {
@@ -54,7 +54,7 @@ class NewsParserForBingTest extends TestCase
         $this->assertEquals($parsedArticle['fetched_at'], $expectedParsedArticle['fetched_at']);
     }
 
-    private function getMockedResponse(): array
+    private function responseProvider(): array
     {
         return [
             [
