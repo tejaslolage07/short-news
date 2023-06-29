@@ -22,11 +22,7 @@ class NewsParserForBing implements NewsParser
     private function parseArticle(array $article): array
     {
         // The Bing API doesn't send author data
-        if ($article['datePublished']) {
-            $formattedDate = $this->formatDate($article['datePublished']);
-        } else {
-            $formattedDate = null;
-        }
+        $formattedDate = $article['datePublished'] ? $this->formatDate($article['datePublished']) : null;
         $imageURL = $this->getImageUrlFromData($article);
         $newsWebsiteName = $this->getNewsWebsiteName($article);
         $currentTime = $this->getCurrentDateTime();
