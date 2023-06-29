@@ -9,7 +9,12 @@ return new class() extends Migration {
     {
         if (Schema::hasTable('articles')) {
             Schema::table('articles', function (Blueprint $table) {
-                $table->foreignId('news_website_id')->nullable()->constrained('news_websites')->onDelete('set null');
+                $table->foreignId('news_website_id')
+                    ->nullable()
+                    ->constrained('news_websites')
+                    ->onDelete('set null')
+                    ->onUpdate('cascade')
+                ;
             });
         }
     }
