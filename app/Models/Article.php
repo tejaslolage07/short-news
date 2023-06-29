@@ -9,11 +9,6 @@ class Article extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'short_news',
         'article_s3_filename',
@@ -23,14 +18,14 @@ class Article extends Model
         'keywords',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<int, string>
-     */
     protected $casts = [
         'published_at' => 'datetime',
         'fetched_at' => 'datetime',
         'keywords' => 'array',
     ];
+
+    public function newsWebsite()
+    {
+        return $this->belongsTo(NewsWebsite::class);
+    }
 }
