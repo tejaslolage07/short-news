@@ -59,29 +59,17 @@ class NewsParserForNewsDataIoTest extends TestCase
         return [
             [
                 [
-                    'status' => 'success',
-                    'totalResults' => 821,
                     'results' => [
                         [
                             'title' => 'Article 1',
                             'link' => 'https://example.com/article1',
-                            'keywords' => [
-                                'プロ野球',
-                                'オールスター',
-                            ],
                             'creator' => ['Example News'],
-                            'video_url' => null,
-                            'description' => 'Article 2 description',
                             'content' => 'Article 1 content',
                             'pubDate' => '2023-06-19 06:22:45',
                             'image_url' => 'https://example.com/image1.jpg',
                             'source_id' => 'full_count',
-                            'category' => ['sports'],
-                            'country' => ['japan'],
-                            'language' => 'japanese',
                         ],
                     ],
-                    'nextPage' => 'next_page_id_1',
                 ],
                 [
                     [
@@ -98,26 +86,17 @@ class NewsParserForNewsDataIoTest extends TestCase
             ],
             [
                 [
-                    'status' => 'success',
-                    'totalResults' => 821,
                     'results' => [
                         [
                             'title' => 'Article 2',
                             'link' => 'https://example.com/article2',
-                            'keywords' => ['千葉ロッテマリーンズ'],
                             'creator' => null,
-                            'video_url' => null,
-                            'description' => 'Article 2 description',
                             'content' => 'Article 2 content',
                             'pubDate' => '2023-06-19 19:19:47',
                             'image_url' => 'https://example.com/image2.jpg',
                             'source_id' => 'full_count',
-                            'category' => ['sports'],
-                            'country' => ['japan'],
-                            'language' => 'japanese',
                         ],
                     ],
-                    'nextPage' => 'next_page_id_2',
                 ],
                 [
                     [
@@ -138,17 +117,11 @@ class NewsParserForNewsDataIoTest extends TestCase
                         [
                             'title' => 'Article 3',
                             'link' => 'https://example.com/article3',
-                            'keywords' => null,
                             'creator' => null,
-                            'video_url' => null,
-                            'description' => 'Article 3 description',
                             'content' => 'Article 3 content',
                             'pubDate' => null,
                             'image_url' => null,
                             'source_id' => 'full_count',
-                            'category' => ['sports'],
-                            'country' => ['japan'],
-                            'language' => 'japanese',
                         ],
                     ],
                     'nextPage' => null,
