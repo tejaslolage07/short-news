@@ -9,6 +9,6 @@ class NewsWebsiteSeeder extends Seeder
 {
     public function run(): void
     {
-        NewsWebsite::factory(5)->create();
+        NewsWebsite::factory()->count(5)->create();
     }
 }
