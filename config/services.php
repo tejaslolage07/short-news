@@ -30,5 +30,11 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
-
+    'bing' => [
+        'key' => env('BING_API_KEY'),
+    ],
+    'newsdataio' => [
+        'key' => env('NEWS_DATA_IO_KEY'),
+    ],
+    
 ];
