@@ -13,6 +13,8 @@ class NewsWebsite extends Model
         'website',
     ];
 
+    protected $table = 'news_websites';
+
     public function articles()
     {
         return $this->hasMany(Article::class);

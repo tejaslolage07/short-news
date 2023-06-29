@@ -9,6 +9,8 @@ class Article extends Model
 {
     use HasFactory;
 
+    protected $table = 'articles';
+
     protected $fillable = [
         'short_news',
         'article_s3_filename',
