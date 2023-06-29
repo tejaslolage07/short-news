@@ -27,11 +27,7 @@ class NewsParserForNewsDataIo
 
     private function parseArticle(array $article): array
     {
-        if ($article['pubDate']) {
-            $formattedDate = $this->formatDate($article['pubDate']);
-        } else {
-            $formattedDate = null;
-        }
+        $formattedDate = $article['pubDate'] ? $this->formatDate($article['pubDate']) : null;
         $currentTime = date('Y-m-d H:i:s');
         $author = $this->getAuthor($article);
 

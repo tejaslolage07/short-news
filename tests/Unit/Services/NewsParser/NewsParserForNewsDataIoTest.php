@@ -13,7 +13,7 @@ use Tests\TestCase;
 class NewsParserForNewsDataIoTest extends TestCase
 {
     /**
-     * @dataProvider getMockedResponse
+     * @dataProvider responseProvider
      */
     public function testGetParsedData(array $response): void
     {
@@ -74,68 +74,61 @@ class NewsParserForNewsDataIoTest extends TestCase
         $this->assertEquals($dateTimeString, $dateTime->format('Y-m-d H:i:s'));
     }
 
-    private function getMockedResponse(): array
+    private function responseProvider(): array
     {
         return [
             [
-               [
-                    'status' => 'success',
-                    'totalResults' => 821,
+                [
                     'results' => [
                         [
                             'title' => 'Article 1',
                             'link' => 'https://example.com/article1',
-                            'keywords' => [
-                                'プロ野球',
-                                'オールスター',
-                            ],
                             'creator' => ['Example News'],
-                            'video_url' => null,
-                            'description' => 'Article 2 description',
                             'content' => 'Article 1 content',
                             'pubDate' => '2023-06-19 06:22:45',
                             'image_url' => 'https://example.com/image1.jpg',
                             'source_id' => 'full_count',
-                            'category' => ['sports'],
-                            'country' => ['japan'],
-                            'language' => 'japanese',
                         ],
                     ],
-                    'nextPage' => 'next_page_id_1',
                 ],
                 [
-                    'results' => [
-                        'title' => 'Article 2',
-                        'link' => 'https://example.com/article2',
-                        'keywords' => ['千葉ロッテマリーンズ'],
-                        'creator' => null,
-                        'video_url' => null,
-                        'description' => 'Article 2 description',
-                        'content' => 'Article 2 content',
-                        'pubDate' => '2023-06-19 06:19:47',
-                        'image_url' => 'https://example.com/image2.jpg',
-                        'source_id' => 'full_count',
-                        'category' => ['sports'],
-                        'country' => ['japan'],
-                        'language' => 'japanese',
+                    [
+                        'headline' => 'Article 1',
+                        'article_url' => 'https://example.com/article1',
+                        'author' => 'Example News',
+                        'content' => 'Article 1 content',
+                        'image_url' => 'https://example.com/image1.jpg',
+                        'news_website' => 'full_count',
+                        'published_at' => '2023-06-19 15:22:45',
+                        'fetched_at' => date('Y-m-d H:i:s'),
                     ],
-                    'nextPage' => 'next_page_id_2',
+                ],
+            ],
+            [
+                [
+                    'results' => [
+                        [
+                            'title' => 'Article 2',
+                            'link' => 'https://example.com/article2',
+                            'creator' => null,
+                            'content' => 'Article 2 content',
+                            'pubDate' => '2023-06-19 19:19:47',
+                            'image_url' => 'https://example.com/image2.jpg',
+                            'source_id' => 'full_count',
+                        ],
+                    ],
                 ],
                 [
                     'results' => [
-                        'title' => 'Article 3',
-                        'link' => 'https://example.com/article3',
-                        'keywords' => null,
-                        'creator' => null,
-                        'video_url' => null,
-                        'description' => 'Article 3 description',
-                        'content' => 'Article 3 content',
-                        'pubDate' => null,
-                        'image_url' => 'https://example.com/image3.jpg',
-                        'source_id' => 'full_count',
-                        'category' => ['sports'],
-                        'country' => ['japan'],
-                        'language' => 'japanese',
+                        [
+                            'title' => 'Article 3',
+                            'link' => 'https://example.com/article3',
+                            'creator' => null,
+                            'content' => 'Article 3 content',
+                            'pubDate' => null,
+                            'image_url' => null,
+                            'source_id' => 'full_count',
+                        ],
                     ],
                     'nextPage' => null,
                 ]
