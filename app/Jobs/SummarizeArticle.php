@@ -17,8 +17,8 @@ class SummarizeArticle implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    public $tries = 3;
-    public $timeout = 90;
+    // public $tries = 3;
+    // public $timeout = 90;
 
     public function __construct(
         public Article $article,
@@ -28,21 +28,21 @@ class SummarizeArticle implements ShouldQueue
     ) {
     }
 
-    public function backoff(): array
-    {
-        return [5, 10, 20];
-    }
+    // public function backoff(): array
+    // {
+    //     return [5, 10, 20];
+    // }
 
     public function handle(Summarizer $summarizer): void
     {
-        if ((''== $this->articleBody) && ('' == $this->prompt)) {
+        if ('' === $this->articleBody && '' === $this->prompt) {
             return;
         }
         if ($this->maxInputTokens <= 0) {
             return;
         }
 
-        if ('' == $this->prompt) {
+        if ('' === $this->prompt) {
             $this->setDefaultPrompt();
         }
 

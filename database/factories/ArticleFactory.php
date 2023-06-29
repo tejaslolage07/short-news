@@ -12,7 +12,7 @@ class ArticleFactory extends Factory
         return [
             'short_news' => '',
             'headline' => fake()->text(),
-            'news_website_id' => NewsWebsite::all()->random()->id,
+            'news_website_id' => NewsWebsite::factory(),
             'author' => fake()->text(),
             'article_url' => fake()->url(),
             'image_url' => fake()->url(),
