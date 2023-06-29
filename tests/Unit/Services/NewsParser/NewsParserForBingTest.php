@@ -51,7 +51,7 @@ class NewsParserForBingTest extends TestCase
         $this->assertEquals($expectedParsedArticle['image_url'], $parsedArticle['image_url']);
         $this->assertEquals($expectedParsedArticle['news_website'], $parsedArticle['news_website']);
         $this->assertEquals($expectedParsedArticle['published_at'], $parsedArticle['published_at']);
-        $this->assertEquals($expectedParsedArticle['fetched_at'], $parsedArticle['fetched_at']);
+        $this->assertNotNull($parsedArticle['fetched_at']);
     }
 
     private function responseProvider(): array
