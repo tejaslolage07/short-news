@@ -188,3 +188,4 @@ class NewsParserForNewsDataIoTest extends TestCase
         ];
     }
 }
+    
