@@ -28,11 +28,16 @@ class NewsParserForNewsDataIo implements NewsParser
 
     private function parseArticle(array $article): array
     {
-        $formattedDate = $this->checkIfExistsAndFormatDate($article['pubDate']);
+        if ($article['pubDate']) {
+            $formattedDate = $this->formatDate($article['pubDate']);
+        } else {
+            $formattedDate = null;
+        }
         $currentTime = $this->getCurrentDateTime();
         $keywords = $this->getKeywords($article);
         $categories = $this->getCategories($article);
         $countries = $this->getCountries($article);
+        $currentTime = date('Y-m-d H:i:s');
         $author = $this->getAuthor($article);
 
         return [
@@ -88,8 +93,8 @@ class NewsParserForNewsDataIo implements NewsParser
         return $article['creator'][0] ?? null;
     }
 
-    private function checkIfExistsAndFormatDate(?string $date): ?string
+    private function formatDate(string $date): string
     {
-        return $date ? (new Carbon($date))->addHours(9)->format('Y-m-d H:i:s') : null;
+        return (new Carbon($date))->addHours(9)->format('Y-m-d H:i:s');
     }
 }
