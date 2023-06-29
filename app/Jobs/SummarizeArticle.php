@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Http\Controllers\ArticleController;
 use App\Models\Article;
 use App\Services\Sockets\Summarizer;
 use Illuminate\Bus\Queueable;
@@ -18,42 +17,48 @@ class SummarizeArticle implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    public $tries = 3;
+    // public $tries = 3;
+    // public $timeout = 90;
 
-    /**
-     * The number of seconds the job can run before timing out.
-     * Default is 60 sec.
-     */
-    public $timeout = 90;
+    public function __construct(
+        public Article $article,
+        public string $articleBody = '',
+        public string $prompt = '',
+        public int $maxInputTokens = 1024
+    ) {
+    }
 
-    public function __construct(public Article $article, public string $articleBody, public string $prompt = '', public int $maxInputTokens = 1024)
+    // public function backoff(): array
+    // {
+    //     return [5, 10, 20];
+    // }
+
+    public function handle(Summarizer $summarizer): void
     {
-        if ('' == $prompt) {
-            $this->prompt = 'Summarize the news article below that is delimited by triple quotes. Respond in Japanese and in no more than 60 words. Article: ```'.$articleBody.'```';
+        if ('' === $this->articleBody && '' === $this->prompt) {
+            return;
         }
-    }
+        if ($this->maxInputTokens <= 0) {
+            return;
+        }
 
-    /**
-     * Calculate the number of seconds to wait before retrying the job.
-     *
-     * @return array<int, int>
-     */
-    public function backoff(): array
-    {
-        return [5, 10, 20];
-    }
+        if ('' === $this->prompt) {
+            $this->setDefaultPrompt();
+        }
 
-    public function handle(ArticleController $articleController, Summarizer $summarizer): void
-    {
-        // Summarize the article
         try {
             $summary = $summarizer->summarizeOverSocket($this->prompt, $this->maxInputTokens);
-            $articleController->update($this->article, ['short_news' => $summary]);
-            print('Summary: '.$summary."\n");
+            $this->article->short_news = $summary;
+            $this->article->save();
+
             return;
         } catch (\Exception $e) {
-            // fail job
             $this->fail($e);
         }
+    }
+
+    private function setDefaultPrompt(): void
+    {
+        $this->prompt = 'Summarize the news article below that is delimited by triple quotes. Respond in Japanese and in no more than 60 words. Article: ```'.$this->articleBody.'```';
     }
 }
