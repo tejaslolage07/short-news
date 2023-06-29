@@ -18,16 +18,14 @@ class SummarizeArticle implements ShouldQueue
     use SerializesModels;
 
     public $tries = 3;
-
     public $timeout = 90;
 
-    public function __construct(public Article $article, public string $articleBody = '', public string $prompt = '', public int $maxInputTokens = 1024)
-    {
-        assert(('' != $articleBody) || ('' != $prompt));
-        assert($maxInputTokens > 0);
-        if ('' == $prompt) {
-            $this->prompt = 'Summarize the news article below that is delimited by triple quotes. Respond in Japanese and in no more than 60 words. Article: ```'.$articleBody.'```';
-        }
+    public function __construct(
+        public Article $article,
+        public string $articleBody = '',
+        public string $prompt = '',
+        public int $maxInputTokens = 1024
+    ) {
     }
 
     public function backoff(): array
@@ -37,6 +35,17 @@ class SummarizeArticle implements ShouldQueue
 
     public function handle(Summarizer $summarizer): void
     {
+        if ((''== $this->articleBody) && ('' == $this->prompt)) {
+            return;
+        }
+        if ($this->maxInputTokens <= 0) {
+            return;
+        }
+
+        if ('' == $this->prompt) {
+            $this->setDefaultPrompt();
+        }
+
         try {
             $summary = $summarizer->summarizeOverSocket($this->prompt, $this->maxInputTokens);
             $this->article->short_news = $summary;
@@ -46,5 +55,10 @@ class SummarizeArticle implements ShouldQueue
         } catch (\Exception $e) {
             $this->fail($e);
         }
+    }
+
+    private function setDefaultPrompt()
+    {
+        $this->prompt = 'Summarize the news article below that is delimited by triple quotes. Respond in Japanese and in no more than 60 words. Article: ```'.$this->articleBody.'```';
     }
 }
