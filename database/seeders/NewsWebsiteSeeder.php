@@ -7,7 +7,6 @@ use Illuminate\Database\Seeder;
 
 class NewsWebsiteSeeder extends Seeder
 {
-
     public function run(): void
     {
         NewsWebsite::factory(5)->create();
