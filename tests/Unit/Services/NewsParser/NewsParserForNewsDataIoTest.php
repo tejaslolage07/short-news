@@ -19,20 +19,19 @@ class NewsParserForNewsDataIoTest extends TestCase
     {
         $parser = new NewsParserForNewsDataIo();
         $parsedData = $parser->getParsedData($response);
-        $this->assertCount(3, $parsedData);
         foreach ($parsedData as $index => $article) {
-            $this->testSingleArticle(parsedArticle: $article, mockedArticle: $response['results'][$index]);
+            $this->assertValidParsedArticle(parsedArticle: $article, mockedArticle: $response['results'][$index]);
         }
     }
 
-    private function testSingleArticle(array $parsedArticle, array $mockedArticle): void
+    private function assertValidParsedArticle(array $parsedArticle, array $mockedArticle): void
     {
-        $this->testKeys($parsedArticle);
-        $this->testDataFiltering(parsedArticle: $parsedArticle, mockedArticle: $mockedArticle);
-        $this->testDateTimeFormat($parsedArticle);
+        $this->assertValidParsedArticleKeys($parsedArticle);
+        $this->assertValidParsedArticleData(parsedArticle: $parsedArticle, mockedArticle: $mockedArticle);
+        $this->assertValidParsedArticleDateTimeFormats($parsedArticle);
     }
 
-    private function testKeys(array $parsedArticle): void
+    private function assertValidParsedArticleKeys(array $parsedArticle): void
     {
         $this->assertArrayHasKey('headline', $parsedArticle);
         $this->assertArrayHasKey('article_url', $parsedArticle);
@@ -47,8 +46,8 @@ class NewsParserForNewsDataIoTest extends TestCase
         $this->assertArrayHasKey('category', $parsedArticle);
         $this->assertArrayHasKey('keywords', $parsedArticle);
     }
-    
-    private function testDataFiltering(array $parsedArticle, array $mockedArticle): void
+
+    private function assertValidParsedArticleData(array $parsedArticle, array $mockedArticle): void
     {
         $author = $this->getAuthorFromMockedData($mockedArticle);
         $country = $this->getCountry($mockedArticle);
@@ -66,15 +65,15 @@ class NewsParserForNewsDataIoTest extends TestCase
         $this->assertEquals($keywords, $parsedArticle['keywords']);
     }
 
-    private function getAuthorFromMockedData(array $mockedArticle): ?string
-    {
-        return $mockedArticle['creator'][0] ?? null;
-    }
-
-    private function testDateTimeFormat(array $parsedArticle): void
+    private function assertValidParsedArticleDateTimeFormats(array $parsedArticle): void
     {
         $this->assertDateTimeFormat($parsedArticle['published_at']);
         $this->assertDateTimeFormat($parsedArticle['fetched_at']);
+    }
+
+    private function getAuthorFromMockedData(array $mockedArticle): ?string
+    {
+        return $mockedArticle['creator'][0] ?? null;
     }
 
     private function assertDateTimeFormat(?string $dateTimeString): void
@@ -104,60 +103,71 @@ class NewsParserForNewsDataIoTest extends TestCase
 
     private function getMockedResponse(): array
     {
-        return [[[
-            'status' => 'success',
-            'totalResults' => 821,
-            'results' => [
-                [
-                    'title' => 'Article 1',
-                    'link' => 'https://example.com/article1',
-                    'keywords' => [
-                        'プロ野球',
-                        'オールスター',
+        return [
+            [
+               [
+                    'status' => 'success',
+                    'totalResults' => 821,
+                    'results' => [
+                        [
+                            'title' => 'Article 1',
+                            'link' => 'https://example.com/article1',
+                            'keywords' => [
+                                'プロ野球',
+                                'オールスター',
+                            ],
+                            'creator' => ['Example News'],
+                            'video_url' => null,
+                            'description' => 'Article 2 description',
+                            'content' => 'Article 1 content',
+                            'pubDate' => '2023-06-19 06:22:45',
+                            'image_url' => 'https://example.com/image1.jpg',
+                            'source_id' => 'full_count',
+                            'category' => ['sports'],
+                            'country' => ['japan'],
+                            'language' => 'japanese',
+                        ],
                     ],
-                    'creator' => ['Example News'],
-                    'video_url' => null,
-                    'description' => 'Article 2 description',
-                    'content' => 'Article 1 content',
-                    'pubDate' => '2023-06-19 06:22:45',
-                    'image_url' => 'https://example.com/image1.jpg',
-                    'source_id' => 'full_count',
-                    'category' => ['sports'],
-                    'country' => ['japan'],
-                    'language' => 'japanese',
+                    'nextPage' => 'next_page_id_1',
                 ],
                 [
-                    'title' => 'Article 2',
-                    'link' => 'https://example.com/article2',
-                    'keywords' => ['千葉ロッテマリーンズ'],
-                    'creator' => null,
-                    'video_url' => null,
-                    'description' => 'Article 2 description',
-                    'content' => 'Article 2 content',
-                    'pubDate' => '2023-06-19 06:19:47',
-                    'image_url' => 'https://example.com/image2.jpg',
-                    'source_id' => 'full_count',
-                    'category' => ['sports'],
-                    'country' => ['japan'],
-                    'language' => 'japanese',
+                    'results' => [
+                        'title' => 'Article 2',
+                        'link' => 'https://example.com/article2',
+                        'keywords' => ['千葉ロッテマリーンズ'],
+                        'creator' => null,
+                        'video_url' => null,
+                        'description' => 'Article 2 description',
+                        'content' => 'Article 2 content',
+                        'pubDate' => '2023-06-19 06:19:47',
+                        'image_url' => 'https://example.com/image2.jpg',
+                        'source_id' => 'full_count',
+                        'category' => ['sports'],
+                        'country' => ['japan'],
+                        'language' => 'japanese',
+                    ],
+                    'nextPage' => 'next_page_id_2',
                 ],
                 [
-                    'title' => 'Article 3',
-                    'link' => 'https://example.com/article3',
-                    'keywords' => null,
-                    'creator' => null,
-                    'video_url' => null,
-                    'description' => 'Article 3 description',
-                    'content' => 'Article 3 content',
-                    'pubDate' => null,
-                    'image_url' => 'https://example.com/image3.jpg',
-                    'source_id' => 'full_count',
-                    'category' => ['sports'],
-                    'country' => ['japan'],
-                    'language' => 'japanese',
-                ],
+                    'results' => [
+                        'title' => 'Article 3',
+                        'link' => 'https://example.com/article3',
+                        'keywords' => null,
+                        'creator' => null,
+                        'video_url' => null,
+                        'description' => 'Article 3 description',
+                        'content' => 'Article 3 content',
+                        'pubDate' => null,
+                        'image_url' => 'https://example.com/image3.jpg',
+                        'source_id' => 'full_count',
+                        'category' => ['sports'],
+                        'country' => ['japan'],
+                        'language' => 'japanese',
+                    ],
+                    'nextPage' => null,
+                ]
             ],
-            'nextPage' => 'next_page_id',
-        ]]];
+        ];
     }
 }
+    

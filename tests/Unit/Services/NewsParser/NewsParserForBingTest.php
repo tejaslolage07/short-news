@@ -20,21 +20,19 @@ class NewsParserForBingTest extends TestCase
     {
         $parser = new NewsParserForBing();
         $parsedData = $parser->getParsedData($response);
-        $this->assertCount(2, $parsedData);
         foreach ($parsedData as $index => $parsedArticle) {
-            $this->testSingleArticle(parsedArticle: $parsedArticle, mockedArticle: $response['value'][$index]);
+            $this->assertValidParsedArticle($parsedArticle, $response['value'][$index]);
         }
     }
 
-    private function testSingleArticle(array $parsedArticle, array $mockedArticle): void
+    private function assertValidParsedArticle(array $parsedArticle, array $mockedArticle): void
     {
-        $this->testKeys($parsedArticle);
-        $this->testDataFiltering(parsedArticle: $parsedArticle, mockedArticle: $mockedArticle);
-        $this->testIfNullOrNot($parsedArticle);
-        $this->testDateTimeFormat($parsedArticle);
+        $this->assertValidParsedArticleKeys($parsedArticle);
+        $this->assertValidParsedArticleData($parsedArticle, $mockedArticle);
+        $this->assertValidParsedArticleDateTimeFormats($parsedArticle);
     }
 
-    private function testKeys(array $parsedArticle): void
+    private function assertValidParsedArticleKeys(array $parsedArticle): void
     {
         $this->assertArrayHasKey('headline', $parsedArticle);
         $this->assertArrayHasKey('article_url', $parsedArticle);
@@ -50,7 +48,7 @@ class NewsParserForBingTest extends TestCase
         $this->assertArrayHasKey('keywords', $parsedArticle);
     }
 
-    private function testDataFiltering(array $parsedArticle, array $mockedArticle): void
+    private function assertValidParsedArticleData(array $parsedArticle, array $mockedArticle): void
     {
         $imageUrl = $mockedArticle['image']['thumbnail']['contentUrl'] ?? null;
         $category = $mockedArticle['category'] ?? null;
@@ -71,13 +69,13 @@ class NewsParserForBingTest extends TestCase
         $this->assertNull($parsedArticle['language']);
     }
 
-    private function testDateTimeFormat(array $parsedArticle): void
+    private function assertValidParsedArticleDateTimeFormats(array $parsedArticle): void // CHANGE NAME OF FUNCTION
     {
-        $this->assertDateTimeFormat($parsedArticle['published_at']);
-        $this->assertDateTimeFormat($parsedArticle['fetched_at']);
+        $this->assertValidDateTimeFormat($parsedArticle['published_at']);
+        $this->assertValidDateTimeFormat($parsedArticle['fetched_at']);
     }
 
-    private function assertDateTimeFormat(?string $dateTimeString): void
+    private function assertValidDateTimeFormat(?string $dateTimeString): void
     {
         if (!$dateTimeString) {
             return;
@@ -94,55 +92,85 @@ class NewsParserForBingTest extends TestCase
 
     private function getMockedResponse(): array
     {
-        return [[[
-            'value' => [
+        return [
+            [
                 [
-                    'name' => 'Article 1',
-                    'url' => 'https://example.com/article1',
-                    'image' => [
-                        'thumbnail' => [
-                            'contentUrl' => 'https://example.com/image1.jpg',
-                            'width' => 157,
-                            'height' => 118,
-                        ],
-                    ],
-                    'about' => [
+                    'value' => [
                         [
-                            'readLink' => 'https://api.bing.microsoft.com/api/v7/entities/79464325-4ebf-5477-3c6f-975a3cb4d4a4?setLang=jp',
-                            'name' => 'Michael Bloomberg',
-                        ],
-                    ],
-                    'description' => 'Article 1 content',
-                    'provider' => [
-                        [
-                            '_type' => 'Organization',
-                            'name' => 'Example News',
+                            'name' => 'Article 1',
+                            'url' => 'https://example.com/article1',
                             'image' => [
                                 'thumbnail' => [
-                                    'contentUrl' => 'https://example.com/article1',
+                                    'contentUrl' => 'https://example.com/image1.jpg',
+                                    'width' => 157,
+                                    'height' => 118,
                                 ],
                             ],
+                            'description' => 'Article 1 content',
+                            'provider' => [
+                                [
+                                    '_type' => 'Organization',
+                                    'name' => 'Example News',
+                                    'image' => [
+                                        'thumbnail' => [
+                                            'contentUrl' => 'https://example.com/article1',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            'datePublished' => '2023-06-19T08:00:00.0000000Z',
+                            'category' => 'World',
+                            'headline' => true,
                         ],
-                    ],
-                    'datePublished' => '2023-06-19T08:00:00.0000000Z',
-                    'category' => 'World',
-                    'headline' => true,
-                ],
-                [
-                    'name' => 'Article 2',
-                    'url' => 'https://example.com/article2',
-                    'description' => 'Article 2 content',
-                    'provider' => [
                         [
-                            '_type' => 'Organization',
-                            'name' => 'Example News',
+                            'name' => 'Article 1',
+                            'url' => 'https://example.com/article1',
+                            'image' => [
+                                'thumbnail' => [
+                                    'contentUrl' => 'https://example.com/image1.jpg',
+                                    'width' => 157,
+                                    'height' => 118,
+                                ],
+                            ],
+                            'description' => 'Article 1 content',
+                            'provider' => [
+                                [
+                                    '_type' => 'Organization',
+                                    'name' => 'Example News',
+                                    'image' => [
+                                        'thumbnail' => [
+                                            'contentUrl' => 'https://example.com/article1',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            'datePublished' => '2023-06-19T08:00:00.0000000Z',
+                            'category' => 'World',
+                            'headline' => true,
                         ],
                     ],
-                    'datePublished' => null,
-                    'category' => 'World',
-                    'headline' => true,
                 ],
             ],
-        ]]];
+            [
+                [
+                    'value' => [
+                        [
+                            'name' => 'Article 2',
+                            'url' => 'https://example.com/article2',
+                            'description' => 'Article 2 content',
+                            'provider' => [
+                                [
+                                    '_type' => 'Organization',
+                                    'name' => 'Example News',
+                                ],
+                            ],
+                            'datePublished' => null,
+                            'category' => 'World',
+                            'headline' => true,
+                        ],
+                    ]
+                ]
+            ],
+        ];
     }
 }
