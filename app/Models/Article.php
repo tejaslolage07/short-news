@@ -20,11 +20,6 @@ class Article extends Model
         'keywords',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<int, string>
-     */
     protected $casts = [
         'published_at' => 'datetime',
         'fetched_at' => 'datetime',

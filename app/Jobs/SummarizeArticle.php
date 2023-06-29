@@ -17,35 +17,35 @@ class SummarizeArticle implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    public $tries = 3;
+    // public $tries = 3;
+    // public $timeout = 90;
 
-    /**
-     * The number of seconds the job can run before timing out.
-     * If we do not set it, it will default to 60 seconds.
-     */
-    public $timeout = 90;
-
-    public function __construct(public Article $article, public string $articleBody = '', public string $prompt = '', public int $maxInputTokens = 1024)
-    {
-        assert(('' != $articleBody) || ('' != $prompt));
-        assert($maxInputTokens > 0);
-        if ('' == $prompt) {
-            $this->prompt = 'Summarize the news article below that is delimited by triple quotes. Respond in Japanese and in no more than 60 words. Article: ```'.$articleBody.'```';
-        }
+    public function __construct(
+        public Article $article,
+        public string $articleBody = '',
+        public string $prompt = '',
+        public int $maxInputTokens = 1024
+    ) {
     }
 
-    /**
-     * Calculate the number of seconds to wait before retrying the job.
-     *
-     * @return array<int, int>
-     */
-    public function backoff(): array
-    {
-        return [5, 10, 20];
-    }
+    // public function backoff(): array
+    // {
+    //     return [5, 10, 20];
+    // }
 
     public function handle(Summarizer $summarizer): void
     {
+        if ('' === $this->articleBody && '' === $this->prompt) {
+            return;
+        }
+        if ($this->maxInputTokens <= 0) {
+            return;
+        }
+
+        if ('' === $this->prompt) {
+            $this->setDefaultPrompt();
+        }
+
         try {
             $summary = $summarizer->summarizeOverSocket($this->prompt, $this->maxInputTokens);
             $this->article->short_news = $summary;
@@ -55,5 +55,10 @@ class SummarizeArticle implements ShouldQueue
         } catch (\Exception $e) {
             $this->fail($e);
         }
+    }
+
+    private function setDefaultPrompt(): void
+    {
+        $this->prompt = 'Summarize the news article below that is delimited by triple quotes. Respond in Japanese and in no more than 60 words. Article: ```'.$this->articleBody.'```';
     }
 }
