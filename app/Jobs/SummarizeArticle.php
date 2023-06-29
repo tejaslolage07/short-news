@@ -19,10 +19,6 @@ class SummarizeArticle implements ShouldQueue
 
     public $tries = 3;
 
-    /**
-     * The number of seconds the job can run before timing out.
-     * If we do not set it, it will default to 60 seconds.
-     */
     public $timeout = 90;
 
     public function __construct(public Article $article, public string $articleBody = '', public string $prompt = '', public int $maxInputTokens = 1024)
@@ -34,11 +30,6 @@ class SummarizeArticle implements ShouldQueue
         }
     }
 
-    /**
-     * Calculate the number of seconds to wait before retrying the job.
-     *
-     * @return array<int, int>
-     */
     public function backoff(): array
     {
         return [5, 10, 20];
