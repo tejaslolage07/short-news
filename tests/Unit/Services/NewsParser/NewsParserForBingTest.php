@@ -14,7 +14,7 @@ use Tests\TestCase;
 class NewsParserForBingTest extends TestCase
 {
     /**
-     * @dataProvider getMockedResponse
+     * @dataProvider responseProvider
      */
     public function testGetParsedData(array $response): void
     {
@@ -81,7 +81,7 @@ class NewsParserForBingTest extends TestCase
         return isset($mockedArticle['about']) ? json_encode($mockedArticle['about'][0]['name']) : null;
     }
 
-    private function getMockedResponse(): array
+    private function responseProvider(): array
     {
         return [
             [

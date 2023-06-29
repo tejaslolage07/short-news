@@ -13,7 +13,7 @@ use Tests\TestCase;
 class NewsParserForNewsDataIoTest extends TestCase
 {
     /**
-     * @dataProvider getMockedResponse
+     * @dataProvider responseProvider
      */
     public function testGetParsedData(array $response): void
     {
@@ -93,7 +93,7 @@ class NewsParserForNewsDataIoTest extends TestCase
         return isset($mockedArticle['country']) ? json_encode($mockedArticle['country']) : null;
     }
 
-    private function getMockedResponse(): array
+    private function responseProvider(): array
     {
         return [
             [
