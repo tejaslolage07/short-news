@@ -5,7 +5,6 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class() extends Migration {
-
     public function up(): void
     {
         if (Schema::hasTable('articles')) {
@@ -19,7 +18,7 @@ return new class() extends Migration {
     {
         if (Schema::hasTable('articles')) {
             Schema::table('articles', function (Blueprint $table) {
-                $table->dropConstrainedForeignId('news_website_id') ;
+                $table->dropConstrainedForeignId('news_website_id');
             });
         }
     }
