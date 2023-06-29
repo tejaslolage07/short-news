@@ -15,14 +15,14 @@ return new class() extends Migration {
             $table->text('article_url', 512);
             $table->text('image_url')->nullable();
             $table->text('article_s3_filename');
-            $table->timestamp('published_at');
-            $table->timestamps();
-            $table->timestamp('fetched_at');
             $table->enum('source', ['bingApi', 'newsDataIoApi', 'api', 'scraper']);
             $table->text('country')->nullable();
             $table->enum('language', ['ja', 'en'])->nullable();
             $table->text('category')->nullable();
             $table->text('keywords')->nullable();
+            $table->timestamp('published_at');
+            $table->timestamps();
+            $table->timestamp('fetched_at');
         });
     }
 

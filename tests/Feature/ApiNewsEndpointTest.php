@@ -47,7 +47,6 @@ class ApiNewsEndpointTest extends TestCase
     {
         $this->seed(class: 'Database\\Seeders\\TestSeeders\\DatabaseSeederForPaginationTest');
 
-        // get the first article
         $response = $this->get('/api/v1/news?count=1');
         $response->assertStatus(200);
         $this->assertCount(1, $response['data']);
@@ -55,7 +54,6 @@ class ApiNewsEndpointTest extends TestCase
         $next_page_url = $response['next_page_url'];
         $firstPageArticles = $response['data'];
 
-        // get the next article
         $response = $this->get($next_page_url.'&count=1');
         $response->assertStatus(200);
         $this->assertCount(1, $response['data']);
@@ -71,7 +69,6 @@ class ApiNewsEndpointTest extends TestCase
             }
         }
 
-        // get the first page
         $response = $this->get('/api/v1/news?count=2');
         $response->assertStatus(200);
         $this->assertCount(2, $response['data']);
@@ -79,14 +76,12 @@ class ApiNewsEndpointTest extends TestCase
         $next_page_url = $response['next_page_url'];
         $firstPageArticles = $response['data'];
 
-        // get the next 2 articles after the last article on the first page
         $response = $this->get($next_page_url.'&count=2');
         $response->assertStatus(200);
         $next_page_url = $response['next_page_url'];
         $this->assertCount(2, $response['data']);
         $this->assertEquals(2, $response['per_page']);
 
-        // check that the articles are not the same as the first page articles, and that the pagination works correctly.
         foreach ($response['data'] as $article) {
             foreach ($firstPageArticles as $firstPageArticle) {
                 $this->assertNotEquals($article['id'], $firstPageArticle['id']);
@@ -117,7 +112,6 @@ class ApiNewsEndpointTest extends TestCase
         }
     }
 
-    // test index doesnt return artiles that have no news_website_id
     public function testIndexDoesNotReturnArticlesWithNoNewsWebsiteId(): void
     {
         $this->seed(class: 'Database\\Seeders\\TestSeeders\\DatabaseSeederForApiTest');
