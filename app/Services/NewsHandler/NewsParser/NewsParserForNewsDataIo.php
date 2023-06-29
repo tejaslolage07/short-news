@@ -39,6 +39,9 @@ class NewsParserForNewsDataIo implements NewsParser
         $countries = $this->getCountries($article);
         $currentTime = date('Y-m-d H:i:s');
         $author = $this->getAuthor($article);
+        $countries = $this->getCountries($article);
+        $categories = $this->getCategories($article);
+        $keywords = $this->getKeywords($article);
 
         return [
             'headline' => $article['title'],
@@ -81,11 +84,6 @@ class NewsParserForNewsDataIo implements NewsParser
         }
     
         return json_encode($article['keywords']);
-    }
-
-    private function getCurrentDateTime(): string
-    {
-        return date('Y-m-d H:i:s');
     }
 
     private function getAuthor(array $article): ?string

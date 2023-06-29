@@ -23,9 +23,9 @@ class NewsParserForBing implements NewsParser
     {
         // The Bing API doesn't send author data
         $formattedDate = $article['datePublished'] ? $this->formatDate($article['datePublished']) : null;
+        $currentTime = date('Y-m-d H:i:s');
         $imageURL = $this->getImageUrlFromData($article);
         $newsWebsiteName = $this->getNewsWebsiteName($article);
-        $currentTime = $this->getCurrentDateTime();
         $keywords = $this->getKeywords($article);
         $category = $this->getCategory($article);
 
@@ -52,11 +52,6 @@ class NewsParserForBing implements NewsParser
         }
 
         return json_encode($article['about'][0]['name']);
-    }
-
-    private function getCurrentDateTime(): string
-    {
-        return date('Y-m-d H:i:s');
     }
 
     private function getCategory(array $article): ?string
