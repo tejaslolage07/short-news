@@ -14,29 +14,17 @@ use Tests\TestCase;
  */
 class NewsFetcherForBingTest extends TestCase
 {
-    public function testFetch(): void
-    {
-        Http::fake([
-            'https://api.bing.microsoft.com/*' => Http::response(['data' => 'mocked data'], 200),
-        ]);
-        $newsFetcher = new NewsFetcherForBing();
-        $response = $newsFetcher->fetch('', 10);
-        $this->testRequest();
-        $this->assertEquals(['data' => 'mocked data'], $response);
-    }
-
     /**
      * @dataProvider dataProvider
      */
-    public function testFetchReturnsValidResponse(array $newsData): void
+    public function testFetch(array $newsData): void
     {
         Http::fake([
             'https://api.bing.microsoft.com/*' => Http::response($newsData, 200),
         ]);
-
         $newsFetcher = new NewsFetcherForBing();
         $response = $newsFetcher->fetch('', 10);
-
+        $this->testRequest();
         $this->assertEquals($newsData, $response);
         $this->assertArrayHasKey('articles', $response);
         $this->assertNotEmpty($response['articles']);
