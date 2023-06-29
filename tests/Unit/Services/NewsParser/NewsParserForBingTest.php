@@ -93,14 +93,11 @@ class NewsParserForBingTest extends TestCase
                             'image' => [
                                 'thumbnail' => [
                                     'contentUrl' => 'https://example.com/image1.jpg',
-                                    'width' => 157,
-                                    'height' => 118,
                                 ],
                             ],
                             'description' => 'Article 1 content',
                             'provider' => [
                                 [
-                                    '_type' => 'Organization',
                                     'name' => 'Example News',
                                     'image' => [
                                         'thumbnail' => [
@@ -110,23 +107,18 @@ class NewsParserForBingTest extends TestCase
                                 ],
                             ],
                             'datePublished' => '2023-06-19T08:00:00.0000000Z',
-                            'category' => 'World',
-                            'headline' => true,
                         ],
                         [
                             'name' => 'Article 1',
                             'url' => 'https://example.com/article1',
                             'image' => [
                                 'thumbnail' => [
-                                    'contentUrl' => 'https://example.com/image1.jpg',
-                                    'width' => 157,
-                                    'height' => 118,
+                                    'contentUrl' => 'https://example.com/image2.jpg',
                                 ],
                             ],
                             'description' => 'Article 1 content',
                             'provider' => [
                                 [
-                                    '_type' => 'Organization',
                                     'name' => 'Example News',
                                     'image' => [
                                         'thumbnail' => [
@@ -135,9 +127,7 @@ class NewsParserForBingTest extends TestCase
                                     ],
                                 ],
                             ],
-                            'datePublished' => '2023-06-19T08:00:00.0000000Z',
-                            'category' => 'World',
-                            'headline' => true,
+                            'datePublished' => '2023-06-19T12:00:00.0000000Z',
                         ],
                     ],
                 ],
@@ -151,13 +141,10 @@ class NewsParserForBingTest extends TestCase
                             'description' => 'Article 2 content',
                             'provider' => [
                                 [
-                                    '_type' => 'Organization',
                                     'name' => 'Example News',
                                 ],
                             ],
                             'datePublished' => null,
-                            'category' => 'World',
-                            'headline' => true,
                         ],
                     ]
                 ]
