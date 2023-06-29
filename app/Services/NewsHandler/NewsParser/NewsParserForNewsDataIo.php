@@ -27,7 +27,11 @@ class NewsParserForNewsDataIo
 
     private function parseArticle(array $article): array
     {
-        $formattedDate = $this->checkIfExistsAndFormatDate($article['pubDate']);
+        if ($article['pubDate']) {
+            $formattedDate = $this->formatDate($article['pubDate']);
+        } else {
+            $formattedDate = null;
+        }
         $currentTime = date('Y-m-d H:i:s');
         $author = $this->getAuthor($article);
 
@@ -48,10 +52,8 @@ class NewsParserForNewsDataIo
         return $article['creator'][0] ?? null;
     }
 
-    private function checkIfExistsAndFormatDate(?string $date): ?string
+    private function formatDate(string $date): string
     {
-        $date ? $formattedDate = (new Carbon($date))->addHours(9)->format('Y-m-d H:i:s') : $formattedDate = null;
-
-        return $formattedDate;
+        return (new Carbon($date))->addHours(9)->format('Y-m-d H:i:s');
     }
 }

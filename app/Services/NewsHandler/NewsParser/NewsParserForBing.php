@@ -21,7 +21,11 @@ class NewsParserForBing
     private function parseArticle(array $article): array
     {
         // The Bing API doesn't send author data
-        $formattedDate = $this->checkIfExistsAndFormatDate($article['datePublished']);
+        if ($article['datePublished']) {
+            $formattedDate = $this->formatDate($article['datePublished']);
+        } else {
+            $formattedDate = null;
+        }
         $imageURL = $this->getImageUrlFromData($article);
         $newsWebsiteName = $this->getNewsWebsiteName($article);
         $currentTime = date('Y-m-d H:i:s');
@@ -48,8 +52,8 @@ class NewsParserForBing
         return $article['image']['thumbnail']['contentUrl'] ?? null;
     }
 
-    private function checkIfExistsAndFormatDate(?string $date): ?string
+    private function formatDate(string $date): string
     {
-        return $date ? (new Carbon($date))->addHours(9)->format('Y-m-d H:i:s') : null;
+        return (new Carbon($date))->addHours(9)->format('Y-m-d H:i:s');
     }
 }
