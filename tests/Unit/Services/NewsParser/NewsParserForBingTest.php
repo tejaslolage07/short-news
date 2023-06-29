@@ -15,20 +15,19 @@ class NewsParserForBingTest extends TestCase
     /**
      * @dataProvider responseProvider
      */
-    public function testGetParsedData(array $response): void
+    public function testGetParsedData(array $mockedResponse, array $expectedParsedResult): void
     {
         $parser = new NewsParserForBing();
-        $parsedData = $parser->getParsedData($response);
+        $parsedData = $parser->getParsedData($mockedResponse);
         foreach ($parsedData as $index => $parsedArticle) {
-            $this->assertValidParsedArticle($parsedArticle, $response['value'][$index]);
+            $this->assertValidParsedArticle($parsedArticle, $expectedParsedResult[$index]);
         }
     }
 
-    private function assertValidParsedArticle(array $parsedArticle, array $mockedArticle): void
+    private function assertValidParsedArticle(array $parsedArticle, array $expectedParsedArticle): void
     {
         $this->assertValidParsedArticleKeys($parsedArticle);
-        $this->assertValidParsedArticleData($parsedArticle, $mockedArticle);
-        $this->assertValidParsedArticleDateTimeFormats($parsedArticle);
+        $this->assertValidParsedArticleData($parsedArticle, $expectedParsedArticle);
     }
 
     private function assertValidParsedArticleKeys(array $parsedArticle): void
@@ -43,32 +42,16 @@ class NewsParserForBingTest extends TestCase
         $this->assertArrayHasKey('fetched_at', $parsedArticle);
     }
 
-    private function assertValidParsedArticleData(array $parsedArticle, array $mockedArticle): void
+    private function assertValidParsedArticleData(array $parsedArticle, array $expectedParsedArticle): void
     {
-        $imageUrl = $mockedArticle['image']['thumbnail']['contentUrl'] ?? null;
-
-        $this->assertEquals($mockedArticle['name'], $parsedArticle['headline']);
-        $this->assertEquals($mockedArticle['url'], $parsedArticle['article_url']);
-        $this->assertNull($parsedArticle['author']);
-        $this->assertEquals($mockedArticle['description'], $parsedArticle['content']);
-        $this->assertEquals($imageUrl, $parsedArticle['image_url']);
-        $this->assertEquals($mockedArticle['provider'][0]['name'], $parsedArticle['news_website']);
-    }
-
-    private function assertValidParsedArticleDateTimeFormats(array $parsedArticle): void // CHANGE NAME OF FUNCTION
-    {
-        $this->assertValidDateTimeFormat($parsedArticle['published_at']);
-        $this->assertValidDateTimeFormat($parsedArticle['fetched_at']);
-    }
-
-    private function assertValidDateTimeFormat(?string $dateTimeString): void
-    {
-        if (!$dateTimeString) {
-            return;
-        }
-        $dateTime = \DateTime::createFromFormat('Y-m-d H:i:s', $dateTimeString);
-        $this->assertInstanceOf(\DateTime::class, $dateTime);
-        $this->assertEquals($dateTimeString, $dateTime->format('Y-m-d H:i:s'));
+        $this->assertEquals($parsedArticle['headline'], $expectedParsedArticle['headline']);
+        $this->assertEquals($parsedArticle['article_url'], $expectedParsedArticle['article_url']);
+        $this->assertEquals($parsedArticle['author'], $expectedParsedArticle['author']);
+        $this->assertEquals($parsedArticle['content'], $expectedParsedArticle['content']);
+        $this->assertEquals($parsedArticle['image_url'], $expectedParsedArticle['image_url']);
+        $this->assertEquals($parsedArticle['news_website'], $expectedParsedArticle['news_website']);
+        $this->assertEquals($parsedArticle['published_at'], $expectedParsedArticle['published_at']);
+        $this->assertEquals($parsedArticle['fetched_at'], $expectedParsedArticle['fetched_at']);
     }
 
     private function responseProvider(): array
@@ -99,20 +82,20 @@ class NewsParserForBingTest extends TestCase
                             'datePublished' => '2023-06-19T08:00:00.0000000Z',
                         ],
                         [
-                            'name' => 'Article 1',
-                            'url' => 'https://example.com/article1',
+                            'name' => 'Article 2',
+                            'url' => 'https://example.com/article2',
                             'image' => [
                                 'thumbnail' => [
                                     'contentUrl' => 'https://example.com/image2.jpg',
                                 ],
                             ],
-                            'description' => 'Article 1 content',
+                            'description' => 'Article 2 content',
                             'provider' => [
                                 [
                                     'name' => 'Example News',
                                     'image' => [
                                         'thumbnail' => [
-                                            'contentUrl' => 'https://example.com/article1',
+                                            'contentUrl' => 'https://example.com/article2',
                                         ],
                                     ],
                                 ],
@@ -121,14 +104,36 @@ class NewsParserForBingTest extends TestCase
                         ],
                     ],
                 ],
+                [
+                    [
+                        'headline' => 'Article 1',
+                        'article_url' => 'https://example.com/article1',
+                        'author' => null,
+                        'content' => 'Article 1 content',
+                        'image_url' => 'https://example.com/image1.jpg',
+                        'news_website' => 'Example News',
+                        'published_at' => '2023-06-19 17:00:00',
+                        'fetched_at' => date('Y-m-d H:i:s'),
+                    ],
+                    [
+                        'headline' => 'Article 2',
+                        'article_url' => 'https://example.com/article2',
+                        'author' => null,
+                        'content' => 'Article 2 content',
+                        'image_url' => 'https://example.com/image2.jpg',
+                        'news_website' => 'Example News',
+                        'published_at' => '2023-06-19 21:00:00',
+                        'fetched_at' => date('Y-m-d H:i:s'),
+                    ],
+                ],
             ],
             [
                 [
                     'value' => [
                         [
-                            'name' => 'Article 2',
-                            'url' => 'https://example.com/article2',
-                            'description' => 'Article 2 content',
+                            'name' => 'Article 3',
+                            'url' => 'https://example.com/article3',
+                            'description' => 'Article 3 content',
                             'provider' => [
                                 [
                                     'name' => 'Example News',
@@ -136,8 +141,20 @@ class NewsParserForBingTest extends TestCase
                             ],
                             'datePublished' => null,
                         ],
-                    ]
-                ]
+                    ],
+                ],
+                [
+                    [
+                        'headline' => 'Article 3',
+                        'article_url' => 'https://example.com/article3',
+                        'author' => null,
+                        'content' => 'Article 3 content',
+                        'image_url' => null,
+                        'news_website' => 'Example News',
+                        'published_at' => null,
+                        'fetched_at' => date('Y-m-d H:i:s'),
+                    ],
+                ],
             ],
         ];
     }
