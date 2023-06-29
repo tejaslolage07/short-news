@@ -8,6 +8,11 @@ use App\Services\Sockets\Summarizer;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
+/**
+ * @internal
+ *
+ * @coversNothing
+ */
 class SummarizerTest extends TestCase
 {
     use DatabaseTransactions;
@@ -18,7 +23,7 @@ class SummarizerTest extends TestCase
         $articlesCount = Article::count();
 
         $articleBody = 'Dummy news article, pass this to summarizer and check if summary is generated and DB updated';
-        $article = Article::factory(1)->create()->first();
+        $article = Article::factory()->count(1)->create()->first();
         $this->assertModelExists($article);
         $this->assertNotNull($article->id);
 
@@ -28,6 +33,7 @@ class SummarizerTest extends TestCase
 
         $this->assertDatabaseCount('articles', $articlesCount + 1);
         $this->assertDatabaseHas('articles', [
+            'id' => $article->id,
             'short_news' => $article->short_news,
         ]);
     }
