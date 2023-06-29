@@ -8,11 +8,6 @@ use App\Services\Sockets\Summarizer;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
-/**
- * @internal
- *
- * @coversNothing
- */
 class SummarizerTest extends TestCase
 {
     use DatabaseTransactions;
