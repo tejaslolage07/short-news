@@ -23,14 +23,12 @@ class NewsHandler
 
     public function fetchAndStoreNewsFromNewsDataIo(): void
     {
-        $responses = $this->newsFetcherForNewsDataIo->fetch();
-        foreach ($responses as $response) {
-            $parsedNewsArticles = $this->newsParserForNewsDataIo->getParsedData($response);
-            $this->storeParsedNewsArticles($parsedNewsArticles);
-        }
+        $response = $this->newsFetcherForNewsDataIo->fetch();
+        $parsedNewsArticles = $this->newsParserForNewsDataIo->getParsedData($response);
+        $this->storeParsedNewsArticles($parsedNewsArticles);
     }
 
-    private function storeParsedNewsArticles(array $parsedNewsArticles)
+    private function storeParsedNewsArticles(array $parsedNewsArticles): void
     {
         foreach ($parsedNewsArticles as $parsedNewsArticle) {
             if ($parsedNewsArticle['content']) {

@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 class NewsFetcherForNewsDataIo
 {
+    private const INITIAL_LIMIT_DAYS = 1;
     private ChunkFetcherForNewsDataIo $chunkFetcherForNewsDataIo;
 
     public function __construct(ChunkFetcherForNewsDataIo $chunkFetcherForNewsDataIo)
@@ -17,63 +18,55 @@ class NewsFetcherForNewsDataIo
     public function fetch(): array
     {
         try {
-            $responses = $this->getResponses($this->chunkFetcherForNewsDataIo);
+            return $this->getResponses($this->chunkFetcherForNewsDataIo);
         } catch (\Exception $e) {
             report('An error occurred: '.$e);
         }
-
-        return $responses;
     }
 
     private function getResponses(ChunkFetcherForNewsDataIo $chunkFetcher): array
     {
-        $existingUrl = $this->getLatestUrlFromDB();
-        $dateTimeCap = $this->getDaysCap(1);    // Give negative values for no cap: (Warning: All credits could get used in one session.)
+        $fetchUntilDateTime = $this->getFetchUntilDateTime();
         $page = '';
         $creditsUsed = 0;
-        $responses = [];
-        do {
+        $articles = [];
+
+        while (true) {
             $fetchedNews = $chunkFetcher->chunkFetch('', '', $page);
+            $fetchedArticles = $fetchedNews['results'];
             ++$creditsUsed;
 
-            for ($i = 0; $i < 10; ++$i) {
-                $articleUrl = $fetchedNews['results'][$i]['link'];
-                $articlePublishedAt = $fetchedNews['results'][$i]['pubDate'];
-                if (!$this->isNewArticle($existingUrl, $dateTimeCap, $articleUrl, $articlePublishedAt)) {
-                    $slicedArray['results'] = array_slice($fetchedNews['results'], 0, $i);
-                    $responses[] = $slicedArray;
-
+            foreach ($fetchedArticles as $fetchedArticle) {
+                $articlePublishedAt = $fetchedArticle['pubDate'];
+                if (!$this->isArticlePublishedLaterThanFetchUntilDateTime($fetchUntilDateTime, $articlePublishedAt)) {
                     break 2;
                 }
+                $articles[] = $fetchedArticle;
             }
-            $responses[] = $fetchedNews;
             $page = $fetchedNews['nextPage'];
-        } while ($page);
+        }
         info(Carbon::now()->tz('Asia/Tokyo')->format('Y-m-d H:i:s')."\tTotal credits used in this session: ".$creditsUsed."\n");
 
-        return $responses;
+        return ['results' => $articles];
     }
 
-    private function getLatestUrlFromDB(): string
+    private function getFetchUntilDateTime(): string
     {
-        $latestUrl = Article::orderBy('published_at', 'desc')->value('article_url');
+        $latestArticle = Article::orderBy('published_at', 'desc')->first();
 
-        return $latestUrl ?: '';
+        return $latestArticle->published_at ?? $this->getInitialLimitDaysDateTime();
     }
 
-    private function getDaysCap(int $days): string
+    private function getInitialLimitDaysDateTime(): string
     {
-        $existingArticleDateTime = Article::orderBy('published_at', 'desc')->value('published_at');
-        $daysCap = Carbon::now()->subDays($days)->tz('UTC')->format('Y-m-d H:i:s');
-        if ($existingArticleDateTime && Carbon::parse($daysCap) < Carbon::parse($existingArticleDateTime)) {
-            return $existingArticleDateTime;
-        }
-
-        return $daysCap;
+        return Carbon::now()->subDays(self::INITIAL_LIMIT_DAYS)->tz('UTC')->format('Y-m-d H:i:s');
     }
 
-    private function isNewArticle(string $existingUrl, string $dateTimeCap, string $articleUrl, string $articlePublishedAt): bool
-    {
-        return $existingUrl !== $articleUrl && $articlePublishedAt > $dateTimeCap;
+    private function isArticlePublishedLaterThanFetchUntilDateTime(
+        string $fetchUntilDateTime,
+        string $articlePublishedAt
+    ): bool {
+        return $articlePublishedAt >= $fetchUntilDateTime;  // >= is used so that if multiple articles have the same published_at value, all of them are fetched.
+        // Article url is unique key in database, so no duplicate articles are saved.
     }
 }
