@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Article;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
@@ -16,18 +18,10 @@ class ApiNewsEndpointTest extends TestCase
 
     public function testIndexReturnsDataInValidFormat(): void
     {
-        \App\Models\NewsWebsite::factory()->count(5)->create();
-
-        \App\Models\Article::factory()->count(100)->create();
-
-        \App\Models\Article::factory()->count(200)->create([
-            'short_news' => 'Not Empty',
-        ]);
-
-        \App\Models\Article::factory()->count(100)->create([
-            'short_news' => 'Not Empty',
-            'news_website_id' => null,
-        ]);
+        Article::factory()
+            ->count(5)
+            ->create(['short_news' => 'Not Empty'])
+        ;
 
         $response = $this->get('/api/v1/news');
         $response->assertStatus(200);
@@ -52,131 +46,106 @@ class ApiNewsEndpointTest extends TestCase
             'per_page',
             'path',
         ]);
-        $this->assertCount(100, $response['data']);
     }
 
-    public function testIndexReturnsCorrectPaginatedData(): void
+    public function testIndexReturnsValidPageUrls(): void
     {
-        \App\Models\NewsWebsite::factory()->count(5)->create();
+        Article::factory()->
+        count(100)->
+        state(new Sequence(
+            ['short_news' => 'something', 'news_website_id' => null],
+            ['short_news' => ''],
+            ['news_website_id' => null],
+            ['short_news' => 'something']
+        ))
+            ->create()
+        ;
 
-        \App\Models\Article::factory()->count(2)->create();
-
-        \App\Models\Article::factory()->count(1)->create([
-            'short_news' => 'Not Empty',
-            'published_at' => '2020-06-20 00:00:00',
-        ]);
-        \App\Models\Article::factory()->count(1)->create([
-            'short_news' => 'Not Empty',
-            'published_at' => '2021-06-20 00:00:00',
-        ]);
-        \App\Models\Article::factory()->count(2)->create([
-            'published_at' => '2022-06-20 00:00:00',
-            'short_news' => 'Not Empty',
-        ]);
-
-        \App\Models\Article::factory()->count(2)->create([
-            'published_at' => '2023-06-20 00:00:00',
-            'short_news' => 'Not Empty',
-        ]);
-
-        \App\Models\Article::factory()->count(2)->create();
-
-        $response = $this->get('/api/v1/news?count=1');
+        $response = $this->get('/api/v1/news');
         $response->assertStatus(200);
-        $this->assertCount(1, $response['data']);
-        $this->assertEquals(1, $response['per_page']);
-        $next_page_url = $response['next_page_url'];
-        $firstPageArticles = $response['data'];
+        $this->assertNull($response['prev_page_url']);
+        $this->assertNull($response['next_page_url']);
 
-        $response = $this->get($next_page_url.'&count=1');
+        $response = $this->get('/api/v1/news?count=10');
         $response->assertStatus(200);
-        $this->assertCount(1, $response['data']);
-        $this->assertEquals(1, $response['per_page']);
-
-        // since it was seeded in such a way that the top 2 articles had the same published_at date
-        // we need to make sure that the next article is not the same as the first article
-        // and that the next article is not missed.
-        foreach ($response['data'] as $article) {
-            foreach ($firstPageArticles as $firstPageArticle) {
-                $this->assertNotEquals($article['id'], $firstPageArticle['id']);
-                $this->assertEquals($firstPageArticle['published_at'], $article['published_at']);
-            }
-        }
-
-        $response = $this->get('/api/v1/news?count=2');
-        $response->assertStatus(200);
-        $this->assertCount(2, $response['data']);
-        $this->assertEquals(2, $response['per_page']);
-        $next_page_url = $response['next_page_url'];
-        $firstPageArticles = $response['data'];
-
-        $response = $this->get($next_page_url.'&count=2');
-        $response->assertStatus(200);
-        $next_page_url = $response['next_page_url'];
-        $this->assertCount(2, $response['data']);
-        $this->assertEquals(2, $response['per_page']);
-
-        foreach ($response['data'] as $article) {
-            foreach ($firstPageArticles as $firstPageArticle) {
-                $this->assertNotEquals($article['id'], $firstPageArticle['id']);
-                $this->assertLessThanOrEqual($firstPageArticle['published_at'], $article['published_at']);
-            }
-        }
-        $firstPageArticles = $response['data'];
-        $response = $this->get($next_page_url.'&count=2');
-        $response->assertStatus(200);
-        $this->assertCount(2, $response['data']);
-        foreach ($response['data'] as $article) {
-            foreach ($firstPageArticles as $firstPageArticle) {
-                $this->assertNotEquals($article['id'], $firstPageArticle['id']);
-                $this->assertLessThanOrEqual($firstPageArticle['published_at'], $article['published_at']);
-            }
-        }
+        $this->assertNull($response['prev_page_url']);
+        $this->assertNotNull($response['next_page_url']);
     }
 
-    public function testIndexDoesNotReturnArticlesWithEmptyShortNews(): void
+    public function testIndexReturnsValidArticles(): void
     {
-        \App\Models\NewsWebsite::factory()->count(5)->create();
-
-        \App\Models\Article::factory()->count(100)->create();
-
-        \App\Models\Article::factory()->count(200)->create([
-            'short_news' => 'Not Empty',
-        ]);
-
-        \App\Models\Article::factory()->count(100)->create([
-            'short_news' => 'Not Empty',
-            'news_website_id' => null,
-        ]);
+        Article::factory()->
+        count(100)->
+        state(new Sequence(
+            ['short_news' => 'something', 'news_website_id' => null],
+            ['short_news' => ''],
+            ['news_website_id' => null],
+            ['short_news' => 'something']
+        ))
+            ->create()
+        ;
 
         $response = $this->get('/api/v1/news?count=400');
         $response->assertStatus(200);
-        $this->assertCount(200, $response['data']);
+        $this->assertCount(25, $response['data']);
         foreach ($response['data'] as $article) {
             $this->assertNotEmpty($article['short_news']);
+            $this->assertNotNull($article['news_website']['id']);
         }
     }
 
-    public function testIndexDoesNotReturnArticlesWithNoNewsWebsiteId(): void
+    public function testIndexReturnsValidPaginatedDataOrderedByIdIfPublishedDateIsSame(): void
     {
-        \App\Models\NewsWebsite::factory()->count(5)->create();
-
-        \App\Models\Article::factory()->count(100)->create();
-
-        \App\Models\Article::factory()->count(200)->create([
-            'short_news' => 'Not Empty',
-        ]);
-
-        \App\Models\Article::factory()->count(100)->create([
-            'short_news' => 'Not Empty',
-            'news_website_id' => null,
-        ]);
-
-        $response = $this->get('/api/v1/news?count=300');
+        Article::factory()->
+        count(10)->
+        state(new Sequence(
+            ['short_news' => 'a', 'published_at' => '2021-06-20 00:00:00'],
+        ))
+            ->create()
+        ;
+        $url = '/api/v1/news?count=5';
+        $response = $this->get($url);
         $response->assertStatus(200);
-        $this->assertCount(200, $response['data']);
-        foreach ($response['data'] as $article) {
-            $this->assertNotNull($article['news_website']['id']);
+        $firstPageArticles = $response['data'];
+
+        $url = $response['next_page_url'].'&count=5';
+        $response = $this->get($url);
+        $response->assertStatus(200);
+        $secondPageArticles = $response['data'];
+
+        foreach ($firstPageArticles as $firstPageArticle) {
+            foreach ($secondPageArticles as $secondPageArticle) {
+                $this->assertLessThan($firstPageArticle['id'], $secondPageArticle['id']);
+            }
         }
+    }
+
+    public function testIndexReturnsValidPaginatedDataOrderedByPublishedDate(): void
+    {
+        Article::factory()->
+        count(20)->
+        state(new Sequence(
+            ['short_news' => 'a', 'published_at' => '2020-06-20 00:00:00'],
+            ['short_news' => 'a', 'published_at' => '2021-06-20 00:00:00'],
+            ['short_news' => 'a', 'published_at' => '2022-06-20 00:00:00'],
+            ['short_news' => 'a', 'published_at' => '2023-06-20 00:00:00'],
+        ))
+            ->create()
+        ;
+        $url = '/api/v1/news?count=3';
+        $url = $this->fetchPageAndAssertPublishedDate($url, '2023-06-20T00:00:00.000000Z');
+        $url = $this->fetchPageAndAssertPublishedDate($url.'&count=2', '2023-06-20T00:00:00.000000Z');
+        $url = $this->fetchPageAndAssertPublishedDate($url.'&count=5', '2022-06-20T00:00:00.000000Z');
+        $url = $this->fetchPageAndAssertPublishedDate($url.'&count=5', '2021-06-20T00:00:00.000000Z');
+        $url = $this->fetchPageAndAssertPublishedDate($url.'&count=5', '2020-06-20T00:00:00.000000Z');
+    }
+
+    private function fetchPageAndAssertPublishedDate($page_url, $expectedPublishedDate): string|null
+    {
+        $response = $this->get($page_url);
+        $response->assertStatus(200);
+        $this->assertEquals($expectedPublishedDate, $response['data'][0]['published_at']);
+
+        return $response['next_page_url'];
     }
 }
