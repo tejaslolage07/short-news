@@ -25,10 +25,9 @@ class FetchNewsFromNewsDataIo extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(NewsHandler $newsHandler)
     {
-        $service = new NewsHandler();
-        $service->fetchAndStoreNewsFromNewsDataIo();
+        $newsHandler->fetchAndStoreNewsFromNewsDataIo();
         Log::info('News fetched from NewsData.io');
     }
 }

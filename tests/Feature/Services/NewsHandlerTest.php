@@ -22,14 +22,14 @@ class NewsHandlerTest extends TestCase
 
     public function testFetchAndStoreNewsFromNewsDataIo()
     {
-        $newsFetcher = new NewsFetcherForNewsDataIo;
         $newsParser = new NewsParserForNewsDataIo;
         $chunkFetcher = new ChunkFetcherForNewsDataIo;
+        $newsFetcher = new NewsFetcherForNewsDataIo($chunkFetcher);
         Queue::fake();
         $initialQueueSize = Queue::size();
         $initialDatabaseCount = Article::count();
-        $service = new NewsHandler();
-        $service->fetchAndStoreNewsFromNewsDataIo($newsFetcher, $newsParser, $chunkFetcher);
+        $service = new NewsHandler($newsFetcher, $newsParser, $chunkFetcher);
+        $service->fetchAndStoreNewsFromNewsDataIo();
         $finalQueueSize = Queue::size();
         $finalDatabaseCount = Article::count();
         $this->assertGreaterThan($initialQueueSize, $finalQueueSize);

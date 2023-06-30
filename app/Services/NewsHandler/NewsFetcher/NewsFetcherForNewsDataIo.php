@@ -7,10 +7,17 @@ use Carbon\Carbon;
 
 class NewsFetcherForNewsDataIo
 {
-    public function fetch(ChunkFetcherForNewsDataIo $newsFetcher): array
+    private ChunkFetcherForNewsDataIo $chunkFetcherForNewsDataIo;
+
+    public function __construct(ChunkFetcherForNewsDataIo $chunkFetcherForNewsDataIo)
+    {
+        $this->chunkFetcherForNewsDataIo = $chunkFetcherForNewsDataIo;
+    }
+
+    public function fetch(): array
     {
         try {
-            $responses = $this->getResponses($newsFetcher);
+            $responses = $this->getResponses($this->chunkFetcherForNewsDataIo);
         } catch (\Exception $e) {
             report('An error occurred: '.$e);
         }

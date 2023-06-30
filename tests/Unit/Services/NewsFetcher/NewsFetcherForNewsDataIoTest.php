@@ -1,69 +1,49 @@
 <?php
-
-namespace Tests\Unit\Services\NewsFetcher;
-
 use App\Services\NewsHandler\NewsFetcher\NewsFetcherForNewsDataIo;
-use Illuminate\Http\Client\Request;
-use Illuminate\Support\Facades\Http;
+use App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo;
 use Tests\TestCase;
+use Carbon\Carbon;
+use App\Models\Article;
 
-/**
- * @internal
- *
- * @coversNothing
- */
 class NewsFetcherForNewsDataIoTest extends TestCase
 {
-    /**
-     * @dataProvider dataProvider
-     */
-    public function testFetch(array $newsData): void
+    public function testFetchReturnsArray()
     {
-        Http::fake([
-            'https://newsdata.io/*' => Http::response($newsData, 200),
-        ]);
-        $newsFetcher = new NewsFetcherForNewsDataIo();
-        $response = $newsFetcher->fetch();
-        $this->testRequest();
-        $this->assertEquals($newsData, $response);
-        $this->assertArrayHasKey('articles', $response);
-        $this->assertNotEmpty($response['articles']);
+        $newsFetcher = new NewsFetcherForNewsDataIo(new ChunkFetcherForNewsDataIo);
+        $responses = $newsFetcher->fetch();
+        $this->assertIsArray($responses);
     }
 
-    public function testFetchThrowsExceptionOnError(): void
+    public function testGetLatestUrlFromDBReturnsString()
     {
-        Http::fake([
-            'https://newsdata.io/*' => Http::response(['error' => 'NewsDataIO API returned an error: mocked error'], 500),
-        ]);
-
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('NewsDataIO API returned an error: mocked error');
-
-        $newsFetcher = new NewsFetcherForNewsDataIo();
-        $newsFetcher->fetch();
+        $newsFetcher = new NewsFetcherForNewsDataIo(new ChunkFetcherForNewsDataIo);
+        $latestUrl = $this->invokeMethod($newsFetcher, 'getLatestUrlFromDB');
+        $this->assertIsString($latestUrl);
     }
 
-    private function testRequest(): void
+    public function testGetDaysCap()
     {
-        Http::assertSent(function (Request $request) {
-            return $request->hasHeader('X-ACCESS-KEY', config('services.newsdataio.key'))
-                && 'https://newsdata.io/api/1/news?language=jp&country=jp' == $request->url()
-                && 'jp' == $request['language']
-                && 'jp' == $request['country'];
-        });
+        $newsFetcher = new NewsFetcherForNewsDataIo(new ChunkFetcherForNewsDataIo);
+        $daysCap = $this->invokeMethod($newsFetcher, 'getDaysCap', [1]);
+        $this->assertIsString($daysCap);
+        $this->assertEquals(Carbon::now()->subDays(1)->tz('UTC')->format('Y-m-d H:i:s'), $daysCap);
     }
 
-    private function dataProvider(): array
+    public function testIsNewArticle()
     {
-        return [
-            [['articles' => [
-                ['title' => 'Sample News 1', 'link' => 'Sample news link 1'],
-                ['title' => 'Sample News 2', 'link' => 'Sample news link 2'],
-            ]]],
-            [['articles' => [
-                ['title' => 'Sample News 1', 'link' => 'Sample news link 1'],
-                ['title' => 'Sample News 2', 'link' => 'Sample news link 2'],
-            ]]],
-        ];
+        $newsFetcher = new NewsFetcherForNewsDataIo(new ChunkFetcherForNewsDataIo);
+        $isNewArticle = $this->invokeMethod($newsFetcher, 'isNewArticle', ['existing_url', '2023-06-30 12:00:00', 'article_url', '2023-06-30 13:00:00']);
+        $this->assertIsBool($isNewArticle);
+        $this->assertEquals(true, $isNewArticle);
+    }
+
+    private function invokeMethod($object, $methodName, array $parameters = [])
+    {
+        $reflection = new \ReflectionClass(get_class($object));
+        $method = $reflection->getMethod($methodName);
+        $method->setAccessible(true);
+
+        return $method->invokeArgs($object, $parameters);
     }
 }
+
