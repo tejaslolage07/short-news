@@ -24,7 +24,7 @@ class NewsParserForBing
         $formattedDate = $article['datePublished'] ? $this->formatDate($article['datePublished']) : null;
         $imageURL = $this->getImageUrlFromData($article);
         $newsWebsiteName = $this->getNewsWebsiteName($article);
-        $currentTime = date('Y-m-d H:i:s');
+        $currentTime = Carbon::now()->format('Y-m-d H:i:s');
 
         return [
             'headline' => $article['name'],
@@ -50,6 +50,6 @@ class NewsParserForBing
 
     private function formatDate(string $date): string
     {
-        return (new Carbon($date))->addHours(9)->format('Y-m-d H:i:s');
+        return Carbon::parse($date)->tz('Asia/Tokyo')->format('Y-m-d H:i:s');
     }
 }
