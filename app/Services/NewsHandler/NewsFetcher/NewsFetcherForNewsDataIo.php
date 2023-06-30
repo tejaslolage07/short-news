@@ -66,7 +66,6 @@ class NewsFetcherForNewsDataIo
         string $fetchUntilDateTime,
         string $articlePublishedAt
     ): bool {
-        return $articlePublishedAt >= $fetchUntilDateTime;  // >= is used so that if multiple articles have the same published_at value, all of them are fetched.
-        // Article url is unique key in database, so no duplicate articles are saved.
+        return $articlePublishedAt >= $fetchUntilDateTime;
     }
 }
