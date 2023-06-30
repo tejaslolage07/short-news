@@ -16,7 +16,19 @@ class ApiNewsEndpointTest extends TestCase
 
     public function testIndexReturnsDataInValidFormat(): void
     {
-        $this->seed(class: 'Database\\Seeders\\TestSeeders\\DatabaseSeederForApiTest');
+        \App\Models\NewsWebsite::factory()->count(5)->create();
+
+        \App\Models\Article::factory()->count(100)->create();
+
+        \App\Models\Article::factory()->count(200)->create([
+            'short_news' => 'Not Empty',
+        ]);
+
+        \App\Models\Article::factory()->count(100)->create([
+            'short_news' => 'Not Empty',
+            'news_website_id' => null,
+        ]);
+
         $response = $this->get('/api/v1/news');
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -45,7 +57,29 @@ class ApiNewsEndpointTest extends TestCase
 
     public function testIndexReturnsCorrectPaginatedData(): void
     {
-        $this->seed(class: 'Database\\Seeders\\TestSeeders\\DatabaseSeederForPaginationTest');
+        \App\Models\NewsWebsite::factory()->count(5)->create();
+
+        \App\Models\Article::factory()->count(2)->create();
+
+        \App\Models\Article::factory()->count(1)->create([
+            'short_news' => 'Not Empty',
+            'published_at' => '2020-06-20 00:00:00',
+        ]);
+        \App\Models\Article::factory()->count(1)->create([
+            'short_news' => 'Not Empty',
+            'published_at' => '2021-06-20 00:00:00',
+        ]);
+        \App\Models\Article::factory()->count(2)->create([
+            'published_at' => '2022-06-20 00:00:00',
+            'short_news' => 'Not Empty',
+        ]);
+
+        \App\Models\Article::factory()->count(2)->create([
+            'published_at' => '2023-06-20 00:00:00',
+            'short_news' => 'Not Empty',
+        ]);
+
+        \App\Models\Article::factory()->count(2)->create();
 
         $response = $this->get('/api/v1/news?count=1');
         $response->assertStatus(200);
@@ -102,7 +136,18 @@ class ApiNewsEndpointTest extends TestCase
 
     public function testIndexDoesNotReturnArticlesWithEmptyShortNews(): void
     {
-        $this->seed(class: 'Database\\Seeders\\TestSeeders\\DatabaseSeederForApiTest');
+        \App\Models\NewsWebsite::factory()->count(5)->create();
+
+        \App\Models\Article::factory()->count(100)->create();
+
+        \App\Models\Article::factory()->count(200)->create([
+            'short_news' => 'Not Empty',
+        ]);
+
+        \App\Models\Article::factory()->count(100)->create([
+            'short_news' => 'Not Empty',
+            'news_website_id' => null,
+        ]);
 
         $response = $this->get('/api/v1/news?count=400');
         $response->assertStatus(200);
@@ -114,7 +159,18 @@ class ApiNewsEndpointTest extends TestCase
 
     public function testIndexDoesNotReturnArticlesWithNoNewsWebsiteId(): void
     {
-        $this->seed(class: 'Database\\Seeders\\TestSeeders\\DatabaseSeederForApiTest');
+        \App\Models\NewsWebsite::factory()->count(5)->create();
+
+        \App\Models\Article::factory()->count(100)->create();
+
+        \App\Models\Article::factory()->count(200)->create([
+            'short_news' => 'Not Empty',
+        ]);
+
+        \App\Models\Article::factory()->count(100)->create([
+            'short_news' => 'Not Empty',
+            'news_website_id' => null,
+        ]);
 
         $response = $this->get('/api/v1/news?count=300');
         $response->assertStatus(200);
