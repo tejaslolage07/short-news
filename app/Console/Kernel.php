@@ -7,14 +7,11 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 class Kernel extends ConsoleKernel
 {
-    private $logFilePath = __DIR__ . '/log/laravel.log';
-
     protected function schedule(Schedule $schedule): void
     {
         $schedule
                 ->command('fetch:newsdataio')
-                ->everyFifteenMinutes()
-                ->appendOutputTo($this->logFilePath);
+                ->everyTenMinutes();
     }
 
     protected function commands(): void
