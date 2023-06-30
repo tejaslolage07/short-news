@@ -39,22 +39,20 @@ class NewsHandler
 
     private function storeParsedNewsArticle(array $parsedNewsArticle): void
     {
-        $newsWebsiteId = $this->getNewsWebsiteId($parsedNewsArticle['news_website']);
-        $savedArticle = $this->storeArticle($parsedNewsArticle, $newsWebsiteId);
-        $this->dispatchToSummarizer($savedArticle, $parsedNewsArticle['content']);
+        $newsWebsiteId = $this->getNewsWebsite($parsedNewsArticle['news_website']);
+        $storedArticle = $this->storeArticle($parsedNewsArticle, $newsWebsiteId);
+        $this->dispatchToSummarizer($storedArticle, $parsedNewsArticle['content']);
     }
 
-    private function getNewsWebsiteId(?string $newsWebsiteName): ?int
+    private function getNewsWebsite(?string $newsWebsiteName): ?NewsWebsite
     {
         if (!$newsWebsiteName) {
             return null;
         }
-        $newsWebsite = NewsWebsite::firstOrCreate(['website' => $newsWebsiteName]);
-
-        return $newsWebsite->id;
+        return NewsWebsite::firstOrCreate(['website' => $newsWebsiteName]);
     }
 
-    private function storeArticle(array $parsedNewsArticle, ?int $newsWebsiteId): Article
+    private function storeArticle(array $parsedNewsArticle, ?NewsWebsite $newsWebsite): Article
     {
         $article = new Article();
         $article->headline = $parsedNewsArticle['headline'];
@@ -63,7 +61,7 @@ class NewsHandler
         $article->image_url = $parsedNewsArticle['image_url'];
         $article->published_at = $parsedNewsArticle['published_at'];
         $article->fetched_at = $parsedNewsArticle['fetched_at'];
-        $article->news_website_id = $newsWebsiteId;
+        $article->news_website_id = $newsWebsite->id ?? null;
         $article->article_s3_filename = null;
         $article->short_news = null;
         $article->save();
@@ -71,8 +69,8 @@ class NewsHandler
         return $article;
     }
 
-    private function dispatchToSummarizer(Article $savedArticle, string $parsedNewsArticleContent): void
+    private function dispatchToSummarizer(Article $storedArticle, string $parsedNewsArticleContent): void
     {
-        SummarizeArticle::dispatch($savedArticle, $parsedNewsArticleContent);
+        SummarizeArticle::dispatch($storedArticle, $parsedNewsArticleContent);
     }
 }
