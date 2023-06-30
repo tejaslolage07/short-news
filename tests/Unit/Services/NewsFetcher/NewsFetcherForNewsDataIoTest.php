@@ -1,49 +1,91 @@
 <?php
-use App\Services\NewsHandler\NewsFetcher\NewsFetcherForNewsDataIo;
-use App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo;
-use Tests\TestCase;
-use Carbon\Carbon;
-use App\Models\Article;
 
+use App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo;
+use App\Services\NewsHandler\NewsFetcher\NewsFetcherForNewsDataIo;
+use Carbon\Carbon;
+use Database\Factories\ArticleFactory;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Tests\TestCase;
+
+use function PHPUnit\Framework\assertEquals;
+
+/**
+ * @internal
+ *
+ * @coversNothing
+ */
 class NewsFetcherForNewsDataIoTest extends TestCase
 {
-    public function testFetchReturnsArray()
+    use DatabaseTransactions;
+
+    /**
+     * @dataProvider responseProvider
+     */
+    public function testFetchWhenDBEmpty(array $response): void
     {
-        $newsFetcher = new NewsFetcherForNewsDataIo(new ChunkFetcherForNewsDataIo);
+        $chunkFetcher = $this->mock(ChunkFetcherForNewsDataIo::class);
+        $chunkFetcher
+            ->shouldReceive('chunkFetch')
+            ->andReturn($response)
+        ;
+        $newsFetcher = new NewsFetcherForNewsDataIo($chunkFetcher);
         $responses = $newsFetcher->fetch();
-        $this->assertIsArray($responses);
+        $numberOfResponses = count($responses['results']);
+        assertEquals($numberOfResponses, 3);
     }
 
-    public function testGetLatestUrlFromDBReturnsString()
+    /**
+     * @dataProvider responseProvider
+     */
+    public function testFetchWhenDBNotEmpty(array $response): void
     {
-        $newsFetcher = new NewsFetcherForNewsDataIo(new ChunkFetcherForNewsDataIo);
-        $latestUrl = $this->invokeMethod($newsFetcher, 'getLatestUrlFromDB');
-        $this->assertIsString($latestUrl);
+        $fiveHoursAgo = Carbon::now()->subHours(5)->tz('UTC')->format('Y-m-d H:i:s');
+        ArticleFactory::new()->create(['published_at' => $fiveHoursAgo]);
+        $chunkFetcher = $this->mock(ChunkFetcherForNewsDataIo::class);
+        $chunkFetcher
+            ->shouldReceive('chunkFetch')
+            ->andReturn($response)
+        ;
+        $newsFetcher = new NewsFetcherForNewsDataIo($chunkFetcher);
+        $responses = $newsFetcher->fetch();
+        $numberOfResponses = count($responses['results']);
+        assertEquals($numberOfResponses, 2);
     }
 
-    public function testGetDaysCap()
+    private function responseProvider(): array
     {
-        $newsFetcher = new NewsFetcherForNewsDataIo(new ChunkFetcherForNewsDataIo);
-        $daysCap = $this->invokeMethod($newsFetcher, 'getDaysCap', [1]);
-        $this->assertIsString($daysCap);
-        $this->assertEquals(Carbon::now()->subDays(1)->tz('UTC')->format('Y-m-d H:i:s'), $daysCap);
-    }
+        $now = Carbon::now()->tz('UTC')->format('Y-m-d H:i:s');
+        $fiveHoursAgo = Carbon::now()->subHours(5)->tz('UTC')->format('Y-m-d H:i:s');
+        $oneDayAgo = Carbon::now()->subDays(1)->tz('UTC')->format('Y-m-d H:i:s');
+        $twoDaysAgo = Carbon::now()->subDays(2)->tz('UTC')->format('Y-m-d H:i:s');
 
-    public function testIsNewArticle()
-    {
-        $newsFetcher = new NewsFetcherForNewsDataIo(new ChunkFetcherForNewsDataIo);
-        $isNewArticle = $this->invokeMethod($newsFetcher, 'isNewArticle', ['existing_url', '2023-06-30 12:00:00', 'article_url', '2023-06-30 13:00:00']);
-        $this->assertIsBool($isNewArticle);
-        $this->assertEquals(true, $isNewArticle);
-    }
-
-    private function invokeMethod($object, $methodName, array $parameters = [])
-    {
-        $reflection = new \ReflectionClass(get_class($object));
-        $method = $reflection->getMethod($methodName);
-        $method->setAccessible(true);
-
-        return $method->invokeArgs($object, $parameters);
+        return [
+            [
+                [
+                    'results' => [
+                        [
+                            'pubDate' => $now,
+                            'title' => 'Mocked Article 1',
+                            'content' => 'Lorem ipsum dolor sit amet',
+                        ],
+                        [
+                            'pubDate' => $fiveHoursAgo,
+                            'title' => 'Mocked Article 2',
+                            'content' => 'Lorem ipsum dolor sit amet',
+                        ],
+                        [
+                            'pubDate' => $oneDayAgo,
+                            'title' => 'Mocked Article 3',
+                            'content' => 'Lorem ipsum dolor sit amet',
+                        ],
+                        [
+                            'pubDate' => $twoDaysAgo,
+                            'title' => 'Mocked Article 4',
+                            'content' => 'Lorem ipsum dolor sit amet',
+                        ],
+                    ],
+                ],
+            ],
+        ];
     }
 }
-
