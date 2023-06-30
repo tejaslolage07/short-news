@@ -21,8 +21,9 @@ return new class() extends Migration {
             $table->text('category')->nullable();
             $table->text('keywords')->nullable();
             $table->timestamp('published_at');
-            $table->timestamps();
             $table->timestamp('fetched_at');
+            $table->timestamps();
+            
         });
     }
 

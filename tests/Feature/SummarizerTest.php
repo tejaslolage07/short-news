@@ -24,7 +24,7 @@ class SummarizerTest extends TestCase
 
         $a = new SummarizeArticle($article, $articleBody, '', 1);
         $a->handle(new Summarizer());
-        $this->assertNotEmpty($article->short_news);
+        $this->assertNotNull($article->short_news);
 
         $this->assertDatabaseHas('articles', [
             'id' => $article->id,

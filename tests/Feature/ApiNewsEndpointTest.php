@@ -81,7 +81,7 @@ class ApiNewsEndpointTest extends TestCase
         count(100)->
         state(new Sequence(
             ['short_news' => 'something', 'news_website_id' => null],
-            ['short_news' => ''],
+            ['short_news' => null],
             ['news_website_id' => null],
             ['short_news' => 'something']
         ))
@@ -92,7 +92,7 @@ class ApiNewsEndpointTest extends TestCase
         $response->assertStatus(200);
         $this->assertCount(25, $response['data']);
         foreach ($response['data'] as $article) {
-            $this->assertNotEmpty($article['short_news']);
+            $this->assertNotNull($article['short_news']);
             $this->assertNotNull($article['news_website']['id']);
         }
     }

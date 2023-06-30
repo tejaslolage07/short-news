@@ -14,4 +14,4 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/news', [ArticleController::class, 'index']);
+Route::get('v1/news', [ArticleController::class, 'index']);

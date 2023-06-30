@@ -10,8 +10,8 @@ class ArticleController extends Controller
     public function index(Request $request)
     {
         return Article::with('newsWebsite')
-            ->where('short_news', '!=', '', 'and')
-            ->where('news_website_id', '!=', null)
+            ->whereNotNull('short_news')
+            ->whereNotNull('news_website_id')
             ->orderByDesc('published_at')
             ->orderByDesc('id')
             ->cursorPaginate(perPage: $request->count ?? 100)
