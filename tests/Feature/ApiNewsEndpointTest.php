@@ -48,7 +48,7 @@ class ApiNewsEndpointTest extends TestCase
         ]);
     }
 
-    public function testIndexReturnsValidPageUrls(): void
+    public function testIndexReturnsValidAttributes(): void
     {
         Article::factory()->
         count(100)->
@@ -65,11 +65,14 @@ class ApiNewsEndpointTest extends TestCase
         $response->assertStatus(200);
         $this->assertNull($response['prev_page_url']);
         $this->assertNull($response['next_page_url']);
+        $this->assertEquals(100, $response['per_page']);
 
         $response = $this->get('/api/v1/news?count=10');
         $response->assertStatus(200);
         $this->assertNull($response['prev_page_url']);
         $this->assertNotNull($response['next_page_url']);
+        $this->assertEquals(10, $response['per_page']);
+
     }
 
     public function testIndexReturnsValidArticles(): void
