@@ -11,7 +11,7 @@ class NewsFetcherForNewsDataIo implements NewsFetcher
     private const INITIAL_LIMIT_DAYS = 1;
     private ChunkFetcherForNewsDataIo $chunkFetcherForNewsDataIo;
 
-    public function __construct($chunkFetcherForNewsDataIo)
+    public function __construct(ChunkFetcherForNewsDataIo $chunkFetcherForNewsDataIo)
     {
         $this->chunkFetcherForNewsDataIo = $chunkFetcherForNewsDataIo;
     }
@@ -30,23 +30,27 @@ class NewsFetcherForNewsDataIo implements NewsFetcher
         $fetchUntilDateTime = $this->getFetchUntilDateTime();
         $page = '';
         $creditsUsed = 0;
-        $articles = [];
+        $articles = collect();
+
+
 
         while (true) {
-            $fetchedNews = $chunkFetcher->chunkFetch('', '', $page);
-            $fetchedArticles = $fetchedNews['results'];
+            $fetchedNews = $chunkFetcher->fetchChunk(page: $page);
+            $fetchedArticles = collect($fetchedNews['results']);
+            $ogCount = $fetchedArticles->count();
             ++$creditsUsed;
 
-            foreach ($fetchedArticles as $fetchedArticle) {
-                $articlePublishedAt = $fetchedArticle['pubDate'];
-                if (!$this->isArticlePublishedLaterThanFetchUntilDateTime($fetchUntilDateTime, $articlePublishedAt)) {
-                    break 2;
-                }
-                $articles[] = $fetchedArticle;
+            $filteredArticles = $fetchedArticles->reject(function ($fetchedArticle) use ($fetchUntilDateTime) {
+                return $fetchedArticle['pubDate'] < $fetchUntilDateTime;
+            });
+            $filteredCount = $filteredArticles->count();
+            $articles = $articles->merge($filteredArticles);
+            if ($ogCount !== $filteredCount) {
+                break;
             }
             $page = $fetchedNews['nextPage'];
         }
-        info(Carbon::now()->tz('Asia/Tokyo')->format('Y-m-d H:i:s')."\tTotal credits used in this session: ".$creditsUsed."\n");
+        info(now()->tz('Asia/Tokyo')->format('Y-m-d H:i:s')."\tTotal credits used in this session: ".$creditsUsed."\n");
 
         return ['results' => $articles];
     }
@@ -60,13 +64,6 @@ class NewsFetcherForNewsDataIo implements NewsFetcher
 
     private function getInitialLimitDaysDateTime(): string
     {
-        return Carbon::now()->subDays(self::INITIAL_LIMIT_DAYS)->tz('UTC')->format('Y-m-d H:i:s');
-    }
-
-    private function isArticlePublishedLaterThanFetchUntilDateTime(
-        string $fetchUntilDateTime,
-        string $articlePublishedAt
-    ): bool {
-        return $articlePublishedAt >= $fetchUntilDateTime;
+        return now()->subDays(self::INITIAL_LIMIT_DAYS)->tz('UTC')->format('Y-m-d H:i:s');
     }
 }

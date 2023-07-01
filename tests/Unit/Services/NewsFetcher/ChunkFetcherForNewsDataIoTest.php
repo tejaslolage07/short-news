@@ -23,7 +23,7 @@ class ChunkFetcherForNewsDataIoTest extends TestCase
             'https://newsdata.io/*' => Http::response($newsData, 200),
         ]);
         $chunkFetcher = new ChunkFetcherForNewsDataIo();
-        $response = $chunkFetcher->chunkFetch();
+        $response = $chunkFetcher->fetchChunk();
         $this->testRequest();
         $this->assertEquals($newsData, $response);
         $this->assertArrayHasKey('articles', $response);
@@ -40,7 +40,7 @@ class ChunkFetcherForNewsDataIoTest extends TestCase
         $this->expectExceptionMessage('NewsDataIO API returned an error: mocked error');
 
         $chunkFetcher = new ChunkFetcherForNewsDataIo();
-        $chunkFetcher->chunkFetch();
+        $chunkFetcher->fetchChunk();
     }
 
     private function testRequest(): void

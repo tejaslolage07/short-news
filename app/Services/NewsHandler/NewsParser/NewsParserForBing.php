@@ -24,11 +24,11 @@ class NewsParserForBing implements NewsParser
         // The Bing API doesn't send author data
         $formattedDate = $article['datePublished'] ? $this->formatDate($article['datePublished']) : null;
 
-        $currentTime = Carbon::now()->format('Y-m-d H:i:s');
         $imageURL = $this->getImageUrlFromData($article);
         $newsWebsiteName = $this->getNewsWebsiteName($article);
         $keywords = $this->getKeywords($article);
         $category = $this->getCategory($article);
+        $currentTime = now()->format('Y-m-d H:i:s');
 
         return [
             'headline' => $article['name'],

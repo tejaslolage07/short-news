@@ -13,77 +13,73 @@ use function PHPUnit\Framework\assertEquals;
  * @internal
  *
  * @coversNothing
+ * 
+ * @runTestsInSeparateProcesses
+ * @preserveGlobalState disabled
  */
 class NewsFetcherForNewsDataIoTest extends TestCase
 {
     use DatabaseTransactions;
 
-    /**
-     * @dataProvider responseProvider
-     */
-    public function testFetchWhenDBEmpty(array $response): void
+    public function testFetchWhenDBEmpty(): void
     {
-        $chunkFetcher = $this->mock(ChunkFetcherForNewsDataIo::class);
-        $chunkFetcher
-            ->shouldReceive('chunkFetch')
+        $response = $this->getFakeResponse();
+        $chunkFetcher = \Mockery::mock('overload:App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo');
+        $chunkFetcher->shouldReceive('fetchChunk')
             ->andReturn($response)
         ;
+        $chunkFetcher = new ChunkFetcherForNewsDataIo();
         $newsFetcher = new NewsFetcherForNewsDataIo($chunkFetcher);
         $responses = $newsFetcher->fetch();
+        // dump($responses);
         $numberOfResponses = count($responses['results']);
         assertEquals($numberOfResponses, 3);
     }
-
-    /**
-     * @dataProvider responseProvider
-     */
-    public function testFetchWhenDBNotEmpty(array $response): void
+    
+    public function testFetchWhenDBNotEmpty(): void
     {
-        $fiveHoursAgo = Carbon::now()->subHours(5)->tz('UTC')->format('Y-m-d H:i:s');
+        $response = $this->getFakeResponse();
+        $fiveHoursAgo = now()->subHours(5)->tz('UTC')->format('Y-m-d H:i:s');
         ArticleFactory::new()->create(['published_at' => $fiveHoursAgo]);
-        $chunkFetcher = $this->mock(ChunkFetcherForNewsDataIo::class);
-        $chunkFetcher
-            ->shouldReceive('chunkFetch')
+        $chunkFetcher = \Mockery::mock('overload:App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo');
+        $chunkFetcher->shouldReceive('fetchChunk')
             ->andReturn($response)
         ;
+        $chunkFetcher = new ChunkFetcherForNewsDataIo();
         $newsFetcher = new NewsFetcherForNewsDataIo($chunkFetcher);
         $responses = $newsFetcher->fetch();
         $numberOfResponses = count($responses['results']);
         assertEquals($numberOfResponses, 2);
     }
 
-    private function responseProvider(): array
+    private function getFakeResponse(): array
     {
-        $now = Carbon::now()->tz('UTC')->format('Y-m-d H:i:s');
-        $fiveHoursAgo = Carbon::now()->subHours(5)->tz('UTC')->format('Y-m-d H:i:s');
-        $oneDayAgo = Carbon::now()->subDays(1)->tz('UTC')->format('Y-m-d H:i:s');
-        $twoDaysAgo = Carbon::now()->subDays(2)->tz('UTC')->format('Y-m-d H:i:s');
+        $now = now()->tz('UTC')->format('Y-m-d H:i:s');
+        $fiveHoursAgo = now()->subHours(5)->tz('UTC')->format('Y-m-d H:i:s');
+        $oneDayAgo = now()->subDays(1)->tz('UTC')->format('Y-m-d H:i:s');
+        $twoDaysAgo = now()->subDays(2)->tz('UTC')->format('Y-m-d H:i:s');
 
         return [
-            [
+            'results' => [
                 [
-                    'results' => [
-                        [
-                            'pubDate' => $now,
-                            'title' => 'Mocked Article 1',
-                            'content' => 'Lorem ipsum dolor sit amet',
-                        ],
-                        [
-                            'pubDate' => $fiveHoursAgo,
-                            'title' => 'Mocked Article 2',
-                            'content' => 'Lorem ipsum dolor sit amet',
-                        ],
-                        [
-                            'pubDate' => $oneDayAgo,
-                            'title' => 'Mocked Article 3',
-                            'content' => 'Lorem ipsum dolor sit amet',
-                        ],
-                        [
-                            'pubDate' => $twoDaysAgo,
-                            'title' => 'Mocked Article 4',
-                            'content' => 'Lorem ipsum dolor sit amet',
-                        ],
-                    ],
+                    'pubDate' => $now,
+                    'title' => 'Mocked Article 1',
+                    'content' => 'Lorem ipsum dolor sit amet',
+                ],
+                [
+                    'pubDate' => $fiveHoursAgo,
+                    'title' => 'Mocked Article 2',
+                    'content' => 'Lorem ipsum dolor sit amet',
+                ],
+                [
+                    'pubDate' => $oneDayAgo,
+                    'title' => 'Mocked Article 3',
+                    'content' => 'Lorem ipsum dolor sit amet',
+                ],
+                [
+                    'pubDate' => $twoDaysAgo,
+                    'title' => 'Mocked Article 4',
+                    'content' => 'Lorem ipsum dolor sit amet',
                 ],
             ],
         ];

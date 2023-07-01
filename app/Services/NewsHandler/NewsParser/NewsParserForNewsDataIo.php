@@ -33,7 +33,7 @@ class NewsParserForNewsDataIo implements NewsParser
         } else {
             $formattedDate = null;
         }
-        $currentTime = Carbon::now()->format('Y-m-d H:i:s');
+        $currentTime = now()->format('Y-m-d H:i:s');
         $keywords = $this->getKeywords($article);
         $categories = $this->getCategories($article);
         $countries = $this->getCountries($article);

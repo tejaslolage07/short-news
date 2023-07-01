@@ -8,7 +8,7 @@ class ChunkFetcherForNewsDataIo
 {
     private const URL = 'https://newsdata.io/api/1/news';
 
-    public function chunkFetch(string $searchQuery = '', string $category = '', string $page = ''): array
+    public function fetchChunk(string $searchQuery = '', string $category = '', string $page = ''): array
     {
         $headers = $this->getHeaders();
         $params = $this->getParams($searchQuery, $category, $page);
