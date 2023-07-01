@@ -13,6 +13,9 @@ use function PHPUnit\Framework\assertEquals;
  * @internal
  *
  * @coversNothing
+ * 
+ * @runTestsInSeparateProcesses
+ * @preserveGlobalState disabled
  */
 class NewsFetcherForNewsDataIoTest extends TestCase
 {
@@ -21,25 +24,28 @@ class NewsFetcherForNewsDataIoTest extends TestCase
     public function testFetchWhenDBEmpty(): void
     {
         $response = $this->getFakeResponse();
-        $chunkFetcher = $this->mock(ChunkFetcherForNewsDataIo::class);
-        $chunkFetcher->shouldReceive('chunkFetch')
+        $chunkFetcher = \Mockery::mock('overload:App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo');
+        $chunkFetcher->shouldReceive('fetchChunk')
             ->andReturn($response)
         ;
+        $chunkFetcher = new ChunkFetcherForNewsDataIo();
         $newsFetcher = new NewsFetcherForNewsDataIo($chunkFetcher);
         $responses = $newsFetcher->fetch();
+        // dump($responses);
         $numberOfResponses = count($responses['results']);
         assertEquals($numberOfResponses, 3);
     }
-
+    
     public function testFetchWhenDBNotEmpty(): void
     {
         $response = $this->getFakeResponse();
         $fiveHoursAgo = now()->subHours(5)->tz('UTC')->format('Y-m-d H:i:s');
         ArticleFactory::new()->create(['published_at' => $fiveHoursAgo]);
-        $chunkFetcher = $this->mock(ChunkFetcherForNewsDataIo::class);
-        $chunkFetcher->shouldReceive('chunkFetch')
+        $chunkFetcher = \Mockery::mock('overload:App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo');
+        $chunkFetcher->shouldReceive('fetchChunk')
             ->andReturn($response)
         ;
+        $chunkFetcher = new ChunkFetcherForNewsDataIo();
         $newsFetcher = new NewsFetcherForNewsDataIo($chunkFetcher);
         $responses = $newsFetcher->fetch();
         $numberOfResponses = count($responses['results']);

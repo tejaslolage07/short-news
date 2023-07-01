@@ -35,10 +35,10 @@ class NewsHandlerTest extends TestCase
         $newsFetcher->shouldReceive('fetch')
             ->andReturn($response)
         ;
+        $newsFetcher = new NewsFetcherForNewsDataIo(new ChunkFetcherForNewsDataIo());
         $newsParser = new NewsParserForNewsDataIo();
         Queue::fake();
 
-        $newsFetcher = new NewsFetcherForNewsDataIo(new ChunkFetcherForNewsDataIo());
         $service = new NewsHandler($newsFetcher, $newsParser);
         $service->fetchAndStoreNewsFromNewsDataIo();
         Queue::assertPushed(SummarizeArticle::class, 1);

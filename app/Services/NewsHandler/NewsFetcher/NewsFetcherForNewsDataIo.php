@@ -29,19 +29,23 @@ class NewsFetcherForNewsDataIo
         $fetchUntilDateTime = $this->getFetchUntilDateTime();
         $page = '';
         $creditsUsed = 0;
-        $articles = [];
+        $articles = collect();
+
+
 
         while (true) {
             $fetchedNews = $chunkFetcher->fetchChunk(page: $page);
-            $fetchedArticles = $fetchedNews['results'];
+            $fetchedArticles = collect($fetchedNews['results']);
+            $ogCount = $fetchedArticles->count();
             ++$creditsUsed;
 
-            foreach ($fetchedArticles as $fetchedArticle) {
-                $articlePublishedAt = $fetchedArticle['pubDate'];
-                if (!$this->isArticlePublishedLaterThanFetchUntilDateTime($fetchUntilDateTime, $articlePublishedAt)) {
-                    break 2;
-                }
-                $articles[] = $fetchedArticle;
+            $filteredArticles = $fetchedArticles->reject(function ($fetchedArticle) use ($fetchUntilDateTime) {
+                return $fetchedArticle['pubDate'] < $fetchUntilDateTime;
+            });
+            $filteredCount = $filteredArticles->count();
+            $articles = $articles->merge($filteredArticles);
+            if ($ogCount !== $filteredCount) {
+                break;
             }
             $page = $fetchedNews['nextPage'];
         }
@@ -60,12 +64,5 @@ class NewsFetcherForNewsDataIo
     private function getInitialLimitDaysDateTime(): string
     {
         return now()->subDays(self::INITIAL_LIMIT_DAYS)->tz('UTC')->format('Y-m-d H:i:s');
-    }
-
-    private function isArticlePublishedLaterThanFetchUntilDateTime(
-        string $fetchUntilDateTime,
-        string $articlePublishedAt
-    ): bool {
-        return $articlePublishedAt >= $fetchUntilDateTime;
     }
 }
