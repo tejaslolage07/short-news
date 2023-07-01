@@ -3,8 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Services\NewsFetcherService;
-use Illuminate\Support\Facades\Log;
+use App\Services\NewsHandler\NewsHandler;
 
 class FetchNewsFromNewsDataIo extends Command
 {
@@ -25,10 +24,9 @@ class FetchNewsFromNewsDataIo extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(NewsHandler $newsHandler)
     {
-        $service = new NewsFetcherService();
-        $service->fetchAndStoreNewsFromNewsDataIo();
-        Log::info('News fetched from NewsData.io');
+        $newsHandler->fetchAndStoreNewsFromNewsDataIo();
+        info('News fetched from NewsData.io');
     }
 }

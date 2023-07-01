@@ -33,11 +33,11 @@ class NewsParserForNewsDataIo implements NewsParser
         } else {
             $formattedDate = null;
         }
-        $currentTime = $this->getCurrentDateTime();
+        $currentTime = Carbon::now()->format('Y-m-d H:i:s');
         $keywords = $this->getKeywords($article);
         $categories = $this->getCategories($article);
         $countries = $this->getCountries($article);
-        $currentTime = date('Y-m-d H:i:s');
+        $currentTime = Carbon::now()->format('Y-m-d H:i:s');
         $author = $this->getAuthor($article);
         $countries = $this->getCountries($article);
         $categories = $this->getCategories($article);
@@ -93,6 +93,6 @@ class NewsParserForNewsDataIo implements NewsParser
 
     private function formatDate(string $date): string
     {
-        return (new Carbon($date))->addHours(9)->format('Y-m-d H:i:s');
+        return Carbon::parse($date, 'UTC')->tz('Asia/Tokyo')->format('Y-m-d H:i:s');
     }
 }

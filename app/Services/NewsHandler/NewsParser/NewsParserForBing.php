@@ -23,7 +23,8 @@ class NewsParserForBing implements NewsParser
     {
         // The Bing API doesn't send author data
         $formattedDate = $article['datePublished'] ? $this->formatDate($article['datePublished']) : null;
-        $currentTime = date('Y-m-d H:i:s');
+
+        $currentTime = Carbon::now()->format('Y-m-d H:i:s');
         $imageURL = $this->getImageUrlFromData($article);
         $newsWebsiteName = $this->getNewsWebsiteName($article);
         $keywords = $this->getKeywords($article);
@@ -71,6 +72,6 @@ class NewsParserForBing implements NewsParser
 
     private function formatDate(string $date): string
     {
-        return (new Carbon($date))->addHours(9)->format('Y-m-d H:i:s');
+        return Carbon::parse($date)->tz('Asia/Tokyo')->format('Y-m-d H:i:s');
     }
 }

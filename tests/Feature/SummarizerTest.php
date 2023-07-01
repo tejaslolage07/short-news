@@ -23,7 +23,7 @@ class SummarizerTest extends TestCase
         $articleBody = 'Dummy news article, pass this to summarizer and check if summary is generated and DB updated';
 
         $a = new SummarizeArticle($article, $articleBody, '', 1);
-        $a->handle(new ArticleController(), new Summarizer());
+        $a->handle(new Summarizer());
         $this->assertNotEmpty($article->short_news);
 
         $this->assertDatabaseHas('articles', [

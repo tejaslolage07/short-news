@@ -49,19 +49,14 @@ class NewsParserForBingTest extends TestCase
 
     private function assertValidParsedArticleData(array $parsedArticle, array $expectedParsedArticle): void
     {
-        $this->assertEquals($parsedArticle['headline'], $expectedParsedArticle['headline']);
-        $this->assertEquals($parsedArticle['article_url'], $expectedParsedArticle['article_url']);
-        $this->assertEquals($parsedArticle['author'], $expectedParsedArticle['author']);
-        $this->assertEquals($parsedArticle['content'], $expectedParsedArticle['content']);
-        $this->assertEquals($parsedArticle['image_url'], $expectedParsedArticle['image_url']);
-        $this->assertEquals($parsedArticle['news_website'], $expectedParsedArticle['news_website']);
-        $this->assertEquals($parsedArticle['published_at'], $expectedParsedArticle['published_at']);
-        $this->assertEquals($parsedArticle['fetched_at'], $expectedParsedArticle['fetched_at']);
-    }
-
-    private function getKeywords($mockedArticle): ?string
-    {
-        return isset($mockedArticle['about']) ? json_encode($mockedArticle['about'][0]['name']) : null;
+        $this->assertEquals($expectedParsedArticle['headline'], $parsedArticle['headline']);
+        $this->assertEquals($expectedParsedArticle['article_url'], $parsedArticle['article_url']);
+        $this->assertEquals($expectedParsedArticle['author'], $parsedArticle['author']);
+        $this->assertEquals($expectedParsedArticle['content'], $parsedArticle['content']);
+        $this->assertEquals($expectedParsedArticle['image_url'], $parsedArticle['image_url']);
+        $this->assertEquals($expectedParsedArticle['news_website'], $parsedArticle['news_website']);
+        $this->assertEquals($expectedParsedArticle['published_at'], $parsedArticle['published_at']);
+        $this->assertNotNull($parsedArticle['fetched_at']);
     }
 
     private function responseProvider(): array

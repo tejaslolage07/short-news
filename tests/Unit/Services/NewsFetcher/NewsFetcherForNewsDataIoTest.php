@@ -1,11 +1,13 @@
 <?php
 
-namespace Tests\Unit\Services\NewsFetcher;
-
+use App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo;
 use App\Services\NewsHandler\NewsFetcher\NewsFetcherForNewsDataIo;
-use Illuminate\Http\Client\Request;
-use Illuminate\Support\Facades\Http;
+use Carbon\Carbon;
+use Database\Factories\ArticleFactory;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
+
+use function PHPUnit\Framework\assertEquals;
 
 /**
  * @internal
@@ -14,56 +16,76 @@ use Tests\TestCase;
  */
 class NewsFetcherForNewsDataIoTest extends TestCase
 {
+    use DatabaseTransactions;
+
     /**
-     * @dataProvider dataProvider
+     * @dataProvider responseProvider
      */
-    public function testFetch(array $newsData): void
+    public function testFetchWhenDBEmpty(array $response): void
     {
-        Http::fake([
-            'https://newsdata.io/*' => Http::response($newsData, 200),
-        ]);
-        $newsFetcher = new NewsFetcherForNewsDataIo();
-        $response = $newsFetcher->fetch();
-        $this->testRequest();
-        $this->assertEquals($newsData, $response);
-        $this->assertArrayHasKey('articles', $response);
-        $this->assertNotEmpty($response['articles']);
+        $chunkFetcher = $this->mock(ChunkFetcherForNewsDataIo::class);
+        $chunkFetcher
+            ->shouldReceive('chunkFetch')
+            ->andReturn($response)
+        ;
+        $newsFetcher = new NewsFetcherForNewsDataIo($chunkFetcher);
+        $responses = $newsFetcher->fetch();
+        $numberOfResponses = count($responses['results']);
+        assertEquals($numberOfResponses, 3);
     }
 
-    public function testFetchThrowsExceptionOnError(): void
+    /**
+     * @dataProvider responseProvider
+     */
+    public function testFetchWhenDBNotEmpty(array $response): void
     {
-        Http::fake([
-            'https://newsdata.io/*' => Http::response(['error' => 'NewsDataIO API returned an error: mocked error'], 500),
-        ]);
-
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('NewsDataIO API returned an error: mocked error');
-
-        $newsFetcher = new NewsFetcherForNewsDataIo();
-        $newsFetcher->fetch();
+        $fiveHoursAgo = Carbon::now()->subHours(5)->tz('UTC')->format('Y-m-d H:i:s');
+        ArticleFactory::new()->create(['published_at' => $fiveHoursAgo]);
+        $chunkFetcher = $this->mock(ChunkFetcherForNewsDataIo::class);
+        $chunkFetcher
+            ->shouldReceive('chunkFetch')
+            ->andReturn($response)
+        ;
+        $newsFetcher = new NewsFetcherForNewsDataIo($chunkFetcher);
+        $responses = $newsFetcher->fetch();
+        $numberOfResponses = count($responses['results']);
+        assertEquals($numberOfResponses, 2);
     }
 
-    private function testRequest(): void
+    private function responseProvider(): array
     {
-        Http::assertSent(function (Request $request) {
-            return $request->hasHeader('X-ACCESS-KEY', config('services.newsdataio.key'))
-                && 'https://newsdata.io/api/1/news?language=jp&country=jp' == $request->url()
-                && 'jp' == $request['language']
-                && 'jp' == $request['country'];
-        });
-    }
+        $now = Carbon::now()->tz('UTC')->format('Y-m-d H:i:s');
+        $fiveHoursAgo = Carbon::now()->subHours(5)->tz('UTC')->format('Y-m-d H:i:s');
+        $oneDayAgo = Carbon::now()->subDays(1)->tz('UTC')->format('Y-m-d H:i:s');
+        $twoDaysAgo = Carbon::now()->subDays(2)->tz('UTC')->format('Y-m-d H:i:s');
 
-    private function dataProvider(): array
-    {
         return [
-            [['articles' => [
-                ['title' => 'Sample News 1', 'link' => 'Sample news link 1'],
-                ['title' => 'Sample News 2', 'link' => 'Sample news link 2'],
-            ]]],
-            [['articles' => [
-                ['title' => 'Sample News 1', 'link' => 'Sample news link 1'],
-                ['title' => 'Sample News 2', 'link' => 'Sample news link 2'],
-            ]]],
+            [
+                [
+                    'results' => [
+                        [
+                            'pubDate' => $now,
+                            'title' => 'Mocked Article 1',
+                            'content' => 'Lorem ipsum dolor sit amet',
+                        ],
+                        [
+                            'pubDate' => $fiveHoursAgo,
+                            'title' => 'Mocked Article 2',
+                            'content' => 'Lorem ipsum dolor sit amet',
+                        ],
+                        [
+                            'pubDate' => $oneDayAgo,
+                            'title' => 'Mocked Article 3',
+                            'content' => 'Lorem ipsum dolor sit amet',
+                        ],
+                        [
+                            'pubDate' => $twoDaysAgo,
+                            'title' => 'Mocked Article 4',
+                            'content' => 'Lorem ipsum dolor sit amet',
+                        ],
+                    ],
+                ],
+            ],
         ];
     }
 }

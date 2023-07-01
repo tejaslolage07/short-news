@@ -48,29 +48,14 @@ class NewsParserForNewsDataIoTest extends TestCase
 
     private function assertValidParsedArticleData(array $parsedArticle, array $expectedParsedArticle): void
     {
-        $this->assertEquals($parsedArticle['headline'], $expectedParsedArticle['headline']);
-        $this->assertEquals($parsedArticle['article_url'], $expectedParsedArticle['article_url']);
-        $this->assertEquals($parsedArticle['news_website'], $expectedParsedArticle['news_website']);
-        $this->assertEquals($parsedArticle['content'], $expectedParsedArticle['content']);
-        $this->assertEquals($parsedArticle['image_url'], $expectedParsedArticle['image_url']);
-        $this->assertEquals($parsedArticle['author'], $expectedParsedArticle['author']);
-        $this->assertEquals($parsedArticle['published_at'], $expectedParsedArticle['published_at']);
-        $this->assertEquals($parsedArticle['fetched_at'], $expectedParsedArticle['fetched_at']);
-    }
-
-    private function getKeywords(array $mockedArticle): ?string
-    {
-        return isset($mockedArticle['keywords']) ? json_encode($mockedArticle['keywords']) : null;
-    }
-
-    private function getCategories(array $mockedArticle): ?string
-    {
-        return isset($mockedArticle['category']) ? json_encode($mockedArticle['category']) : null;
-    }
-
-    private function getCountry(array $mockedArticle): ?string
-    {
-        return isset($mockedArticle['country']) ? json_encode($mockedArticle['country']) : null;
+        $this->assertEquals($expectedParsedArticle['headline'], $parsedArticle['headline']);
+        $this->assertEquals($expectedParsedArticle['article_url'], $parsedArticle['article_url']);
+        $this->assertEquals($expectedParsedArticle['news_website'], $parsedArticle['news_website']);
+        $this->assertEquals($expectedParsedArticle['content'], $parsedArticle['content']);
+        $this->assertEquals($expectedParsedArticle['image_url'], $parsedArticle['image_url']);
+        $this->assertEquals($expectedParsedArticle['author'], $parsedArticle['author']);
+        $this->assertEquals($expectedParsedArticle['published_at'], $parsedArticle['published_at']);
+        $this->assertNotNull($parsedArticle['fetched_at']);
     }
 
     private function responseProvider(): array
@@ -133,19 +118,15 @@ class NewsParserForNewsDataIoTest extends TestCase
             [
                 [
                     'results' => [
-                        'title' => 'Article 3',
-                        'link' => 'https://example.com/article3',
-                        'keywords' => null,
-                        'creator' => null,
-                        'video_url' => null,
-                        'description' => 'Article 3 description',
-                        'content' => 'Article 3 content',
-                        'pubDate' => null,
-                        'image_url' => 'https://example.com/image3.jpg',
-                        'source_id' => 'full_count',
-                        'category' => ['sports'],
-                        'country' => ['japan'],
-                        'language' => 'japanese',
+                        [
+                            'title' => 'Article 3',
+                            'link' => 'https://example.com/article3',
+                            'creator' => null,
+                            'content' => 'Article 3 content',
+                            'pubDate' => null,
+                            'image_url' => null,
+                            'source_id' => 'full_count',
+                        ],
                     ],
                     'nextPage' => null,
                 ],
