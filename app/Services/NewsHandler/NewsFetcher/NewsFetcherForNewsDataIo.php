@@ -10,7 +10,7 @@ class NewsFetcherForNewsDataIo
     private const INITIAL_LIMIT_DAYS = 1;
     private ChunkFetcherForNewsDataIo $chunkFetcherForNewsDataIo;
 
-    public function __construct($chunkFetcherForNewsDataIo)
+    public function __construct(ChunkFetcherForNewsDataIo $chunkFetcherForNewsDataIo)
     {
         $this->chunkFetcherForNewsDataIo = $chunkFetcherForNewsDataIo;
     }
