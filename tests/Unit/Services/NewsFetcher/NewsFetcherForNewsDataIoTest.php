@@ -34,7 +34,7 @@ class NewsFetcherForNewsDataIoTest extends TestCase
     public function testFetchWhenDBNotEmpty(): void
     {
         $response = $this->getFakeResponse();
-        $fiveHoursAgo = Carbon::now()->subHours(5)->tz('UTC')->format('Y-m-d H:i:s');
+        $fiveHoursAgo = now()->subHours(5)->tz('UTC')->format('Y-m-d H:i:s');
         ArticleFactory::new()->create(['published_at' => $fiveHoursAgo]);
         $chunkFetcher = $this->mock(ChunkFetcherForNewsDataIo::class);
         $chunkFetcher->shouldReceive('chunkFetch')
@@ -48,10 +48,10 @@ class NewsFetcherForNewsDataIoTest extends TestCase
 
     private function getFakeResponse(): array
     {
-        $now = Carbon::now()->tz('UTC')->format('Y-m-d H:i:s');
-        $fiveHoursAgo = Carbon::now()->subHours(5)->tz('UTC')->format('Y-m-d H:i:s');
-        $oneDayAgo = Carbon::now()->subDays(1)->tz('UTC')->format('Y-m-d H:i:s');
-        $twoDaysAgo = Carbon::now()->subDays(2)->tz('UTC')->format('Y-m-d H:i:s');
+        $now = now()->tz('UTC')->format('Y-m-d H:i:s');
+        $fiveHoursAgo = now()->subHours(5)->tz('UTC')->format('Y-m-d H:i:s');
+        $oneDayAgo = now()->subDays(1)->tz('UTC')->format('Y-m-d H:i:s');
+        $twoDaysAgo = now()->subDays(2)->tz('UTC')->format('Y-m-d H:i:s');
 
         return [
             'results' => [

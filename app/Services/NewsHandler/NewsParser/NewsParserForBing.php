@@ -24,7 +24,7 @@ class NewsParserForBing
         $formattedDate = $article['datePublished'] ? $this->formatDate($article['datePublished']) : null;
         $imageURL = $this->getImageUrlFromData($article);
         $newsWebsiteName = $this->getNewsWebsiteName($article);
-        $currentTime = Carbon::now()->format('Y-m-d H:i:s');
+        $currentTime = now()->format('Y-m-d H:i:s');
 
         return [
             'headline' => $article['name'],

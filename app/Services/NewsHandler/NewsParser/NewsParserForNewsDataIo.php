@@ -28,7 +28,7 @@ class NewsParserForNewsDataIo
     private function parseArticle(array $article): array
     {
         $formattedDate = $article['pubDate'] ? $this->formatDate($article['pubDate']) : null;
-        $currentTime = Carbon::now()->format('Y-m-d H:i:s');
+        $currentTime = now()->format('Y-m-d H:i:s');
         $author = $this->getAuthor($article);
 
         return [

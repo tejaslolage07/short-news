@@ -32,7 +32,7 @@ class NewsFetcherForNewsDataIo
         $articles = [];
 
         while (true) {
-            $fetchedNews = $chunkFetcher->chunkFetch('', '', $page);
+            $fetchedNews = $chunkFetcher->fetchChunk(page: $page);
             $fetchedArticles = $fetchedNews['results'];
             ++$creditsUsed;
 
@@ -45,7 +45,7 @@ class NewsFetcherForNewsDataIo
             }
             $page = $fetchedNews['nextPage'];
         }
-        info(Carbon::now()->tz('Asia/Tokyo')->format('Y-m-d H:i:s')."\tTotal credits used in this session: ".$creditsUsed."\n");
+        info(now()->tz('Asia/Tokyo')->format('Y-m-d H:i:s')."\tTotal credits used in this session: ".$creditsUsed."\n");
 
         return ['results' => $articles];
     }
@@ -59,7 +59,7 @@ class NewsFetcherForNewsDataIo
 
     private function getInitialLimitDaysDateTime(): string
     {
-        return Carbon::now()->subDays(self::INITIAL_LIMIT_DAYS)->tz('UTC')->format('Y-m-d H:i:s');
+        return now()->subDays(self::INITIAL_LIMIT_DAYS)->tz('UTC')->format('Y-m-d H:i:s');
     }
 
     private function isArticlePublishedLaterThanFetchUntilDateTime(
