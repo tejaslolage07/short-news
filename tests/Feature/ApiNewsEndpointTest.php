@@ -136,11 +136,11 @@ class ApiNewsEndpointTest extends TestCase
             ->create()
         ;
         $url = '/api/v1/news?count=3';
-        $firstPageUrl = $this->fetchPageAndAssertPublishedDate($url, '2023-06-20T00:00:00.000000Z');
-        $secondPageUrl = $this->fetchPageAndAssertPublishedDate($firstPageUrl.'&count=2', '2023-06-20T00:00:00.000000Z');
-        $thirdPageUrl = $this->fetchPageAndAssertPublishedDate($secondPageUrl.'&count=5', '2022-06-20T00:00:00.000000Z');
-        $fourthPageUrl = $this->fetchPageAndAssertPublishedDate($thirdPageUrl.'&count=5', '2021-06-20T00:00:00.000000Z');
-        $fifthPageUrl = $this->fetchPageAndAssertPublishedDate($fourthPageUrl.'&count=5', '2020-06-20T00:00:00.000000Z');
+        $firstPageUrl = $this->fetchPageAndAssertPublishedDate($url, '2023-06-19T15:00:00.000000Z');
+        $secondPageUrl = $this->fetchPageAndAssertPublishedDate($firstPageUrl.'&count=2', '2023-06-19T15:00:00.000000Z');
+        $thirdPageUrl = $this->fetchPageAndAssertPublishedDate($secondPageUrl.'&count=5', '2022-06-19T15:00:00.000000Z');
+        $fourthPageUrl = $this->fetchPageAndAssertPublishedDate($thirdPageUrl.'&count=5', '2021-06-19T15:00:00.000000Z');
+        $fifthPageUrl = $this->fetchPageAndAssertPublishedDate($fourthPageUrl.'&count=5', '2020-06-19T15:00:00.000000Z');
         $this->assertNull($fifthPageUrl);
     }
 
