@@ -31,7 +31,6 @@ class NewsFetcherForNewsDataIoTest extends TestCase
         $chunkFetcher = new ChunkFetcherForNewsDataIo();
         $newsFetcher = new NewsFetcherForNewsDataIo($chunkFetcher);
         $responses = $newsFetcher->fetch();
-        // dump($responses);
         $numberOfResponses = count($responses['results']);
         assertEquals($numberOfResponses, 3);
     }

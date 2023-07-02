@@ -67,7 +67,7 @@ class NewsParserForNewsDataIo implements NewsParser
 
         return json_encode($article['country']);
     }
-    
+
     private function getCategories(array $article): ?string
     {
         if (!isset($article['category'])) {
@@ -76,13 +76,13 @@ class NewsParserForNewsDataIo implements NewsParser
 
         return json_encode($article['category']);
     }
-    
+
     private function getKeywords(array $article): ?string
     {
         if (!isset($article['keywords'])) {
             return null;
         }
-    
+
         return json_encode($article['keywords']);
     }
 
