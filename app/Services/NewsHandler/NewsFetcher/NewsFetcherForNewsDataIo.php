@@ -8,7 +8,7 @@ use App\Models\Article;
 
 class NewsFetcherForNewsDataIo implements NewsFetcher
 {
-    private const INITIAL_LIMIT_DAYS = 1;
+    private const INITIAL_LIMIT_DAYS = 1;   // Update in test as well
     private ChunkFetcherForNewsDataIo $chunkFetcherForNewsDataIo;
 
     public function __construct(ChunkFetcherForNewsDataIo $chunkFetcherForNewsDataIo)
@@ -31,8 +31,6 @@ class NewsFetcherForNewsDataIo implements NewsFetcher
         $page = '';
         $creditsUsed = 0;
         $articles = collect();
-
-
 
         while (true) {
             $fetchedNews = $chunkFetcher->fetchChunk(page: $page);
