@@ -2,7 +2,7 @@
 
 namespace App\Services\NewsHandler\NewsParser\Contracts;
 
-interface NewsParser
+interface NewsParserInterface
 {
     public function getParsedData(array $response): array;
 }

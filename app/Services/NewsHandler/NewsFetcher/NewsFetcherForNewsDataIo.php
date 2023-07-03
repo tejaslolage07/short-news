@@ -2,11 +2,10 @@
 
 namespace App\Services\NewsHandler\NewsFetcher;
 
-use App\Services\NewsHandler\NewsFetcher\Contracts\NewsFetcher;
+use App\Services\NewsHandler\NewsFetcher\Contracts\NewsFetcherInterface;
 use Carbon\Carbon;
-use App\Models\Article;
 
-class NewsFetcherForNewsDataIo implements NewsFetcher
+class NewsFetcherForNewsDataIo implements NewsFetcherInterface
 {
     private ChunkFetcherForNewsDataIo $chunkFetcherForNewsDataIo;
 

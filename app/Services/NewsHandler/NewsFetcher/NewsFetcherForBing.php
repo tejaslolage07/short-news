@@ -2,7 +2,6 @@
 
 namespace App\Services\NewsHandler\NewsFetcher;
 
-use App\Services\NewsHandler\NewsFetcher\Contracts\NewsFetcher;
 use Illuminate\Support\Facades\Http;
 
 // IMP! Bing is rejected due to the reason that it only sends short description of the whole news and not the full article.

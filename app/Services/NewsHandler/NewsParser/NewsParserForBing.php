@@ -2,10 +2,10 @@
 
 namespace App\Services\NewsHandler\NewsParser;
 
-use App\Services\NewsHandler\NewsParser\Contracts\NewsParser;
+use App\Services\NewsHandler\NewsParser\Contracts\NewsParserInterface;
 use Carbon\Carbon;
 
-class NewsParserForBing implements NewsParser
+class NewsParserForBing implements NewsParserInterface
 {
     public function getParsedData(array $response): array
     {
