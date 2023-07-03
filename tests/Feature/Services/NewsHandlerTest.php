@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Services;
+namespace Tests\Feature\Services;
 
 use App\Jobs\SummarizeArticle;
 use App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo;
@@ -11,12 +11,6 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
-
-/**
- * @internal
- *
- * @coversNothing
- */
 
 /**
  * @internal

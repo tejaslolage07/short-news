@@ -1,12 +1,14 @@
 <?php
 
+use App\Models\Article;
 use App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo;
 use App\Services\NewsHandler\NewsFetcher\NewsFetcherForNewsDataIo;
 use Carbon\Carbon;
 use Database\Factories\ArticleFactory;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use App\Models\Article;
 
 use function PHPUnit\Framework\assertEquals;
 
