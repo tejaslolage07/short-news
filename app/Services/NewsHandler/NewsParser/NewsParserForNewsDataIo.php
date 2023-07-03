@@ -28,10 +28,9 @@ class NewsParserForNewsDataIo implements NewsParserInterface
 
     private function parseArticle(array $article): array
     {
+        $formattedDate = null;
         if ($article['pubDate']) {
             $formattedDate = $this->formatDate($article['pubDate']);
-        } else {
-            $formattedDate = null;
         }
         $currentTime = now()->format('Y-m-d H:i:s');
         $author = $this->getAuthor($article);
@@ -77,9 +76,14 @@ class NewsParserForNewsDataIo implements NewsParserInterface
 
     private function getLanguageEnumValue(?string $language): ?string
     {
-        if($language === 'japanese') return 'ja';
-        else if($language === 'english') return 'en';
-        else return null;
+        switch ($language) {
+            case 'japanese':
+                return 'ja';
+            case 'english':
+                return 'en';
+            default:
+                return null;
+        }
     }
 
     private function getCategories(array $article): ?array
