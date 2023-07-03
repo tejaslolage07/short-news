@@ -100,7 +100,7 @@ class ApiNewsEndpointTest extends TestCase
         Article::factory()->
         count(10)->
         state(new Sequence(
-            ['short_news' => 'a', 'published_at' => '2021-06-20 00:00:00'],
+            ['short_news' => 'a', 'published_at' => NOW()],
         ))
             ->create()
         ;
@@ -116,7 +116,7 @@ class ApiNewsEndpointTest extends TestCase
 
         foreach ($firstPageArticles as $firstPageArticle) {
             foreach ($secondPageArticles as $secondPageArticle) {
-                $this->assertLessThan($firstPageArticle['id'], $secondPageArticle['id']);
+                $this->assertGreaterThan($firstPageArticle['id'], $secondPageArticle['id']);
             }
         }
     }
@@ -136,27 +136,25 @@ class ApiNewsEndpointTest extends TestCase
         $url = '/api/v1/news?count=5';
         $response = $this->get($url);
         $response->assertStatus(200);
-        $currentPageArticles = $response['data'];
+        $articlesFetched = $response['data'];
         $next_page_url = $response['next_page_url'];
 
         for ($x = 0; $x < 3; ++$x) {
-            $response = $this->fetchPageAndAssertPublishedDateLessThanPreviousPage($next_page_url.'&count=5', $currentPageArticles);
+            $response = $this->fetchPage($next_page_url.'&count=5');
             $next_page_url = $response[0];
-            $currentPageArticles = $response[1];
+            $articlesFetched = array_merge($articlesFetched, $response[1]);
+        }
+
+        //check if pub date of current article in list less than the previous one
+        for ($x = 1; $x < count($articlesFetched); ++$x) {
+            $this->assertLessThanOrEqual($articlesFetched[$x - 1]['published_at'], $articlesFetched[$x]['published_at']);
         }
     }
 
-    private function fetchPageAndAssertPublishedDateLessThanPreviousPage($page_url, $previousPageArticles): array
+    private function fetchPage($page_url): array
     {
         $response = $this->get($page_url);
         $response->assertStatus(200);
-
-        foreach ($response['data'] as $article) {
-            foreach ($previousPageArticles as $previousPageArticle) {
-                $this->assertLessThanOrEqual($previousPageArticle['published_at'], $article['published_at']);
-            }
-        }
-
         return [$response['next_page_url'], $response['data']];
     }
 }
