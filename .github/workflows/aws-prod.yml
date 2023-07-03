@@ -1,0 +1,114 @@
+on:
+  release:
+    types: [published]
+
+name: Deploy to Prod Amazon ECS
+
+jobs:
+  deploy:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Install Dependencies
+        env:
+          APP_VERSION: ${{ github.event.release.tag_name }}
+        run: |
+          sed -i "s/^APP_VERSION=.*/APP_VERSION='$APP_VERSION'/g" .env.production
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: short-news
+          IMAGE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          # Build a docker container and
+          # push it to ECR so that it can
+          # be deployed to ECS.
+          docker build -t short-news-php:prod -f docker/prod/php/Dockerfile .
+          docker tag short-news-php:prod $ECR_REGISTRY/$ECR_REPOSITORY:php-$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:php-$IMAGE_TAG
+          echo "image-php=$ECR_REGISTRY/$ECR_REPOSITORY:php-$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:nginx-$IMAGE_TAG -f docker/prod/nginx/Dockerfile .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:nginx-$IMAGE_TAG
+          echo "image-nginx=$ECR_REGISTRY/$ECR_REPOSITORY:nginx-$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:queue-$IMAGE_TAG -f docker/prod/queue/Dockerfile .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:queue-$IMAGE_TAG
+          echo "image-queue=$ECR_REGISTRY/$ECR_REPOSITORY:queue-$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:task-scheduler-$IMAGE_TAG -f docker/prod/taskScheduler/Dockerfile .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:task-scheduler-$IMAGE_TAG
+          echo "image-task-scheduler=$ECR_REGISTRY/$ECR_REPOSITORY:task-scheduler-$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:summarizer-$IMAGE_TAG -f docker/prod/pySummarizerSocket/Dockerfile .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:summarizer-$IMAGE_TAG
+          echo "image-summarizer=$ECR_REGISTRY/$ECR_REPOSITORY:summarizer-$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition --task-definition short-news-prod --query taskDefinition > task-definition.json
+
+      - name: Fill in the new image ID in the PHP Amazon ECS task definition
+        id: task-def-php
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: php-fpm
+          image: ${{ steps.build-image.outputs.image-php }}
+
+      - name: Fill in the new image ID in the Nginx Amazon ECS task definition
+        id: task-def-nginx
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def-php.outputs.task-definition }}
+          container-name: nginx
+          image: ${{ steps.build-image.outputs.image-nginx }}
+
+      - name: Fill in the new image ID in the Queue Amazon ECS task definition
+        id: task-def-queue
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: queue-task-scheduler-task-definition.json
+          container-name: queue
+          image: ${{ steps.build-image.outputs.image-queue }}
+
+      - name: Fill in the new image ID in the Task Scheduler Amazon ECS task definition
+        id: task-def-task-scheduler
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def-queue.outputs.task-definition }}
+          container-name: task-scheduler
+          image: ${{ steps.build-image.outputs.image-task-scheduler }}
+
+      - name: Fill in the new image ID in the Summarizer Amazon ECS task definition
+        id: task-def-summarizer
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def-queue.outputs.task-definition }}
+          container-name: summarizer
+          image: ${{ steps.build-image.outputs.image-summarizer }}
+
+      - name: Deploy Short News ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def-summarizer.outputs.task-definition }}
+          service: short-news-prod
+          cluster: short-news
