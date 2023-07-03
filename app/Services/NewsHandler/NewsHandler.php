@@ -77,7 +77,7 @@ class NewsHandler
         $article->image_url = $parsedNewsArticle['image_url'];
         $article->published_at = $parsedNewsArticle['published_at'];
         $article->fetched_at = $parsedNewsArticle['fetched_at'];
-        $article->news_website_id = $newsWebsite->id ?? null;
+        $article->news_website_id = $newsWebsite?->id;
         $article->article_s3_filename = null;
         $article->short_news = null;
         $article->country = $parsedNewsArticle['country'];
