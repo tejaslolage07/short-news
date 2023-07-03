@@ -27,9 +27,8 @@ class FetchNewsFromNewsDataIo extends Command
     /**
      * Execute the console command.
      */
-    public function handle(NewsFetcherForNewsDataIo $newsFetcher, NewsParserForNewsDataIo $newsParser)
+    public function handle(NewsHandler $newsHandler)
     {
-        $newsHandler = new NewsHandler($newsFetcher, $newsParser);
         $newsHandler->fetchAndStoreNewsFromNewsDataIoWhenDBEmpty($this->argument('initialLimitDays'));
         info('News fetched from NewsData.io');
     }
