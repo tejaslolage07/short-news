@@ -107,18 +107,13 @@ class ApiNewsEndpointTest extends TestCase
         $url = '/api/v1/news?count=5';
         $response = $this->get($url);
         $response->assertStatus(200);
-        $firstPageArticles = $response['data'];
+        $articlesFetched = $response['data'];
 
         $url = $response['next_page_url'].'&count=5';
         $response = $this->get($url);
         $response->assertStatus(200);
-        $secondPageArticles = $response['data'];
-
-        foreach ($firstPageArticles as $firstPageArticle) {
-            foreach ($secondPageArticles as $secondPageArticle) {
-                $this->assertGreaterThan($firstPageArticle['id'], $secondPageArticle['id']);
-            }
-        }
+        $articlesFetched = array_merge($articlesFetched, $response['data']);
+        $this->assertArticlesAreProperlyOrderedBy($articlesFetched);
     }
 
     public function testIndexReturnsValidPaginatedDataOrderedByPublishedDate(): void
@@ -145,9 +140,7 @@ class ApiNewsEndpointTest extends TestCase
             $articlesFetched = array_merge($articlesFetched, $response[1]);
         }
 
-        for ($x = 1; $x < count($articlesFetched); ++$x) {
-            $this->assertLessThanOrEqual($articlesFetched[$x - 1]['published_at'], $articlesFetched[$x]['published_at']);
-        }
+        $this->assertArticlesAreProperlyOrderedBy($articlesFetched);
     }
 
     private function fetchPage($page_url): array
@@ -156,5 +149,18 @@ class ApiNewsEndpointTest extends TestCase
         $response->assertStatus(200);
 
         return [$response['next_page_url'], $response['data']];
+    }
+
+    private function assertArticlesAreProperlyOrderedBy($articles): void
+    {
+        // check if articles are ordered by published date in for loop
+        for ($x = 0; $x < count($articles) - 1; ++$x) {
+            $currentArticle = $articles[$x];
+            $nextArticle = $articles[$x + 1];
+            $this->assertLessThanOrEqual($currentArticle['published_at'], $nextArticle['published_at']);
+            if ($currentArticle['published_at'] === $nextArticle['published_at']) {
+                $this->assertGreaterThan($currentArticle['id'], $nextArticle['id']);
+            }
+        }
     }
 }
