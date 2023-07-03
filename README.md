@@ -4,10 +4,12 @@
 
 Short News using Laravel and Python
 
-# Installation
+## Installation
 
-## Python
+### Python
+
 Install the required packages with the following commands:
-```
-pip3 install ...
+
+```bash
+pip install -r requirements.txt
 ```
