@@ -2,9 +2,10 @@
 
 namespace App\Services\NewsHandler\NewsParser;
 
+use App\Services\NewsHandler\NewsParser\Contracts\NewsParserInterface;
 use Carbon\Carbon;
 
-class NewsParserForNewsDataIo
+class NewsParserForNewsDataIo implements NewsParserInterface
 {
     public function getParsedData(array $response): array
     {
@@ -27,9 +28,16 @@ class NewsParserForNewsDataIo
 
     private function parseArticle(array $article): array
     {
-        $formattedDate = $article['pubDate'] ? $this->formatDate($article['pubDate']) : null;
+        $formattedDate = null;
+        if ($article['pubDate']) {
+            $formattedDate = $this->formatDate($article['pubDate']);
+        }
         $currentTime = now()->format('Y-m-d H:i:s');
         $author = $this->getAuthor($article);
+        $countries = $this->getCountries($article);
+        $language = $this->getLanguageEnumValue($article['language']);
+        $categories = $this->getCategories($article);
+        $keywords = $this->getKeywords($article);
 
         return [
             'headline' => $article['title'],
@@ -40,7 +48,16 @@ class NewsParserForNewsDataIo
             'news_website' => $article['source_id'],
             'published_at' => $formattedDate,
             'fetched_at' => $currentTime,
+            'country' => $countries,
+            'language' => $language,
+            'category' => $categories,
+            'keywords' => $keywords,
         ];
+    }
+
+    private function formatDate(string $date): string
+    {
+        return Carbon::parse($date, 'UTC')->tz('Asia/Tokyo')->format('Y-m-d H:i:s');
     }
 
     private function getAuthor(array $article): ?string
@@ -48,8 +65,42 @@ class NewsParserForNewsDataIo
         return $article['creator'][0] ?? null;
     }
 
-    private function formatDate(string $date): string
+    private function getCountries(array $article): ?array
     {
-        return Carbon::parse($date, 'UTC')->tz('Asia/Tokyo')->format('Y-m-d H:i:s');
+        if (!isset($article['country'])) {
+            return null;
+        }
+
+        return $article['country'];
+    }
+
+    private function getLanguageEnumValue(?string $language): ?string
+    {
+        switch ($language) {
+            case 'japanese':
+                return 'ja';
+            case 'english':
+                return 'en';
+            default:
+                return null;
+        }
+    }
+
+    private function getCategories(array $article): ?array
+    {
+        if (!isset($article['category'])) {
+            return null;
+        }
+
+        return $article['category'];
+    }
+
+    private function getKeywords(array $article): ?array
+    {
+        if (!isset($article['keywords'])) {
+            return null;
+        }
+
+        return $article['keywords'];
     }
 }

@@ -2,10 +2,10 @@
 
 namespace App\Services\NewsHandler\NewsFetcher;
 
-use App\Models\Article;
+use App\Services\NewsHandler\NewsFetcher\Contracts\NewsFetcherInterface;
 use Carbon\Carbon;
 
-class NewsFetcherForNewsDataIo
+class NewsFetcherForNewsDataIo implements NewsFetcherInterface
 {
     private ChunkFetcherForNewsDataIo $chunkFetcherForNewsDataIo;
 
@@ -27,7 +27,9 @@ class NewsFetcherForNewsDataIo
             ++$creditsUsed;
 
             $filteredArticles = $fetchedArticles->reject(function ($fetchedArticle) use ($untilDateTime) {
-                return $fetchedArticle['pubDate'] < $untilDateTime;
+                $parsedPublishedAt = Carbon::parse($fetchedArticle['pubDate'], 'UTC');
+                $parsedUntilDateTime = Carbon::parse($untilDateTime, 'Asia/Tokyo');
+                return $parsedPublishedAt < $parsedUntilDateTime;
             });
             $filteredCount = $filteredArticles->count();
             $articles = $articles->merge($filteredArticles);

@@ -24,13 +24,15 @@ class NewsHandler
 
     public function fetchAndStoreNewsFromNewsDataIo(?string $untilDate = null): void
     {
-        if(!$untilDate){
-            $untilDate = $this->getLatestPublishedAt();
-        }
-        $parsedUntilDateTime = $this->getParsedUntilDateTime($untilDate);
-        $response = $this->newsFetcherForNewsDataIo->fetch($parsedUntilDateTime);
-        $parsedNewsArticles = $this->newsParserForNewsDataIo->getParsedData($response);
-        $this->storeParsedNewsArticles($parsedNewsArticles);
+        try{
+            if(!$untilDate){
+                $untilDate = $this->getLatestPublishedAt();
+            }
+            $parsedUntilDateTime = $this->getParsedUntilDateTime($untilDate);
+            $response = $this->newsFetcherForNewsDataIo->fetch($parsedUntilDateTime);
+            $parsedNewsArticles = $this->newsParserForNewsDataIo->getParsedData($response);
+            $this->storeParsedNewsArticles($parsedNewsArticles, 'newsDataIoApi');
+        } catch(\Exception $e) {}
     }
 
     private function getLatestPublishedAt(): string
@@ -44,19 +46,19 @@ class NewsHandler
         return $dateTime;
     }
 
-    private function storeParsedNewsArticles(array $parsedNewsArticles): void
+    private function storeParsedNewsArticles(array $parsedNewsArticles, string $sourceName): void
     {
         foreach ($parsedNewsArticles as $parsedNewsArticle) {
             if ($parsedNewsArticle['content']) {
-                $this->storeParsedNewsArticle($parsedNewsArticle);
+                $this->storeParsedNewsArticle($parsedNewsArticle, $sourceName);
             }
         }
     }
 
-    private function storeParsedNewsArticle(array $parsedNewsArticle): void
+    private function storeParsedNewsArticle(array $parsedNewsArticle, string $sourceName): void
     {
         $newsWebsiteId = $this->getNewsWebsite($parsedNewsArticle['news_website']);
-        $storedArticle = $this->storeArticle($parsedNewsArticle, $newsWebsiteId);
+        $storedArticle = $this->storeArticle($parsedNewsArticle, $newsWebsiteId, $sourceName);
         $this->dispatchToSummarizer($storedArticle, $parsedNewsArticle['content']);
     }
 
@@ -68,7 +70,7 @@ class NewsHandler
         return NewsWebsite::firstOrCreate(['website' => $newsWebsiteName]);
     }
 
-    private function storeArticle(array $parsedNewsArticle, ?NewsWebsite $newsWebsite): Article
+    private function storeArticle(array $parsedNewsArticle, ?NewsWebsite $newsWebsite, string $sourceName): Article
     {
         $article = new Article();
         $article->headline = $parsedNewsArticle['headline'];
@@ -77,9 +79,14 @@ class NewsHandler
         $article->image_url = $parsedNewsArticle['image_url'];
         $article->published_at = $parsedNewsArticle['published_at'];
         $article->fetched_at = $parsedNewsArticle['fetched_at'];
-        $article->news_website_id = $newsWebsite->id ?? null;
+        $article->news_website_id = $newsWebsite?->id;
         $article->article_s3_filename = null;
         $article->short_news = null;
+        $article->country = $parsedNewsArticle['country'];
+        $article->language = $parsedNewsArticle['language'];
+        $article->category = $parsedNewsArticle['category'];
+        $article->keywords = $parsedNewsArticle['keywords'];
+        $article->source = $sourceName;
         $article->save();
 
         return $article;

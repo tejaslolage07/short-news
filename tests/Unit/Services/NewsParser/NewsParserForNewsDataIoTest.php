@@ -40,6 +40,10 @@ class NewsParserForNewsDataIoTest extends TestCase
         $this->assertArrayHasKey('news_website', $parsedArticle);
         $this->assertArrayHasKey('published_at', $parsedArticle);
         $this->assertArrayHasKey('fetched_at', $parsedArticle);
+        $this->assertArrayHasKey('country', $parsedArticle);
+        $this->assertArrayHasKey('language', $parsedArticle);
+        $this->assertArrayHasKey('category', $parsedArticle);
+        $this->assertArrayHasKey('keywords', $parsedArticle);
     }
 
     private function assertValidParsedArticleData(array $parsedArticle, array $expectedParsedArticle): void
@@ -68,6 +72,21 @@ class NewsParserForNewsDataIoTest extends TestCase
                             'pubDate' => '2023-06-19 06:22:45',
                             'image_url' => 'https://example.com/image1.jpg',
                             'source_id' => 'full_count',
+                            'language' => 'japanese',
+                            'country' => [
+                                'japan',
+                                'india',
+                            ],
+                            'category' => [
+                                'general',
+                                'business',
+                            ],
+                            'keywords' => [
+                                'keyword1',
+                                'keyword2',
+                                'keyword3',
+                                'keyword4',
+                            ],
                         ],
                     ],
                 ],
@@ -81,6 +100,10 @@ class NewsParserForNewsDataIoTest extends TestCase
                         'news_website' => 'full_count',
                         'published_at' => '2023-06-19 15:22:45',
                         'fetched_at' => now()->tz('UTC')->format('Y-m-d H:i:s'),
+                        'country' => '["japan","india"]',
+                        'language' => 'japanese',
+                        'category' => '["general","business"]',
+                        'keywords' => '["keyword1","keyword2","keyword3","keyword4"]',
                     ],
                 ],
             ],
@@ -95,6 +118,12 @@ class NewsParserForNewsDataIoTest extends TestCase
                             'pubDate' => '2023-06-19 19:19:47',
                             'image_url' => 'https://example.com/image2.jpg',
                             'source_id' => 'full_count',
+                            'country' => ["japan"],
+                            'language' => 'japanese',
+                            'category' => ["general"],
+                            'keywords' => [
+                                "keyword1"
+                                ],
                         ],
                     ],
                 ],
@@ -108,6 +137,10 @@ class NewsParserForNewsDataIoTest extends TestCase
                         'news_website' => 'full_count',
                         'published_at' => '2023-06-20 04:19:47',
                         'fetched_at' => now()->tz('UTC')->format('Y-m-d H:i:s'),
+                        'country' => ["japan"],
+                        'language' => 'japanese',
+                        'category' => ["general"],
+                        'keywords' => ["keyword1"],
                     ],
                 ],
             ],
@@ -122,6 +155,10 @@ class NewsParserForNewsDataIoTest extends TestCase
                             'pubDate' => null,
                             'image_url' => null,
                             'source_id' => 'full_count',
+                            'country' => ["japan"],
+                            'language' => 'japanese',
+                            'category' => null,
+                            'keywords' => null,
                         ],
                     ],
                     'nextPage' => null,
@@ -136,6 +173,10 @@ class NewsParserForNewsDataIoTest extends TestCase
                         'news_website' => 'full_count',
                         'published_at' => null,
                         'fetched_at' => now()->tz('UTC')->format('Y-m-d H:i:s'),
+                        'country' => ["japan"],
+                        'language' => 'japanese',
+                        'category' => null,
+                        'keywords' => null,
                     ],
                 ],
             ],
