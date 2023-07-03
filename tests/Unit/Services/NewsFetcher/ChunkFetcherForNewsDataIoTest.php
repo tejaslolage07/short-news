@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Services\NewsFetcher;
 
-use App\Services\NewsHandler\NewsFetcher\NewsFetcherForBing;
+use App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -12,18 +12,18 @@ use Tests\TestCase;
  *
  * @coversNothing
  */
-class NewsFetcherForBingTest extends TestCase
+class ChunkFetcherForNewsDataIoTest extends TestCase
 {
     /**
      * @dataProvider dataProvider
      */
-    public function testFetch(array $newsData): void
+    public function testChunkFetch(array $newsData): void
     {
         Http::fake([
-            'https://api.bing.microsoft.com/*' => Http::response($newsData, 200),
+            'https://newsdata.io/*' => Http::response($newsData, 200),
         ]);
-        $newsFetcher = new NewsFetcherForBing();
-        $response = $newsFetcher->fetch('', 10);
+        $chunkFetcher = new ChunkFetcherForNewsDataIo();
+        $response = $chunkFetcher->fetchChunk();
         $this->testRequest();
         $this->assertEquals($newsData, $response);
         $this->assertArrayHasKey('articles', $response);
@@ -33,25 +33,23 @@ class NewsFetcherForBingTest extends TestCase
     public function testFetchThrowsExceptionOnError(): void
     {
         Http::fake([
-            'https://api.bing.microsoft.com/*' => Http::response(['error' => 'Bing API returned an error: mocked error'], 500),
+            'https://newsdata.io/*' => Http::response(['error' => 'NewsDataIO API returned an error: mocked error'], 500),
         ]);
+
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Bing API returned an error: mocked error');
-        $newsFetcher = new NewsFetcherForBing();
-        $newsFetcher->fetch('', 10);
+        $this->expectExceptionMessage('NewsDataIO API returned an error: mocked error');
+
+        $chunkFetcher = new ChunkFetcherForNewsDataIo();
+        $chunkFetcher->fetchChunk();
     }
 
     private function testRequest(): void
     {
         Http::assertSent(function (Request $request) {
-            return $request->hasHeader('Ocp-Apim-Subscription-Key', config('services.bing.key'))
-                && $request->hasHeader('mkt', 'ja-JP')
-                && 'https://api.bing.microsoft.com/v7.0/news/search?q=&count=10&setLang=jp&freshness=Day&safeSearch=Off' == $request->url()
-                && '' == $request['q']
-                && '10' == $request['count']
-                && 'jp' == $request['setLang']
-                && 'Day' == $request['freshness']
-                && 'Off' == $request['safeSearch'];
+            return $request->hasHeader('X-ACCESS-KEY', config('services.newsdataio.key'))
+                && 'https://newsdata.io/api/1/news?language=jp&country=jp' == $request->url()
+                && 'jp' == $request['language']
+                && 'jp' == $request['country'];
         });
     }
 

@@ -1,69 +1,72 @@
 <?php
 
-namespace Tests\Unit\Services\NewsFetcher;
-
+use App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo;
 use App\Services\NewsHandler\NewsFetcher\NewsFetcherForNewsDataIo;
-use Illuminate\Http\Client\Request;
-use Illuminate\Support\Facades\Http;
+use Carbon\Carbon;
+use Database\Factories\ArticleFactory;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
+use App\Models\Article;
+
+use function PHPUnit\Framework\assertEquals;
 
 /**
  * @internal
  *
  * @coversNothing
+ * 
+ * @runTestsInSeparateProcesses
+ * @preserveGlobalState disabled
  */
 class NewsFetcherForNewsDataIoTest extends TestCase
 {
-    /**
-     * @dataProvider dataProvider
-     */
-    public function testFetch(array $newsData): void
+    use DatabaseTransactions;
+    
+    public function testFetch(): void
     {
-        Http::fake([
-            'https://newsdata.io/*' => Http::response($newsData, 200),
-        ]);
-        $newsFetcher = new NewsFetcherForNewsDataIo();
-        $response = $newsFetcher->fetch();
-        $this->testRequest();
-        $this->assertEquals($newsData, $response);
-        $this->assertArrayHasKey('articles', $response);
-        $this->assertNotEmpty($response['articles']);
+        $response = $this->getFakeResponse();
+        $chunkFetcher = \Mockery::mock('overload:App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo');
+        $chunkFetcher->shouldReceive('fetchChunk')
+        ->andReturn($response)
+        ;
+        $chunkFetcher = new ChunkFetcherForNewsDataIo();
+        $newsFetcher = new NewsFetcherForNewsDataIo($chunkFetcher);
+        $oneDayAgo = now()->subDays(1)->format('Y-m-d H:i:s');
+        $responses = $newsFetcher->fetch($oneDayAgo);
+        $numberOfResponses = count($responses['results']);
+        assertEquals($numberOfResponses, 3);
     }
 
-    public function testFetchThrowsExceptionOnError(): void
+    private function getFakeResponse(): array
     {
-        Http::fake([
-            'https://newsdata.io/*' => Http::response(['error' => 'NewsDataIO API returned an error: mocked error'], 500),
-        ]);
+        $now = now()->format('Y-m-d H:i:s');
+        $fiveHoursAgo = now()->subHours(5)->format('Y-m-d H:i:s');
+        $oneDayAgo = now()->subDays(1)->format('Y-m-d H:i:s');
+        $twoDaysAgo = now()->subDays(2)->format('Y-m-d H:i:s');
 
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('NewsDataIO API returned an error: mocked error');
-
-        $newsFetcher = new NewsFetcherForNewsDataIo();
-        $newsFetcher->fetch();
-    }
-
-    private function testRequest(): void
-    {
-        Http::assertSent(function (Request $request) {
-            return $request->hasHeader('X-ACCESS-KEY', config('services.newsdataio.key'))
-                && 'https://newsdata.io/api/1/news?language=jp&country=jp' == $request->url()
-                && 'jp' == $request['language']
-                && 'jp' == $request['country'];
-        });
-    }
-
-    private function dataProvider(): array
-    {
         return [
-            [['articles' => [
-                ['title' => 'Sample News 1', 'link' => 'Sample news link 1'],
-                ['title' => 'Sample News 2', 'link' => 'Sample news link 2'],
-            ]]],
-            [['articles' => [
-                ['title' => 'Sample News 1', 'link' => 'Sample news link 1'],
-                ['title' => 'Sample News 2', 'link' => 'Sample news link 2'],
-            ]]],
+            'results' => [
+                [
+                    'pubDate' => $now,
+                    'title' => 'Mocked Article 1',
+                    'content' => 'Lorem ipsum dolor sit amet',
+                ],
+                [
+                    'pubDate' => $fiveHoursAgo,
+                    'title' => 'Mocked Article 2',
+                    'content' => 'Lorem ipsum dolor sit amet',
+                ],
+                [
+                    'pubDate' => $oneDayAgo,
+                    'title' => 'Mocked Article 3',
+                    'content' => 'Lorem ipsum dolor sit amet',
+                ],
+                [
+                    'pubDate' => $twoDaysAgo,
+                    'title' => 'Mocked Article 4',
+                    'content' => 'Lorem ipsum dolor sit amet',
+                ],
+            ],
         ];
     }
 }
