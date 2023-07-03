@@ -17,12 +17,6 @@ use Tests\TestCase;
  *
  * @coversNothing
  */
-
-/**
- * @internal
- *
- * @coversNothing
- */
 class NewsHandlerTest extends TestCase
 {
     use DatabaseTransactions;
