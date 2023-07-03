@@ -13,7 +13,7 @@ class ArticleController extends Controller
             ->whereNotNull('short_news')
             ->whereNotNull('news_website_id')
             ->orderByDesc('published_at')
-            ->orderByDesc('id')
+            ->orderBy('id')
             ->cursorPaginate(perPage: $request->count ?? 100)
         ;
     }
