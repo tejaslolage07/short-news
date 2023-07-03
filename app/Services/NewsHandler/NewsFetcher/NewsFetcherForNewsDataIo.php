@@ -14,7 +14,7 @@ class NewsFetcherForNewsDataIo
         $this->chunkFetcherForNewsDataIo = $chunkFetcherForNewsDataIo;
     }
     
-    public function fetch(string $initialDateTime): array
+    public function fetch(string $untilDateTime): array
     {
         $page = '';
         $creditsUsed = 0;
@@ -26,8 +26,8 @@ class NewsFetcherForNewsDataIo
             $ogCount = $fetchedArticles->count();
             ++$creditsUsed;
 
-            $filteredArticles = $fetchedArticles->reject(function ($fetchedArticle) use ($initialDateTime) {
-                return $fetchedArticle['pubDate'] < $initialDateTime;
+            $filteredArticles = $fetchedArticles->reject(function ($fetchedArticle) use ($untilDateTime) {
+                return $fetchedArticle['pubDate'] < $untilDateTime;
             });
             $filteredCount = $filteredArticles->count();
             $articles = $articles->merge($filteredArticles);

@@ -22,25 +22,25 @@ class NewsHandler
         $this->newsParserForNewsDataIo = $newsParserForNewsDataIo;
     }
 
-    public function fetchAndStoreNewsFromNewsDataIo(?string $initialDate): void
+    public function fetchAndStoreNewsFromNewsDataIo(?string $untilDate = null): void
     {
-        if(!$initialDate){
-            $initialDate = $this->getFetchUntilDateTime();
+        if(!$untilDate){
+            $untilDate = $this->getLatestPublishedAt();
         }
-        $parsedInitialDateTime = $this->getFetchUntilDateTimeForInitialDate($initialDate);
-        $response = $this->newsFetcherForNewsDataIo->fetch($parsedInitialDateTime);
+        $parsedUntilDateTime = $this->getParsedUntilDateTime($untilDate);
+        $response = $this->newsFetcherForNewsDataIo->fetch($parsedUntilDateTime);
         $parsedNewsArticles = $this->newsParserForNewsDataIo->getParsedData($response);
         $this->storeParsedNewsArticles($parsedNewsArticles);
     }
 
-    private function getFetchUntilDateTime(): string
+    private function getLatestPublishedAt(): string
     {
         return Article::orderBy('published_at', 'desc')->first()->published_at;
     }
 
-    private function getFetchUntilDateTimeForInitialDate(string $initialDate): string
+    private function getParsedUntilDateTime(string $untilDate): string
     {
-        $dateTime = Carbon::parse($initialDate);
+        $dateTime = Carbon::parse($untilDate);
         return $dateTime;
     }
 
