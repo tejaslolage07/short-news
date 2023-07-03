@@ -20,5 +20,3 @@ RUN composer install --no-dev --optimize-autoloader \
     && chmod -R 775 /var/www/html/short-news/bootstrap/cache \
     && php artisan key:generate \
     && php artisan config:cache 
-
-
