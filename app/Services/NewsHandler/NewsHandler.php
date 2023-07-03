@@ -24,15 +24,13 @@ class NewsHandler
 
     public function fetchAndStoreNewsFromNewsDataIo(?string $untilDate = null): void
     {
-        try{
-            if(!$untilDate){
-                $untilDate = $this->getLatestPublishedAt();
-            }
-            $parsedUntilDateTime = $this->getParsedUntilDateTime($untilDate);
-            $response = $this->newsFetcherForNewsDataIo->fetch($parsedUntilDateTime);
-            $parsedNewsArticles = $this->newsParserForNewsDataIo->getParsedData($response);
-            $this->storeParsedNewsArticles($parsedNewsArticles, 'newsDataIoApi');
-        } catch(\Exception $e) {}
+        if (!$untilDate) {
+            $untilDate = $this->getLatestPublishedAt();
+        }
+        $parsedUntilDateTime = $this->getParsedUntilDateTime($untilDate);
+        $response = $this->newsFetcherForNewsDataIo->fetch($parsedUntilDateTime);
+        $parsedNewsArticles = $this->newsParserForNewsDataIo->getParsedData($response);
+        $this->storeParsedNewsArticles($parsedNewsArticles, 'newsDataIoApi');
     }
 
     private function getLatestPublishedAt(): string
@@ -42,8 +40,7 @@ class NewsHandler
 
     private function getParsedUntilDateTime(string $untilDate): string
     {
-        $dateTime = Carbon::parse($untilDate);
-        return $dateTime;
+        return Carbon::parse($untilDate);
     }
 
     private function storeParsedNewsArticles(array $parsedNewsArticles, string $sourceName): void
@@ -67,6 +64,7 @@ class NewsHandler
         if (!$newsWebsiteName) {
             return null;
         }
+
         return NewsWebsite::firstOrCreate(['website' => $newsWebsiteName]);
     }
 
