@@ -7,6 +7,7 @@ use App\Models\Article;
 use App\Models\NewsWebsite;
 use App\Services\NewsHandler\NewsFetcher\NewsFetcherForNewsDataIo;
 use App\Services\NewsHandler\NewsParser\NewsParserForNewsDataIo;
+use Carbon\Carbon;
 
 class NewsHandler
 {
@@ -21,11 +22,26 @@ class NewsHandler
         $this->newsParserForNewsDataIo = $newsParserForNewsDataIo;
     }
 
-    public function fetchAndStoreNewsFromNewsDataIo(): void
+    public function fetchAndStoreNewsFromNewsDataIo(?string $untilDate = null): void
     {
-        $response = $this->newsFetcherForNewsDataIo->fetch();
+        if(!$untilDate){
+            $untilDate = $this->getLatestPublishedAt();
+        }
+        $parsedUntilDateTime = $this->getParsedUntilDateTime($untilDate);
+        $response = $this->newsFetcherForNewsDataIo->fetch($parsedUntilDateTime);
         $parsedNewsArticles = $this->newsParserForNewsDataIo->getParsedData($response);
         $this->storeParsedNewsArticles($parsedNewsArticles);
+    }
+
+    private function getLatestPublishedAt(): string
+    {
+        return Article::orderBy('published_at', 'desc')->first()->published_at;
+    }
+
+    private function getParsedUntilDateTime(string $untilDate): string
+    {
+        $dateTime = Carbon::parse($untilDate);
+        return $dateTime;
     }
 
     private function storeParsedNewsArticles(array $parsedNewsArticles): void

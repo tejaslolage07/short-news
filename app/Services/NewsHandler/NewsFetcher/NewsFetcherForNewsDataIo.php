@@ -8,38 +8,27 @@ use App\Models\Article;
 
 class NewsFetcherForNewsDataIo implements NewsFetcher
 {
-    private const INITIAL_LIMIT_DAYS = 1;   // Update in test as well
     private ChunkFetcherForNewsDataIo $chunkFetcherForNewsDataIo;
 
     public function __construct(ChunkFetcherForNewsDataIo $chunkFetcherForNewsDataIo)
     {
         $this->chunkFetcherForNewsDataIo = $chunkFetcherForNewsDataIo;
     }
-
-    public function fetch(): array
+    
+    public function fetch(string $untilDateTime): array
     {
-        try {
-            return $this->getResponses($this->chunkFetcherForNewsDataIo);
-        } catch (\Exception $e) {
-            report('An error occurred: '.$e);
-        }
-    }
-
-    private function getResponses(ChunkFetcherForNewsDataIo $chunkFetcher): array
-    {
-        $fetchUntilDateTime = $this->getFetchUntilDateTime();
         $page = '';
         $creditsUsed = 0;
         $articles = collect();
 
         while (true) {
-            $fetchedNews = $chunkFetcher->fetchChunk(page: $page);
+            $fetchedNews = $this->chunkFetcherForNewsDataIo->fetchChunk(page: $page);
             $fetchedArticles = collect($fetchedNews['results']);
             $ogCount = $fetchedArticles->count();
             ++$creditsUsed;
 
-            $filteredArticles = $fetchedArticles->reject(function ($fetchedArticle) use ($fetchUntilDateTime) {
-                return $fetchedArticle['pubDate'] < $fetchUntilDateTime;
+            $filteredArticles = $fetchedArticles->reject(function ($fetchedArticle) use ($untilDateTime) {
+                return $fetchedArticle['pubDate'] < $untilDateTime;
             });
             $filteredCount = $filteredArticles->count();
             $articles = $articles->merge($filteredArticles);
@@ -48,20 +37,8 @@ class NewsFetcherForNewsDataIo implements NewsFetcher
             }
             $page = $fetchedNews['nextPage'];
         }
-        info(now()->tz('Asia/Tokyo')->format('Y-m-d H:i:s')."\tTotal credits used in this session: ".$creditsUsed."\n");
+        info(now()->format('Y-m-d H:i:s')."\tTotal credits used in this session: ".$creditsUsed."\n");
 
         return ['results' => $articles];
-    }
-
-    private function getFetchUntilDateTime(): string
-    {
-        $latestArticle = Article::orderBy('published_at', 'desc')->first();
-
-        return $latestArticle->published_at ?? $this->getInitialLimitDaysDateTime();
-    }
-
-    private function getInitialLimitDaysDateTime(): string
-    {
-        return now()->subDays(self::INITIAL_LIMIT_DAYS)->tz('UTC')->format('Y-m-d H:i:s');
     }
 }
