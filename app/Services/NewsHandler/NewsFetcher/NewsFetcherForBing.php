@@ -6,7 +6,7 @@ use App\Services\NewsHandler\NewsFetcher\Contracts\NewsFetcher;
 use Illuminate\Support\Facades\Http;
 
 // IMP! Bing is rejected due to the reason that it only sends short description of the whole news and not the full article.
-class NewsFetcherForBing implements NewsFetcher
+class NewsFetcherForBing
 {
     private const URL = 'https://api.bing.microsoft.com/v7.0/news/search';
 
