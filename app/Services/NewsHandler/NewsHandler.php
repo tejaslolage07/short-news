@@ -31,7 +31,7 @@ class NewsHandler
             $parsedUntilDateTime = $this->getParsedUntilDateTime($untilDate);
             $response = $this->newsFetcherForNewsDataIo->fetch($parsedUntilDateTime);
             $parsedNewsArticles = $this->newsParserForNewsDataIo->getParsedData($response);
-            $this->storeParsedNewsArticles($parsedNewsArticles);
+            $this->storeParsedNewsArticles($parsedNewsArticles, 'newsDataIoApi');
         } catch(\Exception $e) {}
     }
 
@@ -46,19 +46,19 @@ class NewsHandler
         return $dateTime;
     }
 
-    private function storeParsedNewsArticles(array $parsedNewsArticles): void
+    private function storeParsedNewsArticles(array $parsedNewsArticles, string $sourceName): void
     {
         foreach ($parsedNewsArticles as $parsedNewsArticle) {
             if ($parsedNewsArticle['content']) {
-                $this->storeParsedNewsArticle($parsedNewsArticle);
+                $this->storeParsedNewsArticle($parsedNewsArticle, $sourceName);
             }
         }
     }
 
-    private function storeParsedNewsArticle(array $parsedNewsArticle): void
+    private function storeParsedNewsArticle(array $parsedNewsArticle, string $sourceName): void
     {
         $newsWebsiteId = $this->getNewsWebsite($parsedNewsArticle['news_website']);
-        $storedArticle = $this->storeArticle($parsedNewsArticle, $newsWebsiteId);
+        $storedArticle = $this->storeArticle($parsedNewsArticle, $newsWebsiteId, $sourceName);
         $this->dispatchToSummarizer($storedArticle, $parsedNewsArticle['content']);
     }
 
@@ -70,7 +70,7 @@ class NewsHandler
         return NewsWebsite::firstOrCreate(['website' => $newsWebsiteName]);
     }
 
-    private function storeArticle(array $parsedNewsArticle, ?NewsWebsite $newsWebsite): Article
+    private function storeArticle(array $parsedNewsArticle, ?NewsWebsite $newsWebsite, string $sourceName): Article
     {
         $article = new Article();
         $article->headline = $parsedNewsArticle['headline'];
@@ -86,7 +86,7 @@ class NewsHandler
         $article->language = $parsedNewsArticle['language'];
         $article->category = $parsedNewsArticle['category'];
         $article->keywords = $parsedNewsArticle['keywords'];
-        $article->source = 'newsDataIoApi';
+        $article->source = $sourceName;
         $article->save();
 
         return $article;
