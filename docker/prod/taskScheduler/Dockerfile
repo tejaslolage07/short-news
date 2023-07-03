@@ -1,4 +1,4 @@
-FROM short-news:prod
+FROM short-news-php:prod
 
 COPY ./docker/prod/taskScheduler/start-task-scheduler.sh /var/www/html/short-news/
 
