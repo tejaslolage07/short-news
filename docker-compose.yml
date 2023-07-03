@@ -1,0 +1,88 @@
+version: "3"
+
+networks:
+    default:
+        external: true
+        name: dev
+
+services:
+    short-news-backend:
+        build:
+            context: ./vendor/laravel/sail/runtimes/8.2
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: "${WWWGROUP}"
+        image: sail-8.2/app
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+        container_name: short-news-backend
+        ports:
+            - "${APP_PORT:-80}:80"
+        environment:
+            WWWUSER: "${WWWUSER}"
+            LARAVEL_SAIL: 1
+            XDEBUG_MODE: "${SAIL_XDEBUG_MODE:-off}"
+            XDEBUG_CONFIG: "${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}"
+            IGNITION_LOCAL_SITES_PATH: "${PWD}"
+        volumes:
+            - ".:/var/www/html"
+        depends_on:
+            - short-news-mysql
+
+    short-news-mysql:
+        image: "mysql/mysql-server:8.0"
+        ports:
+            - "${FORWARD_DB_PORT:-3306}:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+            MYSQL_ROOT_HOST: "%"
+            MYSQL_DATABASE: "${DB_DATABASE}"
+            MYSQL_USER: "${DB_USERNAME}"
+            MYSQL_PASSWORD: "${DB_PASSWORD}"
+            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+        volumes:
+            - "sail-mysql:/var/lib/mysql"
+            - "./vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh"
+        healthcheck:
+            test:
+                - CMD
+                - mysqladmin
+                - ping
+                - "-p${DB_PASSWORD}"
+            retries: 3
+            timeout: 5s
+
+    short-news-queue-worker:
+        image: sail-8.2/app
+        entrypoint: /usr/bin/php /var/www/html/artisan queue:listen
+        container_name: short-news-queue-worker
+        volumes:
+            - .:/var/www/html:delegated
+        depends_on:
+            - short-news-mysql
+
+    short-news-task-scheduler:
+        image: sail-8.2/app
+        entrypoint: /usr/bin/php /var/www/html/artisan schedule:work
+        container_name: short-news-task-scheduler
+        volumes:
+            - .:/var/www/html:delegated
+        depends_on:
+            - short-news-mysql
+            - short-news-queue-worker
+
+    short-news-summarizer-socket:
+        build:
+            context: .
+            dockerfile: ./docker/dev/pySummarizerSocket/Dockerfile
+        ports:
+            - "8501:8100"
+        image: short-news/summarizer
+        entrypoint: python3 SummarizerSocket.py
+        container_name: short-news-summarizer-socket
+        volumes:
+            - .:/var/www/html:delegated
+
+volumes:
+    sail-mysql:
+        driver: local
