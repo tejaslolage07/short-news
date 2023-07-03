@@ -40,7 +40,7 @@ class NewsHandlerTest extends TestCase
         Queue::fake();
 
         $service = new NewsHandler($newsFetcher, $newsParser);
-        $service->fetchAndStoreNewsFromNewsDataIo();
+        $service->fetchAndStoreNewsFromNewsDataIo(now()->format('Y-m-d H:i:s'));
         Queue::assertPushed(SummarizeArticle::class, 1);
 
         $this->assertDatabaseHas('articles', [
@@ -68,7 +68,7 @@ class NewsHandlerTest extends TestCase
                         '東中野ミツル',
                     ],
                     'content' => 'Some content',
-                    'pubDate' => '2023-07-01 04:00:00',
+                    'pubDate' => now()->addHour()->format('Y-m-d H:i:s'),
                     'image_url' => 'https://example.com/image.jpg',
                     'source_id' => 'ascii',
                     'category' => [

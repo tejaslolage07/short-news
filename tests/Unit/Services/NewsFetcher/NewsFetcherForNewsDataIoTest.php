@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Database\Factories\ArticleFactory;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
+use App\Models\Article;
 
 use function PHPUnit\Framework\assertEquals;
 
@@ -20,44 +21,28 @@ use function PHPUnit\Framework\assertEquals;
 class NewsFetcherForNewsDataIoTest extends TestCase
 {
     use DatabaseTransactions;
-
-    public function testFetchWhenDBEmpty(): void
+    
+    public function testFetch(): void
     {
         $response = $this->getFakeResponse();
         $chunkFetcher = \Mockery::mock('overload:App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo');
         $chunkFetcher->shouldReceive('fetchChunk')
-            ->andReturn($response)
+        ->andReturn($response)
         ;
         $chunkFetcher = new ChunkFetcherForNewsDataIo();
         $newsFetcher = new NewsFetcherForNewsDataIo($chunkFetcher);
-        $responses = $newsFetcher->fetch();
-        // dump($responses);
+        $oneDayAgo = now()->subDays(1)->format('Y-m-d H:i:s');
+        $responses = $newsFetcher->fetch($oneDayAgo);
         $numberOfResponses = count($responses['results']);
         assertEquals($numberOfResponses, 3);
-    }
-    
-    public function testFetchWhenDBNotEmpty(): void
-    {
-        $response = $this->getFakeResponse();
-        $fiveHoursAgo = now()->subHours(5)->tz('UTC')->format('Y-m-d H:i:s');
-        ArticleFactory::new()->create(['published_at' => $fiveHoursAgo]);
-        $chunkFetcher = \Mockery::mock('overload:App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo');
-        $chunkFetcher->shouldReceive('fetchChunk')
-            ->andReturn($response)
-        ;
-        $chunkFetcher = new ChunkFetcherForNewsDataIo();
-        $newsFetcher = new NewsFetcherForNewsDataIo($chunkFetcher);
-        $responses = $newsFetcher->fetch();
-        $numberOfResponses = count($responses['results']);
-        assertEquals($numberOfResponses, 2);
     }
 
     private function getFakeResponse(): array
     {
-        $now = now()->tz('UTC')->format('Y-m-d H:i:s');
-        $fiveHoursAgo = now()->subHours(5)->tz('UTC')->format('Y-m-d H:i:s');
-        $oneDayAgo = now()->subDays(1)->tz('UTC')->format('Y-m-d H:i:s');
-        $twoDaysAgo = now()->subDays(2)->tz('UTC')->format('Y-m-d H:i:s');
+        $now = now()->format('Y-m-d H:i:s');
+        $fiveHoursAgo = now()->subHours(5)->format('Y-m-d H:i:s');
+        $oneDayAgo = now()->subDays(1)->format('Y-m-d H:i:s');
+        $twoDaysAgo = now()->subDays(2)->format('Y-m-d H:i:s');
 
         return [
             'results' => [
