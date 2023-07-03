@@ -153,7 +153,6 @@ class ApiNewsEndpointTest extends TestCase
 
     private function assertArticlesAreProperlyOrderedBy($articles): void
     {
-        // check if articles are ordered by published date in for loop
         for ($x = 0; $x < count($articles) - 1; ++$x) {
             $currentArticle = $articles[$x];
             $nextArticle = $articles[$x + 1];
