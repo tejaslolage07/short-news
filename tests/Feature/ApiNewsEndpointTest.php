@@ -145,7 +145,6 @@ class ApiNewsEndpointTest extends TestCase
             $articlesFetched = array_merge($articlesFetched, $response[1]);
         }
 
-        //check if pub date of current article in list less than the previous one
         for ($x = 1; $x < count($articlesFetched); ++$x) {
             $this->assertLessThanOrEqual($articlesFetched[$x - 1]['published_at'], $articlesFetched[$x]['published_at']);
         }
@@ -155,6 +154,7 @@ class ApiNewsEndpointTest extends TestCase
     {
         $response = $this->get($page_url);
         $response->assertStatus(200);
+
         return [$response['next_page_url'], $response['data']];
     }
 }
