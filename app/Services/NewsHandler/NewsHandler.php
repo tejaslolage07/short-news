@@ -24,13 +24,15 @@ class NewsHandler
 
     public function fetchAndStoreNewsFromNewsDataIo(?string $untilDate = null): void
     {
-        if(!$untilDate){
-            $untilDate = $this->getLatestPublishedAt();
-        }
-        $parsedUntilDateTime = $this->getParsedUntilDateTime($untilDate);
-        $response = $this->newsFetcherForNewsDataIo->fetch($parsedUntilDateTime);
-        $parsedNewsArticles = $this->newsParserForNewsDataIo->getParsedData($response);
-        $this->storeParsedNewsArticles($parsedNewsArticles);
+        try{
+            if(!$untilDate){
+                $untilDate = $this->getLatestPublishedAt();
+            }
+            $parsedUntilDateTime = $this->getParsedUntilDateTime($untilDate);
+            $response = $this->newsFetcherForNewsDataIo->fetch($parsedUntilDateTime);
+            $parsedNewsArticles = $this->newsParserForNewsDataIo->getParsedData($response);
+            $this->storeParsedNewsArticles($parsedNewsArticles);
+        } catch(\Exception $e) {}
     }
 
     private function getLatestPublishedAt(): string
