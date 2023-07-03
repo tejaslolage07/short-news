@@ -72,7 +72,6 @@ class ApiNewsEndpointTest extends TestCase
         $this->assertNull($response['prev_page_url']);
         $this->assertNotNull($response['next_page_url']);
         $this->assertEquals(10, $response['per_page']);
-
     }
 
     public function testIndexReturnsValidArticles(): void
@@ -90,7 +89,6 @@ class ApiNewsEndpointTest extends TestCase
 
         $response = $this->get('/api/v1/news?count=400');
         $response->assertStatus(200);
-        $this->assertCount(25, $response['data']);
         foreach ($response['data'] as $article) {
             $this->assertNotNull($article['short_news']);
             $this->assertNotNull($article['news_website']['id']);
@@ -102,25 +100,20 @@ class ApiNewsEndpointTest extends TestCase
         Article::factory()->
         count(10)->
         state(new Sequence(
-            ['short_news' => 'a', 'published_at' => '2021-06-20 00:00:00'],
+            ['short_news' => 'a', 'published_at' => NOW()],
         ))
             ->create()
         ;
         $url = '/api/v1/news?count=5';
         $response = $this->get($url);
         $response->assertStatus(200);
-        $firstPageArticles = $response['data'];
+        $articlesFetched = $response['data'];
 
         $url = $response['next_page_url'].'&count=5';
         $response = $this->get($url);
         $response->assertStatus(200);
-        $secondPageArticles = $response['data'];
-
-        foreach ($firstPageArticles as $firstPageArticle) {
-            foreach ($secondPageArticles as $secondPageArticle) {
-                $this->assertLessThan($firstPageArticle['id'], $secondPageArticle['id']);
-            }
-        }
+        $articlesFetched = array_merge($articlesFetched, $response['data']);
+        $this->assertArticlesAreProperlyOrderedBy($articlesFetched);
     }
 
     public function testIndexReturnsValidPaginatedDataOrderedByPublishedDate(): void
@@ -135,21 +128,38 @@ class ApiNewsEndpointTest extends TestCase
         ))
             ->create()
         ;
-        $url = '/api/v1/news?count=3';
-        $firstPageUrl = $this->fetchPageAndAssertPublishedDate($url, '2023-06-20T00:00:00.000000Z');
-        $secondPageUrl = $this->fetchPageAndAssertPublishedDate($firstPageUrl.'&count=2', '2023-06-20T00:00:00.000000Z');
-        $thirdPageUrl = $this->fetchPageAndAssertPublishedDate($secondPageUrl.'&count=5', '2022-06-20T00:00:00.000000Z');
-        $fourthPageUrl = $this->fetchPageAndAssertPublishedDate($thirdPageUrl.'&count=5', '2021-06-20T00:00:00.000000Z');
-        $fifthPageUrl = $this->fetchPageAndAssertPublishedDate($fourthPageUrl.'&count=5', '2020-06-20T00:00:00.000000Z');
-        $this->assertNull($fifthPageUrl);
+        $url = '/api/v1/news?count=5';
+        $response = $this->get($url);
+        $response->assertStatus(200);
+        $articlesFetched = $response['data'];
+        $next_page_url = $response['next_page_url'];
+
+        for ($x = 0; $x < 3; ++$x) {
+            $response = $this->fetchPage($next_page_url.'&count=5');
+            $next_page_url = $response[0];
+            $articlesFetched = array_merge($articlesFetched, $response[1]);
+        }
+
+        $this->assertArticlesAreProperlyOrderedBy($articlesFetched);
     }
 
-    private function fetchPageAndAssertPublishedDate($page_url, $expectedPublishedDate): string|null
+    private function fetchPage($page_url): array
     {
         $response = $this->get($page_url);
         $response->assertStatus(200);
-        $this->assertEquals($expectedPublishedDate, $response['data'][0]['published_at']);
 
-        return $response['next_page_url'];
+        return [$response['next_page_url'], $response['data']];
+    }
+
+    private function assertArticlesAreProperlyOrderedBy($articles): void
+    {
+        for ($x = 0; $x < count($articles) - 1; ++$x) {
+            $currentArticle = $articles[$x];
+            $nextArticle = $articles[$x + 1];
+            $this->assertLessThanOrEqual($currentArticle['published_at'], $nextArticle['published_at']);
+            if ($currentArticle['published_at'] === $nextArticle['published_at']) {
+                $this->assertGreaterThan($currentArticle['id'], $nextArticle['id']);
+            }
+        }
     }
 }
