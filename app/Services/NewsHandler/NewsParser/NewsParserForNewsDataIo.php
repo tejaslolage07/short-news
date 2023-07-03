@@ -28,7 +28,7 @@ class NewsParserForNewsDataIo
     private function parseArticle(array $article): array
     {
         $formattedDate = $article['pubDate'] ? $this->formatDate($article['pubDate']) : null;
-        $currentTime = date('Y-m-d H:i:s');
+        $currentTime = now()->format('Y-m-d H:i:s');
         $author = $this->getAuthor($article);
 
         return [
@@ -50,6 +50,6 @@ class NewsParserForNewsDataIo
 
     private function formatDate(string $date): string
     {
-        return (new Carbon($date))->addHours(9)->format('Y-m-d H:i:s');
+        return Carbon::parse($date, 'UTC')->tz('Asia/Tokyo')->format('Y-m-d H:i:s');
     }
 }

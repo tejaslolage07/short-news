@@ -2,46 +2,42 @@
 
 namespace App\Services\NewsHandler\NewsFetcher;
 
-use Illuminate\Support\Facades\Http;
+use App\Models\Article;
+use Carbon\Carbon;
 
 class NewsFetcherForNewsDataIo
 {
-    private const URL = 'https://newsdata.io/api/1/news';
+    private ChunkFetcherForNewsDataIo $chunkFetcherForNewsDataIo;
 
-    public function fetch(string $searchQuery = '', string $category = '', string $page = ''): array
+    public function __construct(ChunkFetcherForNewsDataIo $chunkFetcherForNewsDataIo)
     {
-        $headers = $this->getHeaders();
-        $params = $this->getParams($searchQuery, $category, $page);
-        $response = Http::withHeaders($headers)
-            ->get(self::URL, $params)
-            ->throw()
-        ;
-
-        return $response->json();
+        $this->chunkFetcherForNewsDataIo = $chunkFetcherForNewsDataIo;
     }
-
-    private function getHeaders(): array
+    
+    public function fetch(string $untilDateTime): array
     {
-        return [
-            'X-ACCESS-KEY' => config('services.newsdataio.key'),
-        ];
-    }
+        $page = '';
+        $creditsUsed = 0;
+        $articles = collect();
 
-    private function getParams(string $searchQuery, string $category, string $page): array
-    {
-        $params = [];
-        if ('' !== $searchQuery) {
-            $params['q'] = $searchQuery;
-        }
-        if ('' !== $category) {
-            $params['category'] = $category;
-        }
-        if ('' !== $page) {
-            $params['page'] = $page;
-        }
-        $params['language'] = 'jp';
-        $params['country'] = 'jp';
+        while (true) {
+            $fetchedNews = $this->chunkFetcherForNewsDataIo->fetchChunk(page: $page);
+            $fetchedArticles = collect($fetchedNews['results']);
+            $ogCount = $fetchedArticles->count();
+            ++$creditsUsed;
 
-        return $params;
+            $filteredArticles = $fetchedArticles->reject(function ($fetchedArticle) use ($untilDateTime) {
+                return $fetchedArticle['pubDate'] < $untilDateTime;
+            });
+            $filteredCount = $filteredArticles->count();
+            $articles = $articles->merge($filteredArticles);
+            if ($ogCount !== $filteredCount) {
+                break;
+            }
+            $page = $fetchedNews['nextPage'];
+        }
+        info(now()->format('Y-m-d H:i:s')."\tTotal credits used in this session: ".$creditsUsed."\n");
+
+        return ['results' => $articles];
     }
 }
