@@ -13,7 +13,7 @@ class NewsFetcherForNewsDataIo implements NewsFetcherInterface
     {
         $this->chunkFetcherForNewsDataIo = $chunkFetcherForNewsDataIo;
     }
-    
+
     public function fetch(string $untilDateTime): array
     {
         $page = '';
@@ -27,8 +27,9 @@ class NewsFetcherForNewsDataIo implements NewsFetcherInterface
             ++$creditsUsed;
 
             $filteredArticles = $fetchedArticles->reject(function ($fetchedArticle) use ($untilDateTime) {
-                $parsedPublishedAt = Carbon::parse($fetchedArticle['pubDate'], 'UTC');
+                $parsedPublishedAt = Carbon::parse($fetchedArticle['pubDate'], 'UTC')->tz('Asia/Tokyo');
                 $parsedUntilDateTime = Carbon::parse($untilDateTime, 'Asia/Tokyo');
+
                 return $parsedPublishedAt < $parsedUntilDateTime;
             });
             $filteredCount = $filteredArticles->count();
