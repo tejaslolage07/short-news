@@ -86,7 +86,7 @@ jobs:
         id: task-def-queue
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: queue-task-scheduler-task-definition.json
+          task-definition: ${{ steps.task-def-nginx.outputs.task-definition }}
           container-name: queue
           image: ${{ steps.build-image.outputs.image-queue }}
 
@@ -102,7 +102,7 @@ jobs:
         id: task-def-summarizer
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: ${{ steps.task-def-queue.outputs.task-definition }}
+          task-definition: ${{ steps.task-def-task-scheduler.outputs.task-definition }}
           container-name: summarizer
           image: ${{ steps.build-image.outputs.image-summarizer }}
 
