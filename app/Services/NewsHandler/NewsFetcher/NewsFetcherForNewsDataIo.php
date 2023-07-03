@@ -13,47 +13,21 @@ class NewsFetcherForNewsDataIo
     {
         $this->chunkFetcherForNewsDataIo = $chunkFetcherForNewsDataIo;
     }
-
-    public function fetch(): array
-    {
-        try {
-            $fetchUntilDateTime = $this->getFetchUntilDateTime();
-            return $this->getResponses($this->chunkFetcherForNewsDataIo, $fetchUntilDateTime);
-        } catch (\Exception $e) {
-            report('An error occurred: '.$e);
-        }
-    }
     
-    public function fetchWhenDBEmpty(int $initialLimitDays): array
+    public function fetch(string $initialDateTime): array
     {
-        try {
-            $fetchUntilDateTime = $this->getFetchUntilDateTimeWhenDBEmpty($initialLimitDays);
-            return $this->getResponses($this->chunkFetcherForNewsDataIo, $fetchUntilDateTime);
-        } catch (\Exception $e) {
-            report('An error occurred: '.$e);
-        }
-    }
-
-    private function getFetchUntilDateTimeWhenDBEmpty(int $initialLimitDays): string
-    {
-        return now()->subDays($initialLimitDays)->tz('UTC')->format('Y-m-d H:i:s');
-    }
-
-    private function getResponses(ChunkFetcherForNewsDataIo $chunkFetcher, string $fetchUntilDateTime): array
-    {
-        $fetchUntilDateTime = $this->getFetchUntilDateTime();
         $page = '';
         $creditsUsed = 0;
         $articles = collect();
 
         while (true) {
-            $fetchedNews = $chunkFetcher->fetchChunk(page: $page);
+            $fetchedNews = $this->chunkFetcherForNewsDataIo->fetchChunk(page: $page);
             $fetchedArticles = collect($fetchedNews['results']);
             $ogCount = $fetchedArticles->count();
             ++$creditsUsed;
 
-            $filteredArticles = $fetchedArticles->reject(function ($fetchedArticle) use ($fetchUntilDateTime) {
-                return $fetchedArticle['pubDate'] < $fetchUntilDateTime;
+            $filteredArticles = $fetchedArticles->reject(function ($fetchedArticle) use ($initialDateTime) {
+                return $fetchedArticle['pubDate'] < $initialDateTime;
             });
             $filteredCount = $filteredArticles->count();
             $articles = $articles->merge($filteredArticles);
@@ -62,13 +36,8 @@ class NewsFetcherForNewsDataIo
             }
             $page = $fetchedNews['nextPage'];
         }
-        info(now()->tz('Asia/Tokyo')->format('Y-m-d H:i:s')."\tTotal credits used in this session: ".$creditsUsed."\n");
+        info(now()->format('Y-m-d H:i:s')."\tTotal credits used in this session: ".$creditsUsed."\n");
 
         return ['results' => $articles];
-    }
-
-    private function getFetchUntilDateTime(): string
-    {
-        return Article::orderBy('published_at', 'desc')->first()->published_at;
     }
 }

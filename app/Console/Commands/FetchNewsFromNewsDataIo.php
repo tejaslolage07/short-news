@@ -26,7 +26,7 @@ class FetchNewsFromNewsDataIo extends Command
      */
     public function handle(NewsHandler $newsHandler)
     {
-        $newsHandler->fetchAndStoreNewsFromNewsDataIo();
+        $newsHandler->fetchAndStoreNewsFromNewsDataIo(null);
         info('News fetched from NewsData.io');
     }
 }

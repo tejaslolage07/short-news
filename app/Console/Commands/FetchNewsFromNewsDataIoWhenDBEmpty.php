@@ -2,34 +2,32 @@
 
 namespace App\Console\Commands;
 
-use App\Services\NewsHandler\NewsFetcher\NewsFetcherForNewsDataIo;
 use Illuminate\Console\Command;
 use App\Services\NewsHandler\NewsHandler;
-use App\Services\NewsHandler\NewsParser\NewsParserForNewsDataIo;
 
-class FetchNewsFromNewsDataIo extends Command
+class FetchNewsFromNewsDataIoWhenDBEmpty extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'fetch:newsdataio-when-db-empty 
-                            {initialLimitDays : The number of days to fetch when DB is empty}';
+    protected $signature = 'fetch:newsdataio-until-date
+                            {initialDate : The initial date until which news articles will be fetched (format: Y-m-d))}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Fetch, summarize and store news from NewsData.io when Database is empty';
+    protected $description = 'Fetch, summarize and store news from NewsData.io until date';
 
     /**
      * Execute the console command.
      */
     public function handle(NewsHandler $newsHandler)
     {
-        $newsHandler->fetchAndStoreNewsFromNewsDataIoWhenDBEmpty($this->argument('initialLimitDays'));
+        $newsHandler->fetchAndStoreNewsFromNewsDataIo($this->argument('initialDate'));
         info('News fetched from NewsData.io');
     }
 }

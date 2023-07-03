@@ -7,6 +7,7 @@ use App\Models\Article;
 use App\Models\NewsWebsite;
 use App\Services\NewsHandler\NewsFetcher\NewsFetcherForNewsDataIo;
 use App\Services\NewsHandler\NewsParser\NewsParserForNewsDataIo;
+use Carbon\Carbon;
 
 class NewsHandler
 {
@@ -21,18 +22,26 @@ class NewsHandler
         $this->newsParserForNewsDataIo = $newsParserForNewsDataIo;
     }
 
-    public function fetchAndStoreNewsFromNewsDataIo(): void
+    public function fetchAndStoreNewsFromNewsDataIo(?string $initialDate): void
     {
-        $response = $this->newsFetcherForNewsDataIo->fetch();
+        if(!$initialDate){
+            $initialDate = $this->getFetchUntilDateTime();
+        }
+        $parsedInitialDateTime = $this->getFetchUntilDateTimeForInitialDate($initialDate);
+        $response = $this->newsFetcherForNewsDataIo->fetch($parsedInitialDateTime);
         $parsedNewsArticles = $this->newsParserForNewsDataIo->getParsedData($response);
         $this->storeParsedNewsArticles($parsedNewsArticles);
     }
 
-    public function fetchAndStoreNewsFromNewsDataIoWhenDBEmpty(int $initialLimitDays): void
+    private function getFetchUntilDateTime(): string
     {
-        $response = $this->newsFetcherForNewsDataIo->fetchWhenDBEmpty($initialLimitDays);
-        $parsedNewsArticles = $this->newsParserForNewsDataIo->getParsedData($response);
-        $this->storeParsedNewsArticles($parsedNewsArticles);
+        return Article::orderBy('published_at', 'desc')->first()->published_at;
+    }
+
+    private function getFetchUntilDateTimeForInitialDate(string $initialDate): string
+    {
+        $dateTime = Carbon::parse($initialDate);
+        return $dateTime;
     }
 
     private function storeParsedNewsArticles(array $parsedNewsArticles): void
