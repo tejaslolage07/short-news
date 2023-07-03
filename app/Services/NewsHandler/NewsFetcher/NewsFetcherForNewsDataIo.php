@@ -28,7 +28,9 @@ class NewsFetcherForNewsDataIo implements NewsFetcher
             ++$creditsUsed;
 
             $filteredArticles = $fetchedArticles->reject(function ($fetchedArticle) use ($untilDateTime) {
-                return $fetchedArticle['pubDate'] < $untilDateTime;
+                $parsedPublishedAt = Carbon::parse($fetchedArticle['pubDate'], 'UTC');
+                $parsedUntilDateTime = Carbon::parse($untilDateTime, 'Asia/Tokyo');
+                return $parsedPublishedAt < $parsedUntilDateTime;
             });
             $filteredCount = $filteredArticles->count();
             $articles = $articles->merge($filteredArticles);

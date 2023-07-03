@@ -80,6 +80,11 @@ class NewsHandler
         $article->news_website_id = $newsWebsite->id ?? null;
         $article->article_s3_filename = null;
         $article->short_news = null;
+        $article->country = $parsedNewsArticle['country'];
+        $article->language = $parsedNewsArticle['language'];
+        $article->category = $parsedNewsArticle['category'];
+        $article->keywords = $parsedNewsArticle['keywords'];
+        $article->source = 'newsDataIoApi';
         $article->save();
 
         return $article;

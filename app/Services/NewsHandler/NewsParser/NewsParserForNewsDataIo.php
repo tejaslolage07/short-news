@@ -34,12 +34,9 @@ class NewsParserForNewsDataIo implements NewsParser
             $formattedDate = null;
         }
         $currentTime = now()->format('Y-m-d H:i:s');
-        $keywords = $this->getKeywords($article);
-        $categories = $this->getCategories($article);
-        $countries = $this->getCountries($article);
-        $currentTime = Carbon::now()->format('Y-m-d H:i:s');
         $author = $this->getAuthor($article);
         $countries = $this->getCountries($article);
+        $language = $this->getLanguageEnumValue($article['language']);
         $categories = $this->getCategories($article);
         $keywords = $this->getKeywords($article);
 
@@ -53,37 +50,15 @@ class NewsParserForNewsDataIo implements NewsParser
             'published_at' => $formattedDate,
             'fetched_at' => $currentTime,
             'country' => $countries,
-            'language' => $article['language'],
+            'language' => $language,
             'category' => $categories,
             'keywords' => $keywords,
         ];
     }
 
-    private function getCountries(array $article): ?string
+    private function formatDate(string $date): string
     {
-        if (!isset($article['country'])) {
-            return null;
-        }
-
-        return json_encode($article['country']);
-    }
-
-    private function getCategories(array $article): ?string
-    {
-        if (!isset($article['category'])) {
-            return null;
-        }
-
-        return json_encode($article['category']);
-    }
-
-    private function getKeywords(array $article): ?string
-    {
-        if (!isset($article['keywords'])) {
-            return null;
-        }
-
-        return json_encode($article['keywords']);
+        return Carbon::parse($date, 'UTC')->tz('Asia/Tokyo')->format('Y-m-d H:i:s');
     }
 
     private function getAuthor(array $article): ?string
@@ -91,8 +66,37 @@ class NewsParserForNewsDataIo implements NewsParser
         return $article['creator'][0] ?? null;
     }
 
-    private function formatDate(string $date): string
+    private function getCountries(array $article): ?array
     {
-        return Carbon::parse($date, 'UTC')->tz('Asia/Tokyo')->format('Y-m-d H:i:s');
+        if (!isset($article['country'])) {
+            return null;
+        }
+
+        return $article['country'];
+    }
+
+    private function getLanguageEnumValue(?string $language): ?string
+    {
+        if($language === 'japanese') return 'ja';
+        else if($language === 'english') return 'en';
+        else return null;
+    }
+
+    private function getCategories(array $article): ?array
+    {
+        if (!isset($article['category'])) {
+            return null;
+        }
+
+        return $article['category'];
+    }
+
+    private function getKeywords(array $article): ?array
+    {
+        if (!isset($article['keywords'])) {
+            return null;
+        }
+
+        return $article['keywords'];
     }
 }
