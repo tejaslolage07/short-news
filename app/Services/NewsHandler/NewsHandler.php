@@ -28,6 +28,13 @@ class NewsHandler
         $this->storeParsedNewsArticles($parsedNewsArticles);
     }
 
+    public function fetchAndStoreNewsFromNewsDataIoWhenDBEmpty(int $initialLimitDays): void
+    {
+        $response = $this->newsFetcherForNewsDataIo->fetchWhenDBEmpty($initialLimitDays);
+        $parsedNewsArticles = $this->newsParserForNewsDataIo->getParsedData($response);
+        $this->storeParsedNewsArticles($parsedNewsArticles);
+    }
+
     private function storeParsedNewsArticles(array $parsedNewsArticles): void
     {
         foreach ($parsedNewsArticles as $parsedNewsArticle) {

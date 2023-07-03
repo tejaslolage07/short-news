@@ -7,7 +7,6 @@ use Carbon\Carbon;
 
 class NewsFetcherForNewsDataIo
 {
-    private const INITIAL_LIMIT_DAYS = 1;
     private ChunkFetcherForNewsDataIo $chunkFetcherForNewsDataIo;
 
     public function __construct(ChunkFetcherForNewsDataIo $chunkFetcherForNewsDataIo)
@@ -18,20 +17,34 @@ class NewsFetcherForNewsDataIo
     public function fetch(): array
     {
         try {
-            return $this->getResponses($this->chunkFetcherForNewsDataIo);
+            $fetchUntilDateTime = $this->getFetchUntilDateTime();
+            return $this->getResponses($this->chunkFetcherForNewsDataIo, $fetchUntilDateTime);
+        } catch (\Exception $e) {
+            report('An error occurred: '.$e);
+        }
+    }
+    
+    public function fetchWhenDBEmpty(int $initialLimitDays): array
+    {
+        try {
+            $fetchUntilDateTime = $this->getFetchUntilDateTimeWhenDBEmpty($initialLimitDays);
+            return $this->getResponses($this->chunkFetcherForNewsDataIo, $fetchUntilDateTime);
         } catch (\Exception $e) {
             report('An error occurred: '.$e);
         }
     }
 
-    private function getResponses(ChunkFetcherForNewsDataIo $chunkFetcher): array
+    private function getFetchUntilDateTimeWhenDBEmpty(int $initialLimitDays): string
+    {
+        return now()->subDays($initialLimitDays)->tz('UTC')->format('Y-m-d H:i:s');
+    }
+
+    private function getResponses(ChunkFetcherForNewsDataIo $chunkFetcher, string $fetchUntilDateTime): array
     {
         $fetchUntilDateTime = $this->getFetchUntilDateTime();
         $page = '';
         $creditsUsed = 0;
         $articles = collect();
-
-
 
         while (true) {
             $fetchedNews = $chunkFetcher->fetchChunk(page: $page);
@@ -56,13 +69,6 @@ class NewsFetcherForNewsDataIo
 
     private function getFetchUntilDateTime(): string
     {
-        $latestArticle = Article::orderBy('published_at', 'desc')->first();
-
-        return $latestArticle->published_at ?? $this->getInitialLimitDaysDateTime();
-    }
-
-    private function getInitialLimitDaysDateTime(): string
-    {
-        return now()->subDays(self::INITIAL_LIMIT_DAYS)->tz('UTC')->format('Y-m-d H:i:s');
+        return Article::orderBy('published_at', 'desc')->first()->published_at;
     }
 }
