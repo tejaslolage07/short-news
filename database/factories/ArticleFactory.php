@@ -14,7 +14,7 @@ class ArticleFactory extends Factory
             'headline' => fake()->text(),
             'news_website_id' => NewsWebsite::factory(),
             'author' => fake()->text(),
-            'article_url' => fake()->url(),
+            'article_url' => fake()->unique()->url(),
             'image_url' => fake()->url(),
             'article_s3_filename' => fake()->text(),
             'published_at' => fake()->dateTime(),

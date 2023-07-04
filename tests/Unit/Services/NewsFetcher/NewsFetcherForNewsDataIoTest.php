@@ -41,30 +41,25 @@ class NewsFetcherForNewsDataIoTest extends TestCase
 
     private function getFakeResponse(): array
     {
-        $now = now()->format('Y-m-d H:i:s');
-        $fiveHoursAgo = now()->subHours(5)->format('Y-m-d H:i:s');
-        $oneDayAgo = now()->subDays(1)->format('Y-m-d H:i:s');
-        $twoDaysAgo = now()->subDays(2)->format('Y-m-d H:i:s');
-
         return [
             'results' => [
                 [
-                    'pubDate' => $now,
+                    'pubDate' => now()->format('Y-m-d H:i:s'),
                     'title' => 'Mocked Article 1',
                     'content' => 'Lorem ipsum dolor sit amet',
                 ],
                 [
-                    'pubDate' => $fiveHoursAgo,
+                    'pubDate' => now()->subHours(5)->format('Y-m-d H:i:s'),
                     'title' => 'Mocked Article 2',
                     'content' => 'Lorem ipsum dolor sit amet',
                 ],
                 [
-                    'pubDate' => $oneDayAgo,
+                    'pubDate' => now()->subDays(1)->format('Y-m-d H:i:s'),
                     'title' => 'Mocked Article 3',
                     'content' => 'Lorem ipsum dolor sit amet',
                 ],
                 [
-                    'pubDate' => $twoDaysAgo,
+                    'pubDate' => now()->subDays(2)->format('Y-m-d H:i:s'),
                     'title' => 'Mocked Article 4',
                     'content' => 'Lorem ipsum dolor sit amet',
                 ],

@@ -46,7 +46,8 @@ class NewsHandler
     private function storeParsedNewsArticles(array $parsedNewsArticles, string $sourceName): void
     {
         foreach ($parsedNewsArticles as $parsedNewsArticle) {
-            if ($parsedNewsArticle['content']) {
+            $articleAlreadyExists = Article::where('article_url', $parsedNewsArticle['article_url'])->exists();
+            if ($parsedNewsArticle['content'] && !$articleAlreadyExists) {
                 $this->storeParsedNewsArticle($parsedNewsArticle, $sourceName);
             }
         }
