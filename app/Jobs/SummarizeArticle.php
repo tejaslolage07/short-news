@@ -17,8 +17,9 @@ class SummarizeArticle implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    // public $tries = 3;
-    // public $timeout = 90;
+    public $tries = 3;
+
+    public $timeout = 30;
 
     public function __construct(
         public Article $article,

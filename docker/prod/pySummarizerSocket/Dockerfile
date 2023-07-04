@@ -10,4 +10,4 @@ COPY ./app/Services/Sockets/SummarizerSocket .
 
 EXPOSE 8100
 
-CMD ["python3", "SummarizerSocket.py"]
+CMD ["python3", "summarizer_socket.py"]

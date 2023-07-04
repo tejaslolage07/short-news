@@ -35,23 +35,23 @@ class ChatGptSummarizer:
 
     def summarize(self, data: str) -> str:
         try:
-            jsonData = json.loads(data)
-            chatGptPrompt = jsonData["prompt"]
-            maxInputTokens = jsonData["max_input_tokens"]
+            json_data = json.loads(data)
+            chat_gpt_prompt = json_data["prompt"]
+            max_input_tokens = json_data["max_input_tokens"]
 
             openai.api_key = os.getenv("OPENAI_API_KEY")
 
-            textPrompt = self._format_prompt(chatGptPrompt)
+            text_prompt = self._format_prompt(chat_gpt_prompt)
 
-            tokenArray = self._tokenized_prompt(
-                textPrompt)[0:maxInputTokens]
-            num_tokens = len(tokenArray)
+            token_array = self._tokenized_prompt(
+                text_prompt)[0:max_input_tokens]
+            num_tokens = len(token_array)
 
             response = self._api_call(
-                prompt=textPrompt, max_tokens=self._get_max_tokens(num_tokens), temperature=0.0)
+                prompt=text_prompt, max_tokens=self._get_max_tokens(num_tokens), temperature=0.0)
 
-            summarizedText = response["choices"][0].message["content"]
-            return summarizedText
-        except Exception as e:
-            print("Error in summarizer: ", e)
-            raise e
+            summarized_text = response["choices"][0].message["content"]
+            return summarized_text
+        except Exception as _e:
+            print("Error in summarizer: ", _e)
+            raise _e
