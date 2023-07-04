@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Http;
 class ChunkFetcherForNewsDataIo
 {
     private const URL = 'https://newsdata.io/api/1/news';
+    private const MAX_RETRIES = 3;
+    private const RETRY_DELAY = 1000;
 
     public function fetchChunk(string $searchQuery = '', string $category = '', string $page = ''): array
     {
@@ -14,6 +16,8 @@ class ChunkFetcherForNewsDataIo
         $params = $this->getParams($searchQuery, $category, $page);
         $response = Http::withHeaders($headers)
             ->get(self::URL, $params)
+            ->timeout(20)
+            ->retry(self::MAX_RETRIES, self::RETRY_DELAY)
             ->throw()
         ;
 
