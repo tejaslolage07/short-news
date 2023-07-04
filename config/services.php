@@ -14,6 +14,13 @@ return [
     |
     */
 
+    'aws'=>[
+        'region' => env('AWS_DEFAULT_REGION'),
+        'bucket_name' => env('AWS_BUCKET'),
+        'access_key_id' => env('AWS_ACCESS_KEY_ID'),
+        'secret_key' => env('AWS_SECRET_ACCESS_KEY')
+    ],
+
     'mailgun' => [
         'domain' => env('MAILGUN_DOMAIN'),
         'secret' => env('MAILGUN_SECRET'),
