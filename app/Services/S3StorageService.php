@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 
 class S3StorageService
 {
-    protected $dir = '/short-news/article/';
+    private const DIR = '/short-news/articles/'; 
 
     public function writeToS3Bucket(array $dataArray): string|null
     {
@@ -26,7 +26,7 @@ class S3StorageService
 
     private function getFileNameForUpload(): string
     {
-        $filename = $this->dir.Str::random(20).time();
+        $filename = self::DIR.Str::random(20).time();
         return $filename;
     }
 }
