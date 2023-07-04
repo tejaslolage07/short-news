@@ -8,32 +8,37 @@ use App\Models\NewsWebsite;
 use App\Services\NewsHandler\NewsFetcher\NewsFetcherForNewsDataIo;
 use App\Services\NewsHandler\NewsParser\NewsParserForNewsDataIo;
 use Carbon\Carbon;
+use App\Services\S3StorageService;
 
 class NewsHandler
 {
     private NewsFetcherForNewsDataIo $newsFetcherForNewsDataIo;
     private NewsParserForNewsDataIo $newsParserForNewsDataIo;
+    private S3StorageService $S3StorageService;
 
     public function __construct(
         NewsFetcherForNewsDataIo $newsFetcherForNewsDataIo,
         NewsParserForNewsDataIo $newsParserForNewsDataIo,
+        S3StorageService $S3StorageService,
     ) {
         $this->newsFetcherForNewsDataIo = $newsFetcherForNewsDataIo;
         $this->newsParserForNewsDataIo = $newsParserForNewsDataIo;
+        $this->S3StorageService = $S3StorageService;
     }
 
     public function fetchAndStoreNewsFromNewsDataIo(?string $untilDate = null): void
     {
         if (!$untilDate) {
-            $untilDate = $this->sixHoursAgo();
+            $untilDate = $this->dateTimeSixHoursAgo();
         }
         $parsedUntilDateTime = $this->getParsedUntilDateTime($untilDate);
         $response = $this->newsFetcherForNewsDataIo->fetch($parsedUntilDateTime);
+        $S3FileNames = $this->storeArticlesToS3Bucket($response);
         $parsedNewsArticles = $this->newsParserForNewsDataIo->getParsedData($response);
-        $this->storeParsedNewsArticles($parsedNewsArticles, 'newsDataIoApi');
+        $this->storeParsedNewsArticles($parsedNewsArticles, $S3FileNames, 'newsDataIoApi');
     }
 
-    private function sixHoursAgo(): string
+    private function dateTimeSixHoursAgo(): string
     {
         return now()->subHours(6)->tz('Asia/Tokyo');
     }
@@ -43,20 +48,30 @@ class NewsHandler
         return Carbon::parse($untilDate);
     }
 
-    private function storeParsedNewsArticles(array $parsedNewsArticles, string $sourceName): void
+    private function storeArticlesToS3Bucket(array $response): array
     {
-        foreach ($parsedNewsArticles as $parsedNewsArticle) {
+        $S3FileNames = [];
+        foreach ($response['results'] as $article) {
+            $S3FileNames[] = $this->S3StorageService->writeToS3Bucket($article);
+        }
+
+        return $S3FileNames;
+    }
+
+    private function storeParsedNewsArticles(array $parsedNewsArticles, array $S3FileNames, string $sourceName): void
+    {
+        foreach ($parsedNewsArticles as $index => $parsedNewsArticle) {
             $articleAlreadyExists = Article::where('article_url', $parsedNewsArticle['article_url'])->exists();
             if ($parsedNewsArticle['content'] && !$articleAlreadyExists) {
-                $this->storeParsedNewsArticle($parsedNewsArticle, $sourceName);
+                $this->storeParsedNewsArticle($parsedNewsArticle, $S3FileNames[$index], $sourceName);
             }
         }
     }
 
-    private function storeParsedNewsArticle(array $parsedNewsArticle, string $sourceName): void
+    private function storeParsedNewsArticle(array $parsedNewsArticle, string $S3FileName, string $sourceName): void
     {
         $newsWebsiteId = $this->getNewsWebsite($parsedNewsArticle['news_website']);
-        $storedArticle = $this->storeArticle($parsedNewsArticle, $newsWebsiteId, $sourceName);
+        $storedArticle = $this->storeArticle($parsedNewsArticle, $S3FileName, $newsWebsiteId, $sourceName);
         $this->dispatchToSummarizer($storedArticle, $parsedNewsArticle['content']);
     }
 
@@ -69,7 +84,7 @@ class NewsHandler
         return NewsWebsite::firstOrCreate(['website' => $newsWebsiteName]);
     }
 
-    private function storeArticle(array $parsedNewsArticle, ?NewsWebsite $newsWebsite, string $sourceName): Article
+    private function storeArticle(array $parsedNewsArticle, string $S3FileName, ?NewsWebsite $newsWebsite, string $sourceName): Article
     {
         $article = new Article();
         $article->headline = $parsedNewsArticle['headline'];
@@ -79,7 +94,7 @@ class NewsHandler
         $article->published_at = $parsedNewsArticle['published_at'];
         $article->fetched_at = $parsedNewsArticle['fetched_at'];
         $article->news_website_id = $newsWebsite?->id;
-        $article->article_s3_filename = null;
+        $article->article_s3_filename = $S3FileName;
         $article->short_news = null;
         $article->country = $parsedNewsArticle['country'];
         $article->language = $parsedNewsArticle['language'];
