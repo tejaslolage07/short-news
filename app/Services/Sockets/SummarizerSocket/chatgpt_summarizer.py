@@ -35,7 +35,8 @@ class ChatGptSummarizer:
 
             text_prompt = self._format_prompt(chat_gpt_prompt)
 
-            text_prompt = TokenizerService.limit_tokens(text_prompt, self.calculate_max_input_tokens(max_input_tokens))
+            text_prompt = TokenizerService.limit_tokens(
+                text_prompt, self.calculate_max_input_tokens(max_input_tokens))
 
             response = self._api_call(
                 prompt=text_prompt, max_tokens=300, temperature=0.0)
@@ -45,8 +46,9 @@ class ChatGptSummarizer:
         except Exception as _e:
             print("Error in summarizer: ", _e)
             raise _e
-        
+
     def calculate_max_input_tokens(self, num_tokens: int) -> int:
-        #4096 is the context length, it takes 4 token per request. 300 is the desired num of tokens for output.
-        #so the max is whatever is smaller of 4096 - 4 - 300 and user passed limit.
+        # 4096 is the context length, it takes 4 token per request.
+        # 300 is the desired num of tokens for output.
+        # so the max is whatever is smaller of 4096 - 4 - 300 and user passed limit.
         return min(4096 - 4 - 300, num_tokens)

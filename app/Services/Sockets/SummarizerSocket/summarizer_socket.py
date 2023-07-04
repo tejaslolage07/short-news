@@ -49,7 +49,8 @@ def listen_for_connections():
 
 
 def handle_client():
-    timeout_service = TimeOutService(TIMEOUT_DURATION, "Timed out while trying to summarize!")
+    timeout_service = TimeOutService(
+        TIMEOUT_DURATION, "Timed out while trying to summarize!")
     summarized_data = b''
     try:
         timeout_service.set_timeout()

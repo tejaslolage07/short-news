@@ -1,10 +1,10 @@
 import signal
 
+
 class TimeOutService:
-    def __init__(self, timeout : int, error_msg_on_timeout="Timed out!"):
+    def __init__(self, timeout: int, error_msg_on_timeout="Timed out!"):
         self.timeout = timeout
         self.error_msg = error_msg_on_timeout
-
 
     def handle_timeout(self, signum, frame) -> None:
         raise TimeoutError(self.error_msg)
