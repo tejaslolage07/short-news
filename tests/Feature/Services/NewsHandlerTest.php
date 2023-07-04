@@ -3,7 +3,6 @@
 namespace Tests\Feature\Services;
 
 use App\Jobs\SummarizeArticle;
-use App\Models\Article;
 use App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo;
 use App\Services\NewsHandler\NewsFetcher\NewsFetcherForNewsDataIo;
 use App\Services\NewsHandler\NewsHandler;
@@ -17,8 +16,9 @@ use Tests\TestCase;
  * @internal
  *
  * @coversNothing
- * 
+ *
  * @runTestsInSeparateProcesses
+ *
  * @preserveGlobalState disabled
  */
 class NewsHandlerTest extends TestCase
@@ -28,16 +28,14 @@ class NewsHandlerTest extends TestCase
     public function testFetchAndStoreNewsFromNewsDataIoWhenDatePassed()
     {
         $response = $this->getFakeResponseWhenDatePassed();
-
         $chunkFetcher = \Mockery::mock('overload:App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo');
         $chunkFetcher->shouldReceive('fetchChunk')
-        ->andReturn($response)
+            ->andReturn($response)
         ;
         $chunkFetcher = new ChunkFetcherForNewsDataIo();
         $newsFetcher = new NewsFetcherForNewsDataIo($chunkFetcher);
         $newsParser = new NewsParserForNewsDataIo();
         Queue::fake();
-
         $initialQueueSize = Queue::size();
         $service = new NewsHandler($newsFetcher, $newsParser);
         $service->fetchAndStoreNewsFromNewsDataIo(now()->format('Y-m-d H:i:s'));
@@ -59,17 +57,14 @@ class NewsHandlerTest extends TestCase
     public function testFetchAndStoreNewsFromNewsDataIoWhenDateNotPassed()
     {
         $response = $this->getFakeResponseWhenDateNotPassed();
-
         $chunkFetcher = \Mockery::mock('overload:App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo');
         $chunkFetcher->shouldReceive('fetchChunk')
-        ->andReturn($response)
+            ->andReturn($response)
         ;
         $chunkFetcher = new ChunkFetcherForNewsDataIo();
         $newsFetcher = new NewsFetcherForNewsDataIo($chunkFetcher);
         $newsParser = new NewsParserForNewsDataIo();
-        Article::factory()->create(['published_at' => now()->addHour()->tz('Asia/Tokyo'),]);
         Queue::fake();
-
         $initialQueueSize = Queue::size();
         $service = new NewsHandler($newsFetcher, $newsParser);
         $service->fetchAndStoreNewsFromNewsDataIo();
@@ -156,7 +151,7 @@ class NewsHandlerTest extends TestCase
                     'language' => 'japanese',
                 ],
             ],
-            'nextPage' => 'NextPageString'
+            'nextPage' => 'NextPageString',
         ];
     }
 
@@ -174,7 +169,7 @@ class NewsHandlerTest extends TestCase
                         'Author name',
                     ],
                     'content' => 'Some content',
-                    'pubDate' => now('UTC')->addHours(2)->format('Y-m-d H:i:s'),
+                    'pubDate' => now('UTC')->format('Y-m-d H:i:s'),
                     'image_url' => 'https://example.com/image.jpg',
                     'source_id' => 'ascii',
                     'category' => [
@@ -195,7 +190,7 @@ class NewsHandlerTest extends TestCase
                         'Author 1',
                     ],
                     'content' => 'Some content',
-                    'pubDate' => now('UTC')->addHour()->format('Y-m-d H:i:s'),
+                    'pubDate' => now('UTC')->subHours(6)->format('Y-m-d H:i:s'),
                     'image_url' => 'https://example.com/image.jpg',
                     'source_id' => 'ascii',
                     'category' => [
@@ -216,7 +211,7 @@ class NewsHandlerTest extends TestCase
                         'Author 1',
                     ],
                     'content' => 'Some content',
-                    'pubDate' => now('UTC')->format('Y-m-d H:i:s'),
+                    'pubDate' => now('UTC')->subHours(7)->format('Y-m-d H:i:s'),
                     'image_url' => 'https://example.com/image.jpg',
                     'source_id' => 'ascii',
                     'category' => [
@@ -228,7 +223,7 @@ class NewsHandlerTest extends TestCase
                     'language' => 'japanese',
                 ],
             ],
-            'nextPage' => 'NextPageString'
+            'nextPage' => 'NextPageString',
         ];
     }
 }

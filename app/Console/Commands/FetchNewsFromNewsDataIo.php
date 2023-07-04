@@ -20,8 +20,8 @@ class FetchNewsFromNewsDataIo extends Command
      *
      * @var string
      */
-    protected $description = 'Fetch, summarize and store news from NewsData.io. Arguments: untilDate=YYYY-MM-DD
-                                (if no date is provided, null is considered.)';
+    protected $description = 'Fetch, summarize and store news from NewsData.io. Args: untilDate=YYYY-MM-DD
+                                (if no date is provided, null is passed.)';
 
     /**
      * Execute the console command.

@@ -25,7 +25,7 @@ class NewsHandler
     public function fetchAndStoreNewsFromNewsDataIo(?string $untilDate = null): void
     {
         if (!$untilDate) {
-            $untilDate = $this->getLatestPublishedAt();
+            $untilDate = $this->sixHoursAgo();
         }
         $parsedUntilDateTime = $this->getParsedUntilDateTime($untilDate);
         $response = $this->newsFetcherForNewsDataIo->fetch($parsedUntilDateTime);
@@ -33,9 +33,9 @@ class NewsHandler
         $this->storeParsedNewsArticles($parsedNewsArticles, 'newsDataIoApi');
     }
 
-    private function getLatestPublishedAt(): string
+    private function sixHoursAgo(): string
     {
-        return Article::orderBy('published_at', 'desc')->first()->published_at;
+        return now()->subHours(6)->tz('Asia/Tokyo');
     }
 
     private function getParsedUntilDateTime(string $untilDate): string
