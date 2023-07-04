@@ -15,9 +15,9 @@ class ChunkFetcherForNewsDataIo
         $headers = $this->getHeaders();
         $params = $this->getParams($searchQuery, $category, $page);
         $response = Http::withHeaders($headers)
-            ->get(self::URL, $params)
             ->timeout(20)
             ->retry(self::MAX_RETRIES, self::RETRY_DELAY)
+            ->get(self::URL, $params)
             ->throw()
         ;
 
