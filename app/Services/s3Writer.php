@@ -4,11 +4,13 @@ namespace App\Services;
 
 use Aws\Exception\AwsException;
 use Aws\S3\S3Client;
+use Illuminate\Support\Str;
 
 class S3Writer
 {
     protected $s3;
     protected $bucket;
+    protected $dir = '/short-news/articles/';
 
     public function __construct()
     {
@@ -24,22 +26,35 @@ class S3Writer
         $this->bucket = config('services.aws.bucket_name');
     }
 
-    public function writeToFile(array $data) : void
+    public function writeToS3Bucket(array $dataArray): array
     {
-        try {
-            $dir = '/short-news/articles/';
-            $filename = time().'.json';
-            $fileContent = json_encode($data);
-
-            $this->s3->putObject([
-                'Bucket' => $this->bucket,
-                'Key' => $dir.$filename,
-                'Body' => $fileContent,
-                'ContentType' => 'application/json',
-            ]);
-        } catch (AwsException $e) {
-            echo "There was an error uploading the file.\n";
-            echo $e->getMessage();
+        $filenames = [];
+        foreach ($dataArray as $data) {
+            try {
+                $filename = $this->writeJsonFile($data);
+            } catch (AwsException $e) {
+                $filename = null;
+                echo 'There was an error uploading the file.'.$e->getMessage();
+            } finally {
+                array_push($filenames, $filename);
+            }
         }
+
+        return $filenames;
+    }
+
+    private function writeJsonFile(array $data): string
+    {
+        $filename = Str::random(20).time().'.json';
+        $fileContent = json_encode($data);
+
+        $this->s3->putObject([
+            'Bucket' => $this->bucket,
+            'Key' => $this->dir.$filename,
+            'Body' => $fileContent,
+            'ContentType' => 'application/json',
+        ]);
+
+        return $filename;
     }
 }
