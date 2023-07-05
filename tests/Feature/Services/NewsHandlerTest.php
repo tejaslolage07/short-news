@@ -8,6 +8,7 @@ use App\Services\NewsHandler\NewsFetcher\NewsFetcherForNewsDataIo;
 use App\Services\NewsHandler\NewsHandler;
 use App\Services\NewsHandler\NewsParser\NewsParserForNewsDataIo;
 use App\Services\S3StorageService;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
@@ -47,7 +48,7 @@ class NewsHandlerTest extends TestCase
         $newsParser = new NewsParserForNewsDataIo();
         Queue::fake();
         $service = new NewsHandler($newsFetcher, $newsParser, $S3StorageService);
-        $service->fetchAndStoreNewsFromNewsDataIo(now()->format('Y-m-d H:i:s'));
+        $service->fetchAndStoreNewsFromNewsDataIo('2020-01-01 00:00:00');
         Queue::assertPushed(SummarizeArticle::class, 1);
 
         foreach ($expectedResponse as $index => $expectedResponseArticle) {
@@ -117,7 +118,7 @@ class NewsHandlerTest extends TestCase
                                 'Author 1',
                             ],
                             'content' => 'Content 1',
-                            'pubDate' => now('UTC')->addHour()->format('Y-m-d H:i:s'),
+                            'pubDate' => Carbon::parse('2021-01-01 00:00:00', 'Asia/Tokyo')->tz('UTC')->format('Y-m-d H:i:s'),
                             'image_url' => 'https://example.com/image1.jpg',
                             'source_id' => 'NewsWebsite 1',
                             'category' => [
@@ -138,7 +139,7 @@ class NewsHandlerTest extends TestCase
                                 'Author 1',
                             ],
                             'content' => 'Content 1',
-                            'pubDate' => now('UTC')->addHour()->format('Y-m-d H:i:s'),
+                            'pubDate' => Carbon::parse('2021-01-01 00:00:00', 'Asia/Tokyo')->tz('UTC')->format('Y-m-d H:i:s'),
                             'image_url' => 'https://example.com/image2.jpg',
                             'source_id' => 'NewsWebsite 1',
                             'category' => [
@@ -159,7 +160,7 @@ class NewsHandlerTest extends TestCase
                                 'Author 3',
                             ],
                             'content' => 'Content 3',
-                            'pubDate' => now('UTC')->subHour()->format('Y-m-d H:i:s'),
+                            'pubDate' => Carbon::parse('2019-12-31 23:59:59', 'Asia/Tokyo')->tz('UTC')->format('Y-m-d H:i:s'),
                             'image_url' => 'https://example.com/image3.jpg',
                             'source_id' => 'NewsWebsite 3',
                             'category' => [
@@ -182,7 +183,7 @@ class NewsHandlerTest extends TestCase
                         ],
                         'author' => 'Author 1',
                         'content' => 'Content 1',
-                        'published_at' => now('UTC')->addHour()->tz('Asia/Tokyo')->format('Y-m-d H:i:s'),
+                        'published_at' => Carbon::parse('2021-01-01 00:00:00', 'Asia/Tokyo')->tz('Asia/Tokyo')->format('Y-m-d H:i:s'),
                         'image_url' => 'https://example.com/image1.jpg',
                         'NewsWebsite' => 'NewsWebsite 1',
                         'category' => [
@@ -201,6 +202,9 @@ class NewsHandlerTest extends TestCase
 
     private function getFakeResponseWhenDateNotPassed(): array
     {
+        $UTCnow = now('UTC')->format('Y-m-d H:i:s');
+        $UTCnowSub5Hours = now('UTC')->subHours(5)->format('Y-m-d H:i:s');
+        $UTCnowSub7Hours = now('UTC')->subHours(7)->format('Y-m-d H:i:s');
         return [
             [
                 [
@@ -215,7 +219,28 @@ class NewsHandlerTest extends TestCase
                                 'Author 1',
                             ],
                             'content' => 'Content 1',
-                            'pubDate' => now('UTC')->format('Y-m-d H:i:s'),
+                            'pubDate' => $UTCnow,
+                            'image_url' => 'https://example.com/image1.jpg',
+                            'source_id' => 'NewsWebsite 1',
+                            'category' => [
+                                'top',
+                            ],
+                            'country' => [
+                                'japan',
+                            ],
+                            'language' => 'japanese',
+                        ],
+                        [
+                            'title' => 'Headline 1',
+                            'link' => 'https://example.com/1',
+                            'keywords' => [
+                                'Keyword 1',
+                            ],
+                            'creator' => [
+                                'Author 1',
+                            ],
+                            'content' => 'Content 1',
+                            'pubDate' => $UTCnow,
                             'image_url' => 'https://example.com/image1.jpg',
                             'source_id' => 'NewsWebsite 1',
                             'category' => [
@@ -236,28 +261,7 @@ class NewsHandlerTest extends TestCase
                                 'Author 2',
                             ],
                             'content' => 'Content 2',
-                            'pubDate' => now('UTC')->subHours(5)->format('Y-m-d H:i:s'),
-                            'image_url' => 'https://example.com/image2.jpg',
-                            'source_id' => 'NewsWebsite 2',
-                            'category' => [
-                                'top',
-                            ],
-                            'country' => [
-                                'japan',
-                            ],
-                            'language' => 'japanese',
-                        ],
-                        [
-                            'title' => 'Headline 2',
-                            'link' => 'https://example.com/2',
-                            'keywords' => [
-                                'Keyword 2',
-                            ],
-                            'creator' => [
-                                'Author 2',
-                            ],
-                            'content' => 'Content 2',
-                            'pubDate' => now('UTC')->subHours(5)->format('Y-m-d H:i:s'),
+                            'pubDate' => $UTCnowSub5Hours,
                             'image_url' => 'https://example.com/image2.jpg',
                             'source_id' => 'NewsWebsite 2',
                             'category' => [
@@ -278,7 +282,7 @@ class NewsHandlerTest extends TestCase
                                 'Author 3',
                             ],
                             'content' => 'Content 3',
-                            'pubDate' => now('UTC')->subHours(7)->format('Y-m-d H:i:s'),
+                            'pubDate' => $UTCnowSub7Hours,
                             'image_url' => 'https://example.com/image3.jpg',
                             'source_id' => 'NewsWebsite 3',
                             'category' => [
@@ -301,7 +305,7 @@ class NewsHandlerTest extends TestCase
                         ],
                         'author' => 'Author 1',
                         'content' => 'Content 1',
-                        'published_at' => now('UTC')->tz('Asia/Tokyo')->format('Y-m-d H:i:s'),
+                        'published_at' => Carbon::parse($UTCnow, 'UTC')->tz('Asia/Tokyo')->format('Y-m-d H:i:s'),
                         'image_url' => 'https://example.com/image1.jpg',
                         'NewsWebsite' => 'NewsWebsite 1',
                         'category' => [
@@ -321,7 +325,7 @@ class NewsHandlerTest extends TestCase
                         ],
                         'author' => 'Author 2',
                         'content' => 'Content 2',
-                        'published_at' => now('UTC')->subHours(5)->tz('Asia/Tokyo')->format('Y-m-d H:i:s'),
+                        'published_at' => Carbon::parse($UTCnowSub5Hours, 'UTC')->tz('Asia/Tokyo')->format('Y-m-d H:i:s'),
                         'image_url' => 'https://example.com/image2.jpg',
                         'NewsWebsite' => 'NewsWebsite 2',
                         'category' => [
