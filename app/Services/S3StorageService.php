@@ -15,7 +15,7 @@ class S3StorageService
         $filename = null;
         try {
             $filename = $this->getFileNameForUpload();
-            Storage::disk('s3')->put($filename, json_encode($dataArray));
+            Storage::disk('s3')->put(self::DIR.$filename, json_encode($dataArray));
         } catch (AwsException $e) {
             $filename = null;
             echo 'There was an error uploading the file.'.$e->getMessage();
@@ -26,7 +26,7 @@ class S3StorageService
 
     private function getFileNameForUpload(): string
     {
-        $filename = self::DIR.Str::random(20).time();
+        $filename = Str::random(20).time();
         return $filename;
     }
 }

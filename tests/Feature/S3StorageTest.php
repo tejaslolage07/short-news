@@ -37,8 +37,9 @@ class S3StorageTest extends TestCase
         ];
 
         $filename = $s3Service->writeToS3Bucket($data);
+        $dir = '/short-news/articles/';
 
         $this->assertNotNull($filename);
-        Storage::disk('s3')->assertExists($filename);
+        Storage::disk('s3')->assertExists($dir.$filename);
     }
 }
