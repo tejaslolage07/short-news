@@ -29,7 +29,8 @@ class NewsHandler
 
     public function fetchAndStoreNewsFromNewsDataIo(?string $untilDate = null): void
     {
-        $parsedUntilDateTime = $untilDate ? $this->getParsedUntilDateTime($untilDate) : $this->dateTimeSixHoursAgo();
+        $parsedUntilDateTime = $untilDate ?
+        Carbon::parse($untilDate) : $this->dateTimeSixHoursAgo();
         $response = $this->newsFetcherForNewsDataIo->fetch($parsedUntilDateTime);
         $s3FileNames = $this->storeArticlesToS3Bucket($response['results']);
         $parsedNewsArticles = $this->newsParserForNewsDataIo->getParsedData($response);
@@ -39,11 +40,6 @@ class NewsHandler
     private function dateTimeSixHoursAgo(): string
     {
         return now()->subHours(6)->tz('Asia/Tokyo');
-    }
-
-    private function getParsedUntilDateTime(string $untilDate): string
-    {
-        return Carbon::parse($untilDate);
     }
 
     private function storeArticlesToS3Bucket(Collection $originalNewsArticles): array
