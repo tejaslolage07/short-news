@@ -2,31 +2,23 @@
 
 namespace App\Services;
 
-use Aws\Exception\AwsException;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class S3StorageService
 {
-    private const DIR = '/short-news/articles/'; 
+    private const DIR = '/short-news/articles/';
 
-    public function writeToS3Bucket(array $dataArray): string|null
+    public function writeToS3Bucket(array $dataArray): string
     {
-        $filename = null;
-        try {
-            $filename = $this->getFileNameForUpload();
-            Storage::disk('s3')->put(self::DIR.$filename, json_encode($dataArray));
-        } catch (AwsException $e) {
-            $filename = null;
-            echo 'There was an error uploading the file.'.$e->getMessage();
-        } finally {
-            return $filename;
-        }
+        $filename = $this->getFileNameForUpload();
+        Storage::disk('s3')->put(self::DIR.$filename, json_encode($dataArray));
+
+        return $filename;
     }
 
     private function getFileNameForUpload(): string
     {
-        $filename = Str::random(20).time();
-        return $filename;
+        return Str::random(20).time();
     }
 }
