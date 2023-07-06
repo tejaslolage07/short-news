@@ -40,6 +40,6 @@ class S3StorageTest extends TestCase
         $dir = '/short-news/articles/';
 
         $this->assertNotNull($filename);
-        Storage::disk('s3')->assertExists($dir.$filename);
+        $this->assertTrue(Storage::disk('s3')->exists($dir.$filename));
     }
 }

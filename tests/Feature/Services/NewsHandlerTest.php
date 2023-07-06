@@ -3,6 +3,7 @@
 namespace Tests\Feature\Services;
 
 use App\Jobs\SummarizeArticle;
+use App\Models\Article;
 use App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo;
 use App\Services\NewsHandler\NewsFetcher\NewsFetcherForNewsDataIo;
 use App\Services\NewsHandler\NewsHandler;
@@ -11,6 +12,7 @@ use App\Services\S3StorageService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
@@ -34,33 +36,32 @@ class NewsHandlerTest extends TestCase
      */
     public function testFetchAndStoreNewsFromNewsDataIoWhenDatePassed($fakedResponse, $expectedResponse)
     {
+        Storage::fake('s3');
         $chunkFetcher = \Mockery::mock('overload:App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo');
         $chunkFetcher->shouldReceive('fetchChunk')
             ->andReturn($fakedResponse)
         ;
         $chunkFetcher = new ChunkFetcherForNewsDataIo();
-        $S3StorageService = \Mockery::mock('overload:App\Services\S3StorageService');
-        $S3StorageService->shouldReceive('writeToS3Bucket')
-            ->andReturn('test1')
-        ;
-        $S3StorageService = new S3StorageService();
+        $s3StorageService = new S3StorageService();
         $newsFetcher = new NewsFetcherForNewsDataIo($chunkFetcher);
         $newsParser = new NewsParserForNewsDataIo();
         Queue::fake();
-        $service = new NewsHandler($newsFetcher, $newsParser, $S3StorageService);
+        $service = new NewsHandler($newsFetcher, $newsParser, $s3StorageService);
         $service->fetchAndStoreNewsFromNewsDataIo('2020-01-01 00:00:00');
         Queue::assertPushed(SummarizeArticle::class, 1);
 
-        foreach ($expectedResponse as $index => $expectedResponseArticle) {
+        foreach ($expectedResponse as $expectedResponseArticle) {
             $this->assertDatabaseHas('articles', [
                 'headline' => $expectedResponseArticle['headline'],
                 'article_url' => $expectedResponseArticle['article_url'],
                 'author' => $expectedResponseArticle['author'],
                 'image_url' => $expectedResponseArticle['image_url'],
                 'published_at' => $expectedResponseArticle['published_at'],
-                'article_s3_filename' => 'test'.$index + 1,
                 'short_news' => null,
             ]);
+            $this->assertTrue(Storage::disk('s3')->exists('/short-news/articles/'.Article::where(
+                'article_url', '=', $expectedResponseArticle['article_url']
+            )->first()->article_s3_filename));
         }
     }
 
@@ -72,15 +73,12 @@ class NewsHandlerTest extends TestCase
      */
     public function testFetchAndStoreNewsFromNewsDataIoWhenDateNotPassed($fakedResponse, $expectedResponse)
     {
+        Storage::fake('s3');
         $chunkFetcher = \Mockery::mock('overload:App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo');
         $chunkFetcher->shouldReceive('fetchChunk')
             ->andReturn($fakedResponse)
         ;
         $chunkFetcher = new ChunkFetcherForNewsDataIo();
-        $S3StorageService = \Mockery::mock('overload:App\Services\S3StorageService');
-        $S3StorageService->shouldReceive('writeToS3Bucket')
-            ->andReturn('test1', 'test2')
-        ;
         $S3StorageService = new S3StorageService();
         $newsFetcher = new NewsFetcherForNewsDataIo($chunkFetcher);
         $newsParser = new NewsParserForNewsDataIo();
@@ -89,16 +87,18 @@ class NewsHandlerTest extends TestCase
         $service->fetchAndStoreNewsFromNewsDataIo();
         Queue::assertPushed(SummarizeArticle::class, 2);
 
-        foreach ($expectedResponse as $index => $expectedResponseArticle) {
+        foreach ($expectedResponse as $expectedResponseArticle) {
             $this->assertDatabaseHas('articles', [
                 'headline' => $expectedResponseArticle['headline'],
                 'article_url' => $expectedResponseArticle['article_url'],
                 'author' => $expectedResponseArticle['author'],
                 'image_url' => $expectedResponseArticle['image_url'],
                 'published_at' => $expectedResponseArticle['published_at'],
-                'article_s3_filename' => 'test'.$index + 1,
                 'short_news' => null,
             ]);
+            $this->assertTrue(Storage::disk('s3')->exists('/short-news/articles/'.Article::where(
+                'article_url', '=', $expectedResponseArticle['article_url']
+            )->first()->article_s3_filename));
         }
     }
 
@@ -205,6 +205,7 @@ class NewsHandlerTest extends TestCase
         $UTCnow = now('UTC')->format('Y-m-d H:i:s');
         $UTCnowSub5Hours = now('UTC')->subHours(5)->format('Y-m-d H:i:s');
         $UTCnowSub7Hours = now('UTC')->subHours(7)->format('Y-m-d H:i:s');
+
         return [
             [
                 [

@@ -19,13 +19,6 @@ class NewsParserForNewsDataIo implements NewsParserInterface
         return $parsedData;
     }
 
-    public function getNextPage(string $response): string
-    {
-        $data = json_decode($response, true);
-
-        return $data['nextPage'];
-    }
-
     private function parseArticle(array $article): array
     {
         $formattedDate = null;
