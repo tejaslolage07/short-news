@@ -38,6 +38,7 @@ class NewsHandlerTest extends TestCase
     {
         Storage::fake('s3');
         Queue::fake();
+
         $chunkFetcher = \Mockery::mock('overload:App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo');
         $chunkFetcher->shouldReceive('fetchChunk')
             ->andReturn($fakedResponse)
@@ -52,17 +53,8 @@ class NewsHandlerTest extends TestCase
         Queue::assertPushed(SummarizeArticle::class, 1);
 
         foreach ($expectedArticles as $expectedArticle) {
-            $this->assertDatabaseHas('articles', [
-                'headline' => $expectedArticle['headline'],
-                'article_url' => $expectedArticle['article_url'],
-                'author' => $expectedArticle['author'],
-                'image_url' => $expectedArticle['image_url'],
-                'published_at' => $expectedArticle['published_at'],
-                'short_news' => null,
-            ]);
-            Storage::disk('s3')->assertExists('/short-news/articles/'.Article::where(
-                'article_url', '=', $expectedArticle['article_url']
-            )->first()->article_s3_filename);
+            $this->assertValidArticle($expectedArticle);
+            $this->assertArticlePresentInS3($expectedArticle);
         }
     }
 
@@ -90,18 +82,31 @@ class NewsHandlerTest extends TestCase
         Queue::assertPushed(SummarizeArticle::class, 2);
 
         foreach ($expectedArticles as $expectedArticle) {
-            $this->assertDatabaseHas('articles', [
-                'headline' => $expectedArticle['headline'],
-                'article_url' => $expectedArticle['article_url'],
-                'author' => $expectedArticle['author'],
-                'image_url' => $expectedArticle['image_url'],
-                'published_at' => $expectedArticle['published_at'],
-                'short_news' => null,
-            ]);
-            Storage::disk('s3')->assertExists('/short-news/articles/'.Article::where(
-                'article_url', '=', $expectedArticle['article_url']
-            )->first()->article_s3_filename);
+            $this->assertValidArticle($expectedArticle);
+            $this->assertArticlePresentInS3($expectedArticle);
         }
+    }
+
+    private function assertValidArticle(array $article): void
+    {
+        $this->assertDatabaseHas('articles', [
+            'headline' => $article['headline'],
+            'article_url' => $article['article_url'],
+            'author' => $article['author'],
+            'image_url' => $article['image_url'],
+            'published_at' => $article['published_at'],
+            'short_news' => null,
+        ]);
+    }
+
+    private function assertArticlePresentInS3(array $article): void
+    {
+        $directory = '/short-news/articles/';
+        $fileName = Article::whereArticleUrl($article['article_url'])
+            ->first()
+            ->article_s3_filename
+        ;
+        Storage::disk('s3')->assertExists($directory.$fileName);
     }
 
     private function getFakeResponseWhenDatePassed(): array
