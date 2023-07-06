@@ -52,7 +52,11 @@ class NewsHandler
     {
         $S3FileNames = [];
         foreach ($response['results'] as $article) {
-            $S3FileNames[] = $this->S3StorageService->writeToS3Bucket($article);
+            try{
+                $S3FileNames[] = $this->S3StorageService->writeToS3Bucket($article);
+            } catch(\Exception $e) {
+                report($e);
+            }
         }
 
         return $S3FileNames;
