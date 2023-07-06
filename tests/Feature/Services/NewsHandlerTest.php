@@ -34,33 +34,34 @@ class NewsHandlerTest extends TestCase
      * @param mixed $fakedResponse
      * @param mixed $expectedResponse
      */
-    public function testFetchAndStoreNewsFromNewsDataIoWhenDatePassed($fakedResponse, $expectedResponse)
+    public function testFetchAndStoreNewsFromNewsDataIoWhenDatePassed($fakedResponse, $expectedArticles)
     {
         Storage::fake('s3');
+        Queue::fake();
         $chunkFetcher = \Mockery::mock('overload:App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo');
         $chunkFetcher->shouldReceive('fetchChunk')
             ->andReturn($fakedResponse)
         ;
         $chunkFetcher = new ChunkFetcherForNewsDataIo();
-        $s3StorageService = new S3StorageService();
         $newsFetcher = new NewsFetcherForNewsDataIo($chunkFetcher);
         $newsParser = new NewsParserForNewsDataIo();
-        Queue::fake();
+        $s3StorageService = new S3StorageService();
         $service = new NewsHandler($newsFetcher, $newsParser, $s3StorageService);
         $service->fetchAndStoreNewsFromNewsDataIo('2020-01-01 00:00:00');
+        
         Queue::assertPushed(SummarizeArticle::class, 1);
 
-        foreach ($expectedResponse as $expectedResponseArticle) {
+        foreach ($expectedArticles as $expectedArticle) {
             $this->assertDatabaseHas('articles', [
-                'headline' => $expectedResponseArticle['headline'],
-                'article_url' => $expectedResponseArticle['article_url'],
-                'author' => $expectedResponseArticle['author'],
-                'image_url' => $expectedResponseArticle['image_url'],
-                'published_at' => $expectedResponseArticle['published_at'],
+                'headline' => $expectedArticle['headline'],
+                'article_url' => $expectedArticle['article_url'],
+                'author' => $expectedArticle['author'],
+                'image_url' => $expectedArticle['image_url'],
+                'published_at' => $expectedArticle['published_at'],
                 'short_news' => null,
             ]);
             $this->assertTrue(Storage::disk('s3')->exists('/short-news/articles/'.Article::where(
-                'article_url', '=', $expectedResponseArticle['article_url']
+                'article_url', '=', $expectedArticle['article_url']
             )->first()->article_s3_filename));
         }
     }
@@ -71,33 +72,34 @@ class NewsHandlerTest extends TestCase
      * @param mixed $fakedResponse
      * @param mixed $expectedResponse
      */
-    public function testFetchAndStoreNewsFromNewsDataIoWhenDateNotPassed($fakedResponse, $expectedResponse)
+    public function testFetchAndStoreNewsFromNewsDataIoWhenDateNotPassed($fakedResponse, $expectedArticles)
     {
         Storage::fake('s3');
+        Queue::fake();
         $chunkFetcher = \Mockery::mock('overload:App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo');
         $chunkFetcher->shouldReceive('fetchChunk')
             ->andReturn($fakedResponse)
         ;
         $chunkFetcher = new ChunkFetcherForNewsDataIo();
-        $S3StorageService = new S3StorageService();
         $newsFetcher = new NewsFetcherForNewsDataIo($chunkFetcher);
         $newsParser = new NewsParserForNewsDataIo();
-        Queue::fake();
+        $S3StorageService = new S3StorageService();
         $service = new NewsHandler($newsFetcher, $newsParser, $S3StorageService);
         $service->fetchAndStoreNewsFromNewsDataIo();
+
         Queue::assertPushed(SummarizeArticle::class, 2);
 
-        foreach ($expectedResponse as $expectedResponseArticle) {
+        foreach ($expectedArticles as $expectedArticle) {
             $this->assertDatabaseHas('articles', [
-                'headline' => $expectedResponseArticle['headline'],
-                'article_url' => $expectedResponseArticle['article_url'],
-                'author' => $expectedResponseArticle['author'],
-                'image_url' => $expectedResponseArticle['image_url'],
-                'published_at' => $expectedResponseArticle['published_at'],
+                'headline' => $expectedArticle['headline'],
+                'article_url' => $expectedArticle['article_url'],
+                'author' => $expectedArticle['author'],
+                'image_url' => $expectedArticle['image_url'],
+                'published_at' => $expectedArticle['published_at'],
                 'short_news' => null,
             ]);
             $this->assertTrue(Storage::disk('s3')->exists('/short-news/articles/'.Article::where(
-                'article_url', '=', $expectedResponseArticle['article_url']
+                'article_url', '=', $expectedArticle['article_url']
             )->first()->article_s3_filename));
         }
     }
