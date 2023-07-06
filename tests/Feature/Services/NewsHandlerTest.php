@@ -32,7 +32,7 @@ class NewsHandlerTest extends TestCase
      * @dataProvider getFakeResponseWhenDatePassed
      *
      * @param mixed $fakedResponse
-     * @param mixed $expectedResponse
+     * @param mixed $expectedArticles
      */
     public function testFetchAndStoreNewsFromNewsDataIoWhenDatePassed($fakedResponse, $expectedArticles)
     {
@@ -48,7 +48,7 @@ class NewsHandlerTest extends TestCase
         $s3StorageService = new S3StorageService();
         $service = new NewsHandler($newsFetcher, $newsParser, $s3StorageService);
         $service->fetchAndStoreNewsFromNewsDataIo('2020-01-01 00:00:00');
-        
+
         Queue::assertPushed(SummarizeArticle::class, 1);
 
         foreach ($expectedArticles as $expectedArticle) {
@@ -60,9 +60,9 @@ class NewsHandlerTest extends TestCase
                 'published_at' => $expectedArticle['published_at'],
                 'short_news' => null,
             ]);
-            $this->assertTrue(Storage::disk('s3')->exists('/short-news/articles/'.Article::where(
+            Storage::disk('s3')->assertExists('/short-news/articles/'.Article::where(
                 'article_url', '=', $expectedArticle['article_url']
-            )->first()->article_s3_filename));
+            )->first()->article_s3_filename);
         }
     }
 
@@ -70,7 +70,7 @@ class NewsHandlerTest extends TestCase
      * @dataProvider getFakeResponseWhenDateNotPassed
      *
      * @param mixed $fakedResponse
-     * @param mixed $expectedResponse
+     * @param mixed $expectedArticles
      */
     public function testFetchAndStoreNewsFromNewsDataIoWhenDateNotPassed($fakedResponse, $expectedArticles)
     {
@@ -98,9 +98,9 @@ class NewsHandlerTest extends TestCase
                 'published_at' => $expectedArticle['published_at'],
                 'short_news' => null,
             ]);
-            $this->assertTrue(Storage::disk('s3')->exists('/short-news/articles/'.Article::where(
+            Storage::disk('s3')->assertExists('/short-news/articles/'.Article::where(
                 'article_url', '=', $expectedArticle['article_url']
-            )->first()->article_s3_filename));
+            )->first()->article_s3_filename);
         }
     }
 
