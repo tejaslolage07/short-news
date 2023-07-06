@@ -39,7 +39,7 @@ class NewsHandler
 
     private function dateTimeSixHoursAgo(): string
     {
-        return now()->subHours(6)->tz('Asia/Tokyo');
+        return now()->subHours(6);
     }
 
     private function storeArticlesToS3Bucket(Collection $originalNewsArticles): array
