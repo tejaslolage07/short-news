@@ -57,8 +57,11 @@ class NewsHandler
         return $s3FileNames;
     }
 
-    private function storeParsedNewsArticles(array $parsedNewsArticles, array $s3FileNames, string $sourceName): void
-    {
+    private function storeParsedNewsArticles(
+        array $parsedNewsArticles,
+        array $s3FileNames,
+        string $sourceName
+    ): void {
         foreach ($parsedNewsArticles as $index => $parsedNewsArticle) {
             $isArticleUrlNotPresent = Article::where('article_url', $parsedNewsArticle['article_url'])->doesntExist();
             if ($parsedNewsArticle['content'] && $isArticleUrlNotPresent) {
@@ -67,8 +70,11 @@ class NewsHandler
         }
     }
 
-    private function storeParsedNewsArticle(array $parsedNewsArticle, ?string $s3FileName, string $sourceName): void
-    {
+    private function storeParsedNewsArticle(
+        array $parsedNewsArticle,
+        ?string $s3FileName,
+        string $sourceName
+    ): void {
         $newsWebsiteId = $this->getNewsWebsite($parsedNewsArticle['news_website']);
         $storedArticle = $this->storeArticle($parsedNewsArticle, $s3FileName, $newsWebsiteId, $sourceName);
         $this->dispatchToSummarizer($storedArticle, $parsedNewsArticle['content']);
@@ -85,7 +91,7 @@ class NewsHandler
 
     private function storeArticle(
         array $parsedNewsArticle,
-        string $s3FileName,
+        ?string $s3FileName,
         ?NewsWebsite $newsWebsite,
         string $sourceName
     ): Article {
