@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
@@ -36,5 +35,4 @@ return [
     'newsdataio' => [
         'key' => env('NEWS_DATA_IO_KEY'),
     ],
-    
 ];
