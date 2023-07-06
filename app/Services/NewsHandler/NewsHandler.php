@@ -60,8 +60,8 @@ class NewsHandler
     private function storeParsedNewsArticles(array $parsedNewsArticles, array $s3FileNames, string $sourceName): void
     {
         foreach ($parsedNewsArticles as $index => $parsedNewsArticle) {
-            $articleAlreadyExists = Article::where('article_url', $parsedNewsArticle['article_url'])->exists();
-            if ($parsedNewsArticle['content'] && !$articleAlreadyExists) {
+            $isArticleNotPresentInDatabase = Article::where('article_url', $parsedNewsArticle['article_url'])->doesntExist();
+            if ($parsedNewsArticle['content'] && $isArticleNotPresentInDatabase) {
                 $this->storeParsedNewsArticle($parsedNewsArticle, $s3FileNames[$index], $sourceName);
             }
         }
