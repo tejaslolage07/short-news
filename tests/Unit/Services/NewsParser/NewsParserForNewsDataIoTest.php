@@ -3,6 +3,7 @@
 namespace Tests\Unit\Services\NewsParser;
 
 use App\Services\NewsHandler\NewsParser\NewsParserForNewsDataIo;
+use Carbon\Carbon;
 use Tests\TestCase;
 
 /**
@@ -69,7 +70,7 @@ class NewsParserForNewsDataIoTest extends TestCase
                             'link' => 'https://example.com/article1',
                             'creator' => ['Example News'],
                             'content' => 'Article 1 content',
-                            'pubDate' => '2023-06-19 06:22:45',
+                            'pubDate' => '2023-01-01 00:00:00',
                             'image_url' => 'https://example.com/image1.jpg',
                             'source_id' => 'full_count',
                             'language' => 'japanese',
@@ -98,8 +99,8 @@ class NewsParserForNewsDataIoTest extends TestCase
                         'content' => 'Article 1 content',
                         'image_url' => 'https://example.com/image1.jpg',
                         'news_website' => 'full_count',
-                        'published_at' => '2023-06-19 15:22:45',
-                        'fetched_at' => now()->tz('UTC')->format('Y-m-d H:i:s'),
+                        'published_at' => Carbon::parse('2023-01-01 00:00:00', 'UTC')->tz('Asia/Tokyo')->format('Y-m-d H:i:s'),
+                        'fetched_at' => now()->format('Y-m-d H:i:s'),
                         'country' => '["japan","india"]',
                         'language' => 'japanese',
                         'category' => '["general","business"]',
@@ -115,7 +116,7 @@ class NewsParserForNewsDataIoTest extends TestCase
                             'link' => 'https://example.com/article2',
                             'creator' => null,
                             'content' => 'Article 2 content',
-                            'pubDate' => '2023-06-19 19:19:47',
+                            'pubDate' => '2022-01-01 00:00:00',
                             'image_url' => 'https://example.com/image2.jpg',
                             'source_id' => 'full_count',
                             'country' => ["japan"],
@@ -135,8 +136,8 @@ class NewsParserForNewsDataIoTest extends TestCase
                         'content' => 'Article 2 content',
                         'image_url' => 'https://example.com/image2.jpg',
                         'news_website' => 'full_count',
-                        'published_at' => '2023-06-20 04:19:47',
-                        'fetched_at' => now()->tz('UTC')->format('Y-m-d H:i:s'),
+                        'published_at' => Carbon::parse('2022-01-01 00:00:00', 'UTC')->tz('Asia/Tokyo')->format('Y-m-d H:i:s'),
+                        'fetched_at' => now()->format('Y-m-d H:i:s'),
                         'country' => ["japan"],
                         'language' => 'japanese',
                         'category' => ["general"],
@@ -172,7 +173,7 @@ class NewsParserForNewsDataIoTest extends TestCase
                         'image_url' => null,
                         'news_website' => 'full_count',
                         'published_at' => null,
-                        'fetched_at' => now()->tz('UTC')->format('Y-m-d H:i:s'),
+                        'fetched_at' => now()->format('Y-m-d H:i:s'),
                         'country' => ["japan"],
                         'language' => 'japanese',
                         'category' => null,

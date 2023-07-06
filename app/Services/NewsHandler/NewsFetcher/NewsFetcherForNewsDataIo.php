@@ -39,7 +39,7 @@ class NewsFetcherForNewsDataIo implements NewsFetcherInterface
             }
             $page = $fetchedNews['nextPage'];
         }
-        info(now()->format('Y-m-d H:i:s')."\tTotal credits used in this session: ".$creditsUsed."\n");
+        info(now()->format('Y-m-d H:i:s')."\tTotal credits used in this session: ".$creditsUsed);
 
         return ['results' => $articles];
     }
