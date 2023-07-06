@@ -53,6 +53,7 @@ class NewsHandler
             try {
                 $s3FileNames[] = $this->s3StorageService->writeToS3Bucket($article);
             } catch (\Exception $e) {
+                $s3FileNames[] = null;
                 report($e);
             }
         }
@@ -70,7 +71,7 @@ class NewsHandler
         }
     }
 
-    private function storeParsedNewsArticle(array $parsedNewsArticle, string $s3FileName, string $sourceName): void
+    private function storeParsedNewsArticle(array $parsedNewsArticle, ?string $s3FileName, string $sourceName): void
     {
         $newsWebsiteId = $this->getNewsWebsite($parsedNewsArticle['news_website']);
         $storedArticle = $this->storeArticle($parsedNewsArticle, $s3FileName, $newsWebsiteId, $sourceName);
