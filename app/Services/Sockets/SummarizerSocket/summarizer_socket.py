@@ -60,6 +60,7 @@ def handle_client():
     except TimeoutError as _e:
         pass
     except Exception as _e:
+        timeout_service.clear_timeout()
         print(f"Error in handling CLIENT request to summarize: ${_e}")
     finally:
         send_data(summarized_data)
