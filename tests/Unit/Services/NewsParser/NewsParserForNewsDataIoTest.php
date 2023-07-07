@@ -13,14 +13,14 @@ use Tests\TestCase;
  */
 class NewsParserForNewsDataIoTest extends TestCase
 {
+    private const FETCHED_AT = '2023-01-01 00:00:00';
     /**
      * @dataProvider responseProvider
      */
     public function testGetParsedData(array $mockedResponse, array $expectedParsedResult): void
     {
-        $fetchedAt = now()->format('Y-m-d H:i:s');
         $parser = new NewsParserForNewsDataIo();
-        $parsedData = $parser->getParsedData($mockedResponse, $fetchedAt);
+        $parsedData = $parser->getParsedData($mockedResponse, self::FETCHED_AT);
         foreach ($parsedData as $index => $article) {
             $this->assertValidParsedArticle($article, $expectedParsedResult[$index]);
         }
@@ -57,7 +57,7 @@ class NewsParserForNewsDataIoTest extends TestCase
         $this->assertEquals($expectedParsedArticle['image_url'], $originalParsedArticle['image_url']);
         $this->assertEquals($expectedParsedArticle['author'], $originalParsedArticle['author']);
         $this->assertEquals($expectedParsedArticle['published_at'], $originalParsedArticle['published_at']);
-        $this->assertNotNull($originalParsedArticle['fetched_at']);
+        $this->assertEquals(self::FETCHED_AT, $originalParsedArticle['fetched_at']);
     }
 
     private function responseProvider(): array
