@@ -95,36 +95,15 @@ class ApiNewsEndpointTest extends TestCase
         }
     }
 
-    public function testIndexReturnsValidPaginatedDataOrderedByIdIfPublishedDateIsSame(): void
-    {
-        Article::factory()->
-        count(10)->
-        state(new Sequence(
-            ['short_news' => 'a', 'published_at' => NOW()],
-        ))
-            ->create()
-        ;
-        $url = '/api/v1/news?count=5';
-        $response = $this->get($url);
-        $response->assertStatus(200);
-        $articlesFetched = $response['data'];
-
-        $url = $response['next_page_url'].'&count=5';
-        $response = $this->get($url);
-        $response->assertStatus(200);
-        $articlesFetched = array_merge($articlesFetched, $response['data']);
-        $this->assertArticlesAreProperlyOrderedBy($articlesFetched);
-    }
-
-    public function testIndexReturnsValidPaginatedDataOrderedByPublishedDate(): void
+    public function testIndexReturnsValidPaginatedDataOrderedByFetchedAt(): void
     {
         Article::factory()->
         count(20)->
         state(new Sequence(
-            ['short_news' => 'a', 'published_at' => '2020-06-20 00:00:00'],
-            ['short_news' => 'a', 'published_at' => '2021-06-20 00:00:00'],
-            ['short_news' => 'a', 'published_at' => '2022-06-20 00:00:00'],
-            ['short_news' => 'a', 'published_at' => '2023-06-20 00:00:00'],
+            ['short_news' => 'a', 'fetched_at' => NOW()],
+            ['short_news' => 'a', 'fetched_at' => NOW()],
+            ['short_news' => 'a', 'fetched_at' => NOW()],
+            ['short_news' => 'a', 'fetched_at' => NOW()],
         ))
             ->create()
         ;
@@ -143,6 +122,55 @@ class ApiNewsEndpointTest extends TestCase
         $this->assertArticlesAreProperlyOrderedBy($articlesFetched);
     }
 
+    public function testIndexReturnsValidPaginatedDataOrderedByPublishedDateIfFetchedAtIsSame(): void
+    {
+        $now = NOW();
+        Article::factory()->
+        count(20)->
+        state(new Sequence(
+            ['short_news' => 'a', 'published_at' => '2020-06-20 00:00:00', 'fetched_at' => $now],
+            ['short_news' => 'a', 'published_at' => '2021-06-20 00:00:00', 'fetched_at' => $now],
+            ['short_news' => 'a', 'published_at' => '2022-06-20 00:00:00', 'fetched_at' => $now],
+            ['short_news' => 'a', 'published_at' => '2023-06-20 00:00:00', 'fetched_at' => $now],
+        ))
+            ->create()
+        ;
+        $url = '/api/v1/news?count=5';
+        $response = $this->get($url);
+        $response->assertStatus(200);
+        $articlesFetched = $response['data'];
+        $next_page_url = $response['next_page_url'];
+
+        for ($x = 0; $x < 3; ++$x) {
+            $response = $this->fetchPage($next_page_url.'&count=5');
+            $next_page_url = $response[0];
+            $articlesFetched = array_merge($articlesFetched, $response[1]);
+        }
+
+        $this->assertArticlesAreProperlyOrderedBy($articlesFetched);
+    }
+
+    public function testIndexReturnsValidPaginatedDataOrderedByIdIfPublishedAtAndFetchedAtAreSame(): void
+    {
+        Article::factory()->
+        count(10)->
+        state(new Sequence(
+            ['short_news' => 'a', 'published_at' => NOW(), 'fetched_at' => NOW()],
+        ))
+            ->create()
+        ;
+        $url = '/api/v1/news?count=5';
+        $response = $this->get($url);
+        $response->assertStatus(200);
+        $articlesFetched = $response['data'];
+
+        $url = $response['next_page_url'].'&count=5';
+        $response = $this->get($url);
+        $response->assertStatus(200);
+        $articlesFetched = array_merge($articlesFetched, $response['data']);
+        $this->assertArticlesAreProperlyOrderedBy($articlesFetched);
+    }
+
     private function fetchPage($page_url): array
     {
         $response = $this->get($page_url);
@@ -156,9 +184,12 @@ class ApiNewsEndpointTest extends TestCase
         for ($x = 0; $x < count($articles) - 1; ++$x) {
             $currentArticle = $articles[$x];
             $nextArticle = $articles[$x + 1];
-            $this->assertLessThanOrEqual($currentArticle['published_at'], $nextArticle['published_at']);
-            if ($currentArticle['published_at'] === $nextArticle['published_at']) {
-                $this->assertGreaterThan($currentArticle['id'], $nextArticle['id']);
+            $this->assertLessThanOrEqual($currentArticle['fetched_at'], $nextArticle['fetched_at']);
+            if ($currentArticle['fetched_at'] === $nextArticle['fetched_at']) {
+                $this->assertLessThanOrEqual($currentArticle['published_at'], $nextArticle['published_at']);
+                if ($currentArticle['published_at'] === $nextArticle['published_at']) {
+                    $this->assertGreaterThan($currentArticle['id'], $nextArticle['id']);
+                }
             }
         }
     }
