@@ -18,45 +18,46 @@ class NewsParserForNewsDataIoTest extends TestCase
      */
     public function testGetParsedData(array $mockedResponse, array $expectedParsedResult): void
     {
+        $fetchedAt = now()->format('Y-m-d H:i:s');
         $parser = new NewsParserForNewsDataIo();
-        $parsedData = $parser->getParsedData($mockedResponse);
+        $parsedData = $parser->getParsedData($mockedResponse, $fetchedAt);
         foreach ($parsedData as $index => $article) {
             $this->assertValidParsedArticle($article, $expectedParsedResult[$index]);
         }
     }
 
-    private function assertValidParsedArticle(array $parsedArticle, array $expectedParsedArticle): void
+    private function assertValidParsedArticle(array $originalParsedArticle, array $expectedParsedArticle): void
     {
-        $this->assertValidParsedArticleKeys($parsedArticle);
-        $this->assertValidParsedArticleData($parsedArticle, $expectedParsedArticle);
+        $this->assertValidParsedArticleKeys($originalParsedArticle);
+        $this->assertValidParsedArticleData($originalParsedArticle, $expectedParsedArticle);
     }
 
-    private function assertValidParsedArticleKeys(array $parsedArticle): void
+    private function assertValidParsedArticleKeys(array $originalParsedArticle): void
     {
-        $this->assertArrayHasKey('headline', $parsedArticle);
-        $this->assertArrayHasKey('article_url', $parsedArticle);
-        $this->assertArrayHasKey('author', $parsedArticle);
-        $this->assertArrayHasKey('content', $parsedArticle);
-        $this->assertArrayHasKey('image_url', $parsedArticle);
-        $this->assertArrayHasKey('news_website', $parsedArticle);
-        $this->assertArrayHasKey('published_at', $parsedArticle);
-        $this->assertArrayHasKey('fetched_at', $parsedArticle);
-        $this->assertArrayHasKey('country', $parsedArticle);
-        $this->assertArrayHasKey('language', $parsedArticle);
-        $this->assertArrayHasKey('category', $parsedArticle);
-        $this->assertArrayHasKey('keywords', $parsedArticle);
+        $this->assertArrayHasKey('headline', $originalParsedArticle);
+        $this->assertArrayHasKey('article_url', $originalParsedArticle);
+        $this->assertArrayHasKey('author', $originalParsedArticle);
+        $this->assertArrayHasKey('content', $originalParsedArticle);
+        $this->assertArrayHasKey('image_url', $originalParsedArticle);
+        $this->assertArrayHasKey('news_website', $originalParsedArticle);
+        $this->assertArrayHasKey('published_at', $originalParsedArticle);
+        $this->assertArrayHasKey('fetched_at', $originalParsedArticle);
+        $this->assertArrayHasKey('country', $originalParsedArticle);
+        $this->assertArrayHasKey('language', $originalParsedArticle);
+        $this->assertArrayHasKey('category', $originalParsedArticle);
+        $this->assertArrayHasKey('keywords', $originalParsedArticle);
     }
 
-    private function assertValidParsedArticleData(array $parsedArticle, array $expectedParsedArticle): void
+    private function assertValidParsedArticleData(array $originalParsedArticle, array $expectedParsedArticle): void
     {
-        $this->assertEquals($expectedParsedArticle['headline'], $parsedArticle['headline']);
-        $this->assertEquals($expectedParsedArticle['article_url'], $parsedArticle['article_url']);
-        $this->assertEquals($expectedParsedArticle['news_website'], $parsedArticle['news_website']);
-        $this->assertEquals($expectedParsedArticle['content'], $parsedArticle['content']);
-        $this->assertEquals($expectedParsedArticle['image_url'], $parsedArticle['image_url']);
-        $this->assertEquals($expectedParsedArticle['author'], $parsedArticle['author']);
-        $this->assertEquals($expectedParsedArticle['published_at'], $parsedArticle['published_at']);
-        $this->assertNotNull($parsedArticle['fetched_at']);
+        $this->assertEquals($expectedParsedArticle['headline'], $originalParsedArticle['headline']);
+        $this->assertEquals($expectedParsedArticle['article_url'], $originalParsedArticle['article_url']);
+        $this->assertEquals($expectedParsedArticle['news_website'], $originalParsedArticle['news_website']);
+        $this->assertEquals($expectedParsedArticle['content'], $originalParsedArticle['content']);
+        $this->assertEquals($expectedParsedArticle['image_url'], $originalParsedArticle['image_url']);
+        $this->assertEquals($expectedParsedArticle['author'], $originalParsedArticle['author']);
+        $this->assertEquals($expectedParsedArticle['published_at'], $originalParsedArticle['published_at']);
+        $this->assertNotNull($originalParsedArticle['fetched_at']);
     }
 
     private function responseProvider(): array
@@ -100,7 +101,6 @@ class NewsParserForNewsDataIoTest extends TestCase
                         'image_url' => 'https://example.com/image1.jpg',
                         'news_website' => 'full_count',
                         'published_at' => Carbon::parse('2023-01-01 00:00:00', 'UTC')->tz('Asia/Tokyo')->format('Y-m-d H:i:s'),
-                        'fetched_at' => now()->format('Y-m-d H:i:s'),
                         'country' => '["japan","india"]',
                         'language' => 'japanese',
                         'category' => '["general","business"]',
@@ -137,7 +137,6 @@ class NewsParserForNewsDataIoTest extends TestCase
                         'image_url' => 'https://example.com/image2.jpg',
                         'news_website' => 'full_count',
                         'published_at' => Carbon::parse('2022-01-01 00:00:00', 'UTC')->tz('Asia/Tokyo')->format('Y-m-d H:i:s'),
-                        'fetched_at' => now()->format('Y-m-d H:i:s'),
                         'country' => ["japan"],
                         'language' => 'japanese',
                         'category' => ["general"],
@@ -173,7 +172,6 @@ class NewsParserForNewsDataIoTest extends TestCase
                         'image_url' => null,
                         'news_website' => 'full_count',
                         'published_at' => null,
-                        'fetched_at' => now()->format('Y-m-d H:i:s'),
                         'country' => ["japan"],
                         'language' => 'japanese',
                         'category' => null,

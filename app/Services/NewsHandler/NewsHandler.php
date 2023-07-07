@@ -31,9 +31,10 @@ class NewsHandler
     {
         $parsedUntilDateTime = $untilDate ?
         Carbon::parse($untilDate) : $this->dateTimeSixHoursAgo();
+        $fetchedAt = now()->format('Y-m-d H:i:s');
         $response = $this->newsFetcherForNewsDataIo->fetch($parsedUntilDateTime);
         $s3FileNames = $this->storeArticlesToS3Bucket($response['results']);
-        $parsedNewsArticles = $this->newsParserForNewsDataIo->getParsedData($response);
+        $parsedNewsArticles = $this->newsParserForNewsDataIo->getParsedData($response, $fetchedAt);
         $this->storeParsedNewsArticles($parsedNewsArticles, $s3FileNames, 'newsDataIoApi');
     }
 
