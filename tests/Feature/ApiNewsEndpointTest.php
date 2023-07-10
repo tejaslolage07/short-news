@@ -97,17 +97,17 @@ class ApiNewsEndpointTest extends TestCase
 
     public function testIndexReturnsValidPaginatedDataOrderedByFetchedAt(): void
     {
-        $now1= NOW();
-        $now2 = NOW();
-        $now3 = NOW();
-        $now4 = NOW();
+        $time1 = NOW();
+        $time2 = NOW()->addMinutes(1);
+        $time3 = NOW()->addMinutes(2);
+        $time4 = NOW()->addMinutes(3);
         Article::factory()->
         count(20)->
         state(new Sequence(
-            ['short_news' => 'a', 'fetched_at' => $now1],
-            ['short_news' => 'a', 'fetched_at' => $now2],
-            ['short_news' => 'a', 'fetched_at' => $now3],
-            ['short_news' => 'a', 'fetched_at' => $now4],
+            ['short_news' => 'a', 'fetched_at' => $time1],
+            ['short_news' => 'a', 'fetched_at' => $time2],
+            ['short_news' => 'a', 'fetched_at' => $time3],
+            ['short_news' => 'a', 'fetched_at' => $time4],
         ))
             ->create()
         ;
