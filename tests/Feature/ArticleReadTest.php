@@ -194,12 +194,12 @@ class ArticleReadTest extends TestCase
             $nextArticle = $articles[$x + 1];
 
             $this->assertTrue($currentArticle['fetched_at'] >= $nextArticle['fetched_at']);
-            if ($currentArticle['fetched_at'] < $nextArticle['fetched_at']) {
+            if ($currentArticle['fetched_at'] > $nextArticle['fetched_at']) {
                 continue;
             }
 
             $this->assertTrue($currentArticle['published_at'] >= $nextArticle['published_at']);
-            if ($currentArticle['published_at'] < $nextArticle['published_at']) {
+            if ($currentArticle['published_at'] > $nextArticle['published_at']) {
                 continue;
             }
 
