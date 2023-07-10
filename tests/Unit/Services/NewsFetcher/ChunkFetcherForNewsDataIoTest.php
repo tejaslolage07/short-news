@@ -43,7 +43,7 @@ class ChunkFetcherForNewsDataIoTest extends TestCase
         $chunkFetcher->fetchChunk();
     }
 
-    public function testRequest(): void
+    public function testValidRequest(): void
     {
         Http::assertSent(function (Request $request) {
             return $request->hasHeader('X-ACCESS-KEY', config('services.newsdataio.key'))
