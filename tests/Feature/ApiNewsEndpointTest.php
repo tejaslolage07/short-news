@@ -160,8 +160,12 @@ class ApiNewsEndpointTest extends TestCase
         $fetchedAt = NOW();
 
         Article::factory()->
-        count(10)->
-        create(['short_news' => 'a', 'published_at' => $publishedAt, 'fetched_at' => $fetchedAt]);
+            count(10)->
+            create([
+                'short_news' => 'a',
+                'published_at' => $publishedAt,
+                'fetched_at' => $fetchedAt,
+            ]);
         $url = '/api/v1/news?count=5';
         $response = $this->get($url);
         $response->assertStatus(200);
@@ -182,18 +186,23 @@ class ApiNewsEndpointTest extends TestCase
         return [$response['next_page_url'], $response['data']];
     }
 
-    private function assertArticlesAreProperlyOrderedBy($articles): void
+    private function assertArticlesAreProperlyOrderedBy(array $articles): void
     {
         for ($x = 0; $x < count($articles) - 1; ++$x) {
             $currentArticle = $articles[$x];
             $nextArticle = $articles[$x + 1];
+
             $this->assertLessThanOrEqual($currentArticle['fetched_at'], $nextArticle['fetched_at']);
-            if ($currentArticle['fetched_at'] === $nextArticle['fetched_at']) {
-                $this->assertLessThanOrEqual($currentArticle['published_at'], $nextArticle['published_at']);
-                if ($currentArticle['published_at'] === $nextArticle['published_at']) {
-                    $this->assertGreaterThan($currentArticle['id'], $nextArticle['id']);
-                }
+            if ($currentArticle['fetched_at'] < $nextArticle['fetched_at']) {
+                continue;
             }
+
+            $this->assertLessThanOrEqual($currentArticle['published_at'], $nextArticle['published_at']);
+            if ($currentArticle['published_at'] < $nextArticle['published_at']) {
+                continue;
+            }
+
+            $this->assertGreaterThan($currentArticle['id'], $nextArticle['id']);
         }
     }
 }
