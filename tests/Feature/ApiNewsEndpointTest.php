@@ -161,11 +161,7 @@ class ApiNewsEndpointTest extends TestCase
 
         Article::factory()->
         count(10)->
-        state(new Sequence(
-            ['short_news' => 'a', 'published_at' => $publishedAt, 'fetched_at' => $fetchedAt],
-        ))
-            ->create()
-        ;
+        create(['short_news' => 'a', 'published_at' => $publishedAt, 'fetched_at' => $fetchedAt]);
         $url = '/api/v1/news?count=5';
         $response = $this->get($url);
         $response->assertStatus(200);
@@ -178,7 +174,7 @@ class ApiNewsEndpointTest extends TestCase
         $this->assertArticlesAreProperlyOrderedBy($articlesFetched);
     }
 
-    private function fetchPage($page_url): array
+    private function fetchPage(string $page_url): array
     {
         $response = $this->get($page_url);
         $response->assertStatus(200);
