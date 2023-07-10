@@ -15,7 +15,7 @@ use Tests\TestCase;
 class ChunkFetcherForNewsDataIoTest extends TestCase
 {
     /**
-     * @dataProvider dataProvider
+     * @dataProvider newsDataIoDataProvider
      */
     public function testChunkFetch(array $newsData): void
     {
@@ -43,7 +43,7 @@ class ChunkFetcherForNewsDataIoTest extends TestCase
         $chunkFetcher->fetchChunk();
     }
 
-    private function testRequest(): void
+    public function testRequest(): void
     {
         Http::assertSent(function (Request $request) {
             return $request->hasHeader('X-ACCESS-KEY', config('services.newsdataio.key'))
@@ -53,7 +53,7 @@ class ChunkFetcherForNewsDataIoTest extends TestCase
         });
     }
 
-    private function dataProvider(): array
+    public static function newsDataIoDataProvider(): array
     {
         return [
             [['articles' => [

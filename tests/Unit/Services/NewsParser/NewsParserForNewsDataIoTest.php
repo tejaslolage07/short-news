@@ -9,7 +9,7 @@ use Tests\TestCase;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \App\Services\NewsHandler\NewsParser\NewsParserForNewsDataIo
  */
 class NewsParserForNewsDataIoTest extends TestCase
 {
@@ -25,41 +25,7 @@ class NewsParserForNewsDataIoTest extends TestCase
         }
     }
 
-    private function assertValidParsedArticle(array $parsedArticle, array $expectedParsedArticle): void
-    {
-        $this->assertValidParsedArticleKeys($parsedArticle);
-        $this->assertValidParsedArticleData($parsedArticle, $expectedParsedArticle);
-    }
-
-    private function assertValidParsedArticleKeys(array $parsedArticle): void
-    {
-        $this->assertArrayHasKey('headline', $parsedArticle);
-        $this->assertArrayHasKey('article_url', $parsedArticle);
-        $this->assertArrayHasKey('author', $parsedArticle);
-        $this->assertArrayHasKey('content', $parsedArticle);
-        $this->assertArrayHasKey('image_url', $parsedArticle);
-        $this->assertArrayHasKey('news_website', $parsedArticle);
-        $this->assertArrayHasKey('published_at', $parsedArticle);
-        $this->assertArrayHasKey('fetched_at', $parsedArticle);
-        $this->assertArrayHasKey('country', $parsedArticle);
-        $this->assertArrayHasKey('language', $parsedArticle);
-        $this->assertArrayHasKey('category', $parsedArticle);
-        $this->assertArrayHasKey('keywords', $parsedArticle);
-    }
-
-    private function assertValidParsedArticleData(array $parsedArticle, array $expectedParsedArticle): void
-    {
-        $this->assertEquals($expectedParsedArticle['headline'], $parsedArticle['headline']);
-        $this->assertEquals($expectedParsedArticle['article_url'], $parsedArticle['article_url']);
-        $this->assertEquals($expectedParsedArticle['news_website'], $parsedArticle['news_website']);
-        $this->assertEquals($expectedParsedArticle['content'], $parsedArticle['content']);
-        $this->assertEquals($expectedParsedArticle['image_url'], $parsedArticle['image_url']);
-        $this->assertEquals($expectedParsedArticle['author'], $parsedArticle['author']);
-        $this->assertEquals($expectedParsedArticle['published_at'], $parsedArticle['published_at']);
-        $this->assertNotNull($parsedArticle['fetched_at']);
-    }
-
-    private function responseProvider(): array
+    public static function responseProvider(): array
     {
         return [
             [
@@ -119,12 +85,12 @@ class NewsParserForNewsDataIoTest extends TestCase
                             'pubDate' => '2022-01-01 00:00:00',
                             'image_url' => 'https://example.com/image2.jpg',
                             'source_id' => 'full_count',
-                            'country' => ["japan"],
+                            'country' => ['japan'],
                             'language' => 'japanese',
-                            'category' => ["general"],
+                            'category' => ['general'],
                             'keywords' => [
-                                "keyword1"
-                                ],
+                                'keyword1',
+                            ],
                         ],
                     ],
                 ],
@@ -138,10 +104,10 @@ class NewsParserForNewsDataIoTest extends TestCase
                         'news_website' => 'full_count',
                         'published_at' => Carbon::parse('2022-01-01 00:00:00', 'UTC')->tz('Asia/Tokyo')->format('Y-m-d H:i:s'),
                         'fetched_at' => now()->format('Y-m-d H:i:s'),
-                        'country' => ["japan"],
+                        'country' => ['japan'],
                         'language' => 'japanese',
-                        'category' => ["general"],
-                        'keywords' => ["keyword1"],
+                        'category' => ['general'],
+                        'keywords' => ['keyword1'],
                     ],
                 ],
             ],
@@ -156,7 +122,7 @@ class NewsParserForNewsDataIoTest extends TestCase
                             'pubDate' => null,
                             'image_url' => null,
                             'source_id' => 'full_count',
-                            'country' => ["japan"],
+                            'country' => ['japan'],
                             'language' => 'japanese',
                             'category' => null,
                             'keywords' => null,
@@ -174,7 +140,7 @@ class NewsParserForNewsDataIoTest extends TestCase
                         'news_website' => 'full_count',
                         'published_at' => null,
                         'fetched_at' => now()->format('Y-m-d H:i:s'),
-                        'country' => ["japan"],
+                        'country' => ['japan'],
                         'language' => 'japanese',
                         'category' => null,
                         'keywords' => null,
@@ -182,5 +148,39 @@ class NewsParserForNewsDataIoTest extends TestCase
                 ],
             ],
         ];
+    }
+
+    private function assertValidParsedArticle(array $parsedArticle, array $expectedParsedArticle): void
+    {
+        $this->assertValidParsedArticleKeys($parsedArticle);
+        $this->assertValidParsedArticleData($parsedArticle, $expectedParsedArticle);
+    }
+
+    private function assertValidParsedArticleKeys(array $parsedArticle): void
+    {
+        $this->assertArrayHasKey('headline', $parsedArticle);
+        $this->assertArrayHasKey('article_url', $parsedArticle);
+        $this->assertArrayHasKey('author', $parsedArticle);
+        $this->assertArrayHasKey('content', $parsedArticle);
+        $this->assertArrayHasKey('image_url', $parsedArticle);
+        $this->assertArrayHasKey('news_website', $parsedArticle);
+        $this->assertArrayHasKey('published_at', $parsedArticle);
+        $this->assertArrayHasKey('fetched_at', $parsedArticle);
+        $this->assertArrayHasKey('country', $parsedArticle);
+        $this->assertArrayHasKey('language', $parsedArticle);
+        $this->assertArrayHasKey('category', $parsedArticle);
+        $this->assertArrayHasKey('keywords', $parsedArticle);
+    }
+
+    private function assertValidParsedArticleData(array $parsedArticle, array $expectedParsedArticle): void
+    {
+        $this->assertEquals($expectedParsedArticle['headline'], $parsedArticle['headline']);
+        $this->assertEquals($expectedParsedArticle['article_url'], $parsedArticle['article_url']);
+        $this->assertEquals($expectedParsedArticle['news_website'], $parsedArticle['news_website']);
+        $this->assertEquals($expectedParsedArticle['content'], $parsedArticle['content']);
+        $this->assertEquals($expectedParsedArticle['image_url'], $parsedArticle['image_url']);
+        $this->assertEquals($expectedParsedArticle['author'], $parsedArticle['author']);
+        $this->assertEquals($expectedParsedArticle['published_at'], $parsedArticle['published_at']);
+        $this->assertNotNull($parsedArticle['fetched_at']);
     }
 }
