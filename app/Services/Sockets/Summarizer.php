@@ -13,7 +13,7 @@ class Summarizer
         $this->formatAndSendToSocket($prompt, $maxInputTokens);
         $output = $this->readFromSocket();
         $this->closeConnection();
-        if ('' === $output) {
+        if ('' === $output || null === $output) {
             throw new \Exception('No summary returned, check the summarizer logs for errors!');
         }
 
@@ -39,7 +39,7 @@ class Summarizer
         }
     }
 
-    private function formatAndSendToSocket(string $prompt, int $maxInputTokens) : void
+    private function formatAndSendToSocket(string $prompt, int $maxInputTokens): void
     {
         $data = $this->formatData($prompt, $maxInputTokens);
         $status = socket_write($this->socket, $data);

@@ -63,7 +63,7 @@ jobs:
       - name: Run Python SummarizerSocket
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: python3 app/Services/Sockets/SummarizerSocket/SummarizerSocket.py &
+        run: python3 app/Services/Sockets/SummarizerSocket/summarizer_socket.py &
 
       - name: Run Testsuite
         run: |
