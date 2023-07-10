@@ -109,7 +109,7 @@ class NewsHandlerTest extends TestCase
         Storage::disk('s3')->assertExists($directory.$fileName);
     }
 
-    private function getFakeResponseWhenDatePassed(): array
+    public static function getFakeResponseWhenDatePassed(): array
     {
         return [
             [
@@ -207,7 +207,7 @@ class NewsHandlerTest extends TestCase
         ];
     }
 
-    private function getFakeResponseWhenDateNotPassed(): array
+    public static function getFakeResponseWhenDateNotPassed(): array
     {
         $UTCnow = now('UTC')->format('Y-m-d H:i:s');
         $UTCnowSub5Hours = now('UTC')->subHours(5)->format('Y-m-d H:i:s');
