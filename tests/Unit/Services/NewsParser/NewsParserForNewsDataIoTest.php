@@ -18,10 +18,11 @@ class NewsParserForNewsDataIoTest extends TestCase
      */
     public function testGetParsedData(array $mockedResponse, array $expectedParsedResult): void
     {
+        $fetchedAt = '2023-01-01 00:00:00';
         $parser = new NewsParserForNewsDataIo();
-        $parsedData = $parser->getParsedData($mockedResponse);
+        $parsedData = $parser->getParsedData($mockedResponse, $fetchedAt);
         foreach ($parsedData as $index => $article) {
-            $this->assertValidParsedArticle($article, $expectedParsedResult[$index]);
+            $this->assertValidParsedArticle($article, $expectedParsedResult[$index], $fetchedAt);
         }
     }
 
@@ -66,7 +67,6 @@ class NewsParserForNewsDataIoTest extends TestCase
                         'image_url' => 'https://example.com/image1.jpg',
                         'news_website' => 'full_count',
                         'published_at' => Carbon::parse('2023-01-01 00:00:00', 'UTC')->tz('Asia/Tokyo')->format('Y-m-d H:i:s'),
-                        'fetched_at' => now()->format('Y-m-d H:i:s'),
                         'country' => '["japan","india"]',
                         'language' => 'japanese',
                         'category' => '["general","business"]',
