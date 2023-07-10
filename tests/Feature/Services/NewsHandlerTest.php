@@ -87,28 +87,6 @@ class NewsHandlerTest extends TestCase
         }
     }
 
-    private function assertValidArticle(array $article): void
-    {
-        $this->assertDatabaseHas('articles', [
-            'headline' => $article['headline'],
-            'article_url' => $article['article_url'],
-            'author' => $article['author'],
-            'image_url' => $article['image_url'],
-            'published_at' => $article['published_at'],
-            'short_news' => null,
-        ]);
-    }
-
-    private function assertArticlePresentInS3(array $article): void
-    {
-        $directory = '/short-news/articles/';
-        $fileName = Article::whereArticleUrl($article['article_url'])
-            ->first()
-            ->article_s3_filename
-        ;
-        Storage::disk('s3')->assertExists($directory.$fileName);
-    }
-
     public static function getFakeResponseWhenDatePassed(): array
     {
         return [
@@ -348,5 +326,27 @@ class NewsHandlerTest extends TestCase
                 ],
             ],
         ];
+    }
+
+    private function assertValidArticle(array $article): void
+    {
+        $this->assertDatabaseHas('articles', [
+            'headline' => $article['headline'],
+            'article_url' => $article['article_url'],
+            'author' => $article['author'],
+            'image_url' => $article['image_url'],
+            'published_at' => $article['published_at'],
+            'short_news' => null,
+        ]);
+    }
+
+    private function assertArticlePresentInS3(array $article): void
+    {
+        $directory = S3StorageService::LOCAL_DIR;
+        $fileName = Article::whereArticleUrl($article['article_url'])
+            ->first()
+            ->article_s3_filename
+        ;
+        Storage::disk('s3')->assertExists($directory.$fileName.S3StorageService::EXT);
     }
 }
