@@ -12,6 +12,7 @@ class ArticleController extends Controller
         return Article::with('newsWebsite')
             ->whereNotNull('short_news')
             ->whereNotNull('news_website_id')
+            ->orderbyDesc('fetched_at')
             ->orderByDesc('published_at')
             ->orderBy('id')
             ->cursorPaginate(perPage: $request->count ?? 100)
