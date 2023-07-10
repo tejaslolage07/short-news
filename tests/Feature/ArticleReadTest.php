@@ -10,9 +10,9 @@ use Tests\TestCase;
 /**
  * @internal
  *
- * @coversNothing
+ * @covers \App\Http\Controllers\ArticleController
  */
-class ApiNewsEndpointTest extends TestCase
+class ArticleReadTest extends TestCase
 {
     use DatabaseTransactions;
 
@@ -50,14 +50,14 @@ class ApiNewsEndpointTest extends TestCase
 
     public function testIndexReturnsValidAttributes(): void
     {
-        Article::factory()->
-        count(100)->
-        state(new Sequence(
-            ['short_news' => 'something', 'news_website_id' => null],
-            ['short_news' => ''],
-            ['news_website_id' => null],
-            ['short_news' => 'something']
-        ))
+        Article::factory()
+            ->count(100)
+            ->state(new Sequence(
+                ['short_news' => 'something', 'news_website_id' => null],
+                ['short_news' => ''],
+                ['news_website_id' => null],
+                ['short_news' => 'something']
+            ))
             ->create()
         ;
 
@@ -76,14 +76,14 @@ class ApiNewsEndpointTest extends TestCase
 
     public function testIndexReturnsValidArticles(): void
     {
-        Article::factory()->
-        count(100)->
-        state(new Sequence(
-            ['short_news' => 'something', 'news_website_id' => null],
-            ['short_news' => null],
-            ['news_website_id' => null],
-            ['short_news' => 'something']
-        ))
+        Article::factory()
+            ->count(100)
+            ->state(new Sequence(
+                ['short_news' => 'something', 'news_website_id' => null],
+                ['short_news' => null],
+                ['news_website_id' => null],
+                ['short_news' => 'something']
+            ))
             ->create()
         ;
 
@@ -101,14 +101,14 @@ class ApiNewsEndpointTest extends TestCase
         $time2 = NOW()->addMinutes(1);
         $time3 = NOW()->addMinutes(2);
         $time4 = NOW()->addMinutes(3);
-        Article::factory()->
-        count(20)->
-        state(new Sequence(
-            ['short_news' => 'a', 'fetched_at' => $time1],
-            ['short_news' => 'a', 'fetched_at' => $time2],
-            ['short_news' => 'a', 'fetched_at' => $time3],
-            ['short_news' => 'a', 'fetched_at' => $time4],
-        ))
+        Article::factory()
+            ->count(20)
+            ->state(new Sequence(
+                ['short_news' => 'a', 'fetched_at' => $time1],
+                ['short_news' => 'a', 'fetched_at' => $time2],
+                ['short_news' => 'a', 'fetched_at' => $time3],
+                ['short_news' => 'a', 'fetched_at' => $time4],
+            ))
             ->create()
         ;
         $url = '/api/v1/news?count=5';
@@ -129,14 +129,14 @@ class ApiNewsEndpointTest extends TestCase
     public function testIndexReturnsValidPaginatedDataOrderedByPublishedDateIfFetchedAtIsSame(): void
     {
         $now = NOW();
-        Article::factory()->
-        count(20)->
-        state(new Sequence(
-            ['short_news' => 'a', 'published_at' => '2020-06-20 00:00:00', 'fetched_at' => $now],
-            ['short_news' => 'a', 'published_at' => '2021-06-20 00:00:00', 'fetched_at' => $now],
-            ['short_news' => 'a', 'published_at' => '2022-06-20 00:00:00', 'fetched_at' => $now],
-            ['short_news' => 'a', 'published_at' => '2023-06-20 00:00:00', 'fetched_at' => $now],
-        ))
+        Article::factory()
+            ->count(20)
+            ->state(new Sequence(
+                ['short_news' => 'a', 'published_at' => '2020-06-20 00:00:00', 'fetched_at' => $now],
+                ['short_news' => 'a', 'published_at' => '2021-06-20 00:00:00', 'fetched_at' => $now],
+                ['short_news' => 'a', 'published_at' => '2022-06-20 00:00:00', 'fetched_at' => $now],
+                ['short_news' => 'a', 'published_at' => '2023-06-20 00:00:00', 'fetched_at' => $now],
+            ))
             ->create()
         ;
         $url = '/api/v1/news?count=5';
@@ -159,13 +159,14 @@ class ApiNewsEndpointTest extends TestCase
         $publishedAt = NOW();
         $fetchedAt = NOW();
 
-        Article::factory()->
-            count(10)->
-            create([
+        Article::factory()
+            ->count(10)
+            ->create([
                 'short_news' => 'a',
                 'published_at' => $publishedAt,
                 'fetched_at' => $fetchedAt,
-            ]);
+            ])
+        ;
         $url = '/api/v1/news?count=5';
         $response = $this->get($url);
         $response->assertStatus(200);
