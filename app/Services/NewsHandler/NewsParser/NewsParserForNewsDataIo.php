@@ -7,25 +7,24 @@ use Carbon\Carbon;
 
 class NewsParserForNewsDataIo implements NewsParserInterface
 {
-    public function getParsedData(array $response): array
+    public function getParsedData(array $response, string $fetchedAt): array
     {
         $articles = $response['results'];
         $parsedData = [];
         foreach ($articles as $article) {
-            $parsedArticle = $this->parseArticle($article);
+            $parsedArticle = $this->parseArticle($article, $fetchedAt);
             $parsedData[] = $parsedArticle;
         }
 
         return $parsedData;
     }
 
-    private function parseArticle(array $article): array
+    private function parseArticle(array $article, $fetchedAt): array
     {
         $formattedDate = null;
         if ($article['pubDate']) {
             $formattedDate = $this->formatDate($article['pubDate']);
         }
-        $currentTime = now()->format('Y-m-d H:i:s');
         $author = $this->getAuthor($article);
         $countries = $this->getCountries($article);
         $language = $this->getLanguageEnumValue($article['language']);
@@ -40,7 +39,7 @@ class NewsParserForNewsDataIo implements NewsParserInterface
             'image_url' => $article['image_url'],
             'news_website' => $article['source_id'],
             'published_at' => $formattedDate,
-            'fetched_at' => $currentTime,
+            'fetched_at' => $fetchedAt,
             'country' => $countries,
             'language' => $language,
             'category' => $categories,
