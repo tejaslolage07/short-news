@@ -97,13 +97,17 @@ class ApiNewsEndpointTest extends TestCase
 
     public function testIndexReturnsValidPaginatedDataOrderedByFetchedAt(): void
     {
+        $now1= NOW();
+        $now2 = NOW();
+        $now3 = NOW();
+        $now4 = NOW();
         Article::factory()->
         count(20)->
         state(new Sequence(
-            ['short_news' => 'a', 'fetched_at' => NOW()],
-            ['short_news' => 'a', 'fetched_at' => NOW()],
-            ['short_news' => 'a', 'fetched_at' => NOW()],
-            ['short_news' => 'a', 'fetched_at' => NOW()],
+            ['short_news' => 'a', 'fetched_at' => $now1],
+            ['short_news' => 'a', 'fetched_at' => $now2],
+            ['short_news' => 'a', 'fetched_at' => $now3],
+            ['short_news' => 'a', 'fetched_at' => $now4],
         ))
             ->create()
         ;
@@ -152,10 +156,13 @@ class ApiNewsEndpointTest extends TestCase
 
     public function testIndexReturnsValidPaginatedDataOrderedByIdIfPublishedAtAndFetchedAtAreSame(): void
     {
+        $publishedAt = NOW();
+        $fetchedAt = NOW();
+
         Article::factory()->
         count(10)->
         state(new Sequence(
-            ['short_news' => 'a', 'published_at' => NOW(), 'fetched_at' => NOW()],
+            ['short_news' => 'a', 'published_at' => $publishedAt, 'fetched_at' => $fetchedAt],
         ))
             ->create()
         ;
