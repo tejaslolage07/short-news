@@ -13,51 +13,51 @@ use Tests\TestCase;
  */
 class NewsParserForNewsDataIoTest extends TestCase
 {
-    private const FETCHED_AT = '2023-01-01 00:00:00';
     /**
      * @dataProvider responseProvider
      */
     public function testGetParsedData(array $mockedResponse, array $expectedParsedResult): void
     {
+        $fetchedAt = '2023-01-01 00:00:00';
         $parser = new NewsParserForNewsDataIo();
-        $parsedData = $parser->getParsedData($mockedResponse, self::FETCHED_AT);
+        $parsedData = $parser->getParsedData($mockedResponse, $fetchedAt);
         foreach ($parsedData as $index => $article) {
-            $this->assertValidParsedArticle($article, $expectedParsedResult[$index]);
+            $this->assertValidParsedArticle($article, $expectedParsedResult[$index], $fetchedAt);
         }
     }
 
-    private function assertValidParsedArticle(array $originalParsedArticle, array $expectedParsedArticle): void
+    private function assertValidParsedArticle(array $parsedArticle, array $expectedParsedArticle, string $fetchedAt): void
     {
-        $this->assertValidParsedArticleKeys($originalParsedArticle);
-        $this->assertValidParsedArticleData($originalParsedArticle, $expectedParsedArticle);
+        $this->assertValidParsedArticleKeys($parsedArticle);
+        $this->assertValidParsedArticleData($parsedArticle, $expectedParsedArticle, $fetchedAt);
     }
 
-    private function assertValidParsedArticleKeys(array $originalParsedArticle): void
+    private function assertValidParsedArticleKeys(array $parsedArticle): void
     {
-        $this->assertArrayHasKey('headline', $originalParsedArticle);
-        $this->assertArrayHasKey('article_url', $originalParsedArticle);
-        $this->assertArrayHasKey('author', $originalParsedArticle);
-        $this->assertArrayHasKey('content', $originalParsedArticle);
-        $this->assertArrayHasKey('image_url', $originalParsedArticle);
-        $this->assertArrayHasKey('news_website', $originalParsedArticle);
-        $this->assertArrayHasKey('published_at', $originalParsedArticle);
-        $this->assertArrayHasKey('fetched_at', $originalParsedArticle);
-        $this->assertArrayHasKey('country', $originalParsedArticle);
-        $this->assertArrayHasKey('language', $originalParsedArticle);
-        $this->assertArrayHasKey('category', $originalParsedArticle);
-        $this->assertArrayHasKey('keywords', $originalParsedArticle);
+        $this->assertArrayHasKey('headline', $parsedArticle);
+        $this->assertArrayHasKey('article_url', $parsedArticle);
+        $this->assertArrayHasKey('author', $parsedArticle);
+        $this->assertArrayHasKey('content', $parsedArticle);
+        $this->assertArrayHasKey('image_url', $parsedArticle);
+        $this->assertArrayHasKey('news_website', $parsedArticle);
+        $this->assertArrayHasKey('published_at', $parsedArticle);
+        $this->assertArrayHasKey('fetched_at', $parsedArticle);
+        $this->assertArrayHasKey('country', $parsedArticle);
+        $this->assertArrayHasKey('language', $parsedArticle);
+        $this->assertArrayHasKey('category', $parsedArticle);
+        $this->assertArrayHasKey('keywords', $parsedArticle);
     }
 
-    private function assertValidParsedArticleData(array $originalParsedArticle, array $expectedParsedArticle): void
+    private function assertValidParsedArticleData(array $parsedArticle, array $expectedParsedArticle, string $fetchedAt): void
     {
-        $this->assertEquals($expectedParsedArticle['headline'], $originalParsedArticle['headline']);
-        $this->assertEquals($expectedParsedArticle['article_url'], $originalParsedArticle['article_url']);
-        $this->assertEquals($expectedParsedArticle['news_website'], $originalParsedArticle['news_website']);
-        $this->assertEquals($expectedParsedArticle['content'], $originalParsedArticle['content']);
-        $this->assertEquals($expectedParsedArticle['image_url'], $originalParsedArticle['image_url']);
-        $this->assertEquals($expectedParsedArticle['author'], $originalParsedArticle['author']);
-        $this->assertEquals($expectedParsedArticle['published_at'], $originalParsedArticle['published_at']);
-        $this->assertEquals(self::FETCHED_AT, $originalParsedArticle['fetched_at']);
+        $this->assertEquals($expectedParsedArticle['headline'], $parsedArticle['headline']);
+        $this->assertEquals($expectedParsedArticle['article_url'], $parsedArticle['article_url']);
+        $this->assertEquals($expectedParsedArticle['news_website'], $parsedArticle['news_website']);
+        $this->assertEquals($expectedParsedArticle['content'], $parsedArticle['content']);
+        $this->assertEquals($expectedParsedArticle['image_url'], $parsedArticle['image_url']);
+        $this->assertEquals($expectedParsedArticle['author'], $parsedArticle['author']);
+        $this->assertEquals($expectedParsedArticle['published_at'], $parsedArticle['published_at']);
+        $this->assertEquals($fetchedAt, $parsedArticle['fetched_at']);
     }
 
     private function responseProvider(): array
