@@ -24,7 +24,7 @@ class ChunkFetcherForNewsDataIoTest extends TestCase
         ]);
         $chunkFetcher = new ChunkFetcherForNewsDataIo();
         $response = $chunkFetcher->fetchChunk();
-        $this->testRequest();
+        $this->assertValidRequest();
         $this->assertEquals($newsData, $response);
         $this->assertArrayHasKey('articles', $response);
         $this->assertNotEmpty($response['articles']);
@@ -43,7 +43,7 @@ class ChunkFetcherForNewsDataIoTest extends TestCase
         $chunkFetcher->fetchChunk();
     }
 
-    public function testValidRequest(): void
+    public function assertValidRequest(): void
     {
         Http::assertSent(function (Request $request) {
             return $request->hasHeader('X-ACCESS-KEY', config('services.newsdataio.key'))
