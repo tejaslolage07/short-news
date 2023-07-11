@@ -33,9 +33,8 @@ class NewsHandler
         Carbon::parse($untilDate) : $this->dateTimeSixHoursAgo();
         $fetchedAt = now()->format('Y-m-d H:i:s');
         $response = $this->newsFetcherForNewsDataIo->fetch($parsedUntilDateTime);
-        $s3FileNames = $this->storeArticlesToS3Bucket($response['results']);
         $parsedNewsArticles = $this->newsParserForNewsDataIo->getParsedData($response, $fetchedAt);
-        $this->storeParsedNewsArticles($parsedNewsArticles, $s3FileNames, 'newsDataIoApi');
+        $this->storeNewsArticlesAndUploadToS3($response['results'], $parsedNewsArticles, 'newsDataIoApi');
     }
 
     private function dateTimeSixHoursAgo(): string
@@ -43,41 +42,37 @@ class NewsHandler
         return now()->subHours(6);
     }
 
-    private function storeArticlesToS3Bucket(Collection $originalNewsArticles): array
-    {
-        $s3FileNames = [];
-        foreach ($originalNewsArticles as $article) {
-            try {
-                $s3FileNames[] = $this->s3StorageService->writeToS3Bucket($article);
-            } catch (\Exception $e) {
-                $s3FileNames[] = null;
-                report($e);
-            }
-        }
-
-        return $s3FileNames;
-    }
-
-    private function storeParsedNewsArticles(
+    private function storeNewsArticlesAndUploadToS3(
+        Collection $responseResults,
         array $parsedNewsArticles,
-        array $s3FileNames,
         string $sourceName
     ): void {
         foreach ($parsedNewsArticles as $index => $parsedNewsArticle) {
             $isArticleUrlNotPresent = Article::where('article_url', $parsedNewsArticle['article_url'])->doesntExist();
             if ($parsedNewsArticle['content'] && $isArticleUrlNotPresent) {
-                $this->storeParsedNewsArticle($parsedNewsArticle, $s3FileNames[$index], $sourceName);
+                $s3FileName = $this->uploadNewsArticleToS3($responseResults[$index]);
+                $this->summarizeAndStoreParsedNewsArticle($parsedNewsArticle, $s3FileName, $sourceName);
             }
         }
     }
 
-    private function storeParsedNewsArticle(
+    private function uploadNewsArticleToS3(array $newsArticle): string
+    {
+        try {
+            return $this->s3StorageService->writeToS3Bucket($newsArticle);
+        } catch (\Exception $e) {
+            return null;
+            report($e);
+        }
+    }
+
+    private function summarizeAndStoreParsedNewsArticle(
         array $parsedNewsArticle,
         ?string $s3FileName,
         string $sourceName
     ): void {
         $newsWebsiteId = $this->getNewsWebsite($parsedNewsArticle['news_website']);
-        $storedArticle = $this->storeArticle($parsedNewsArticle, $s3FileName, $newsWebsiteId, $sourceName);
+        $storedArticle = $this->storeParsedArticle($parsedNewsArticle, $s3FileName, $newsWebsiteId, $sourceName);
         $this->dispatchToSummarizer($storedArticle, $parsedNewsArticle['content']);
     }
 
@@ -90,7 +85,7 @@ class NewsHandler
         return NewsWebsite::firstOrCreate(['website' => $newsWebsiteName]);
     }
 
-    private function storeArticle(
+    private function storeParsedArticle(
         array $parsedNewsArticle,
         ?string $s3FileName,
         ?NewsWebsite $newsWebsite,
