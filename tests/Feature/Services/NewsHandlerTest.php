@@ -51,13 +51,14 @@ class NewsHandlerTest extends TestCase
         $service->fetchAndStoreNewsFromNewsDataIo('2020-01-01 00:00:00');
 
         Queue::assertPushed(SummarizeArticle::class, 1);
-
+        $this->assertCount(1, Storage::disk('s3')->allFiles(S3StorageService::LOCAL_DIR));
+        
         foreach ($expectedArticles as $expectedArticle) {
             $this->assertValidArticle($expectedArticle);
             $this->assertArticlePresentInS3($expectedArticle);
         }
     }
-
+    
     /**
      * @dataProvider getFakeResponseWhenDateNotPassed
      *
@@ -70,7 +71,7 @@ class NewsHandlerTest extends TestCase
         Queue::fake();
         $chunkFetcher = \Mockery::mock('overload:App\Services\NewsHandler\NewsFetcher\ChunkFetcherForNewsDataIo');
         $chunkFetcher->shouldReceive('fetchChunk')
-            ->andReturn($fakedResponse)
+        ->andReturn($fakedResponse)
         ;
         $chunkFetcher = new ChunkFetcherForNewsDataIo();
         $newsFetcher = new NewsFetcherForNewsDataIo($chunkFetcher);
@@ -78,8 +79,9 @@ class NewsHandlerTest extends TestCase
         $S3StorageService = new S3StorageService();
         $service = new NewsHandler($newsFetcher, $newsParser, $S3StorageService);
         $service->fetchAndStoreNewsFromNewsDataIo();
-
+        
         Queue::assertPushed(SummarizeArticle::class, 2);
+        $this->assertCount(2 ,Storage::disk('s3')->allFiles(S3StorageService::LOCAL_DIR));
 
         foreach ($expectedArticles as $expectedArticle) {
             $this->assertValidArticle($expectedArticle);
@@ -349,4 +351,6 @@ class NewsHandlerTest extends TestCase
         ;
         Storage::disk('s3')->assertExists($directory.$fileName.S3StorageService::EXT);
     }
+
+    // private function assert
 }
