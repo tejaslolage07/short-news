@@ -50,8 +50,8 @@ class NewsHandlerTest extends TestCase
         $service = new NewsHandler($newsFetcher, $newsParser, $s3StorageService);
         $service->fetchAndStoreNewsFromNewsDataIo('2020-01-01 00:00:00');
 
-        Queue::assertPushed(SummarizeArticle::class, 1);
-        $this->assertCount(1, Storage::disk('s3')->allFiles(S3StorageService::LOCAL_DIR));
+        Queue::assertPushed(SummarizeArticle::class, count($expectedArticles));
+        $this->assertCount(count($expectedArticles), Storage::disk('s3')->allFiles(S3StorageService::LOCAL_DIR));
 
         foreach ($expectedArticles as $expectedArticle) {
             $this->assertValidArticle($expectedArticle);
@@ -80,8 +80,8 @@ class NewsHandlerTest extends TestCase
         $service = new NewsHandler($newsFetcher, $newsParser, $S3StorageService);
         $service->fetchAndStoreNewsFromNewsDataIo();
 
-        Queue::assertPushed(SummarizeArticle::class, 2);
-        $this->assertCount(2, Storage::disk('s3')->allFiles(S3StorageService::LOCAL_DIR));
+        Queue::assertPushed(SummarizeArticle::class, count($expectedArticles));
+        $this->assertCount(count($expectedArticles), Storage::disk('s3')->allFiles(S3StorageService::LOCAL_DIR));
 
         foreach ($expectedArticles as $expectedArticle) {
             $this->assertValidArticle($expectedArticle);
@@ -351,6 +351,4 @@ class NewsHandlerTest extends TestCase
         ;
         Storage::disk('s3')->assertExists($directory.$fileName.S3StorageService::EXT);
     }
-
-    // private function assert
 }
