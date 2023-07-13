@@ -64,7 +64,7 @@ class NewsHandler
         }
     }
 
-    private function uploadNewsArticleToS3(array $newsArticle): string
+    private function uploadNewsArticleToS3(array $newsArticle): ?string
     {
         try {
             return $this->s3StorageService->writeToS3Bucket($newsArticle);
