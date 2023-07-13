@@ -48,11 +48,19 @@ class NewsHandler
         string $sourceName
     ): void {
         foreach ($parsedNewsArticles as $index => $parsedNewsArticle) {
-            $isArticleUrlNotPresent = Article::where('article_url', $parsedNewsArticle['article_url'])->doesntExist();
-            if ($parsedNewsArticle['content'] && $isArticleUrlNotPresent) {
-                $s3FileName = $this->uploadNewsArticleToS3($responseResults[$index]);
-                $this->summarizeAndStoreParsedNewsArticle($parsedNewsArticle, $s3FileName, $sourceName);
+            $content = $parsedNewsArticle['content'];
+            $url = $parsedNewsArticle['article_url'];
+
+            if (null === $content) {
+                continue;
             }
+            if (Article::where('article_url', $url)->exists()) {
+                continue;
+            }
+
+            $s3FileName = $this->uploadNewsArticleToS3($responseResults[$index]);
+            $article = $this->storeParsedNewsArticle($parsedNewsArticle, $s3FileName, $sourceName);
+            SummarizeArticle::dispatch($article, $content);
         }
     }
 
@@ -66,23 +74,21 @@ class NewsHandler
         }
     }
 
-    private function summarizeAndStoreParsedNewsArticle(
+    private function storeParsedNewsArticle(
         array $parsedNewsArticle,
         ?string $s3FileName,
         string $sourceName
-    ): void {
+    ): Article {
         $newsWebsiteId = $this->getNewsWebsite($parsedNewsArticle['news_website']);
-        $storedArticle = $this->storeParsedArticle($parsedNewsArticle, $s3FileName, $newsWebsiteId, $sourceName);
-        $this->dispatchToSummarizer($storedArticle, $parsedNewsArticle['content']);
+
+        return $this->storeParsedArticle($parsedNewsArticle, $s3FileName, $newsWebsiteId, $sourceName);
     }
 
     private function getNewsWebsite(?string $newsWebsiteName): ?NewsWebsite
     {
-        if (!$newsWebsiteName) {
-            return null;
-        }
-
-        return NewsWebsite::firstOrCreate(['website' => $newsWebsiteName]);
+        return !$newsWebsiteName
+            ? null
+            : NewsWebsite::firstOrCreate(['website' => $newsWebsiteName]);
     }
 
     private function storeParsedArticle(
@@ -109,10 +115,5 @@ class NewsHandler
         $article->save();
 
         return $article;
-    }
-
-    private function dispatchToSummarizer(Article $storedArticle, string $parsedNewsArticleContent): void
-    {
-        SummarizeArticle::dispatch($storedArticle, $parsedNewsArticleContent);
     }
 }
