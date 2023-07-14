@@ -190,8 +190,8 @@ class NewsHandlerTest extends TestCase
     public static function getFakeResponseWhenDateNotPassed(): array
     {
         $UTCnow = now('UTC')->format('Y-m-d H:i:s');
-        $UTCnowSub5Hours = now('UTC')->subHours(5)->format('Y-m-d H:i:s');
-        $UTCnowSub7Hours = now('UTC')->subHours(7)->format('Y-m-d H:i:s');
+        $UTCnowSub5Hours = now('UTC')->subDay()->addHour()->format('Y-m-d H:i:s');
+        $UTCnowSub7Hours = now('UTC')->subDay()->subHour()->format('Y-m-d H:i:s');
 
         return [
             [

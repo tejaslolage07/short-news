@@ -30,18 +30,13 @@ class NewsHandler
     public function fetchAndStoreNewsFromNewsDataIo(?string $untilDate = null): void
     {
         $parsedUntilDateTime = $untilDate ?
-        Carbon::parse($untilDate) : $this->dateTimeSixHoursAgo();
+        Carbon::parse($untilDate) : now()->subDay();
         $fetchedAt = now()->format('Y-m-d H:i:s');
         $response = $this->newsFetcherForNewsDataIo->fetch($parsedUntilDateTime);
         $parsedNewsArticles = $this->newsParserForNewsDataIo->getParsedData($response, $fetchedAt);
         $this->storeNewsArticlesAndUploadToS3($response['results'], $parsedNewsArticles, 'newsDataIoApi');
     }
-
-    private function dateTimeSixHoursAgo(): string
-    {
-        return now()->subHours(6);
-    }
-
+    
     private function storeNewsArticlesAndUploadToS3(
         Collection $responseResults,
         array $parsedNewsArticles,
