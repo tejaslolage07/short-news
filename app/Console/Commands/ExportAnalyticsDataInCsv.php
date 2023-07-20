@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Services\ExportAnalyticsData;
+use App\Services\AnalyticsDataExporter;
 use Illuminate\Console\Command;
 
 class ExportAnalyticsDataInCsv extends Command
@@ -24,9 +24,9 @@ class ExportAnalyticsDataInCsv extends Command
     /**
      * Execute the console command.
      */
-    public function handle(ExportAnalyticsData $exportAnalyticsData)
+    public function handle(AnalyticsDataExporter $analyticsDataExporter)
     {
-        $exportAnalyticsData->exportCsv();
+        $analyticsDataExporter->exportCsv();
         info('Analytics data exported in CSV format');
     }
 }
