@@ -60,6 +60,6 @@ class SummarizeArticle implements ShouldQueue
 
     private function setDefaultPrompt(): void
     {
-        $this->prompt = 'Summarize the news article below that is delimited by triple quotes. Respond in Japanese and in no more than 200 characters. Article: """'.$this->articleBody.'"""';
+        $this->prompt = 'Summarize the news article below that is delimited by triple quotes. Respond in Japanese and between 150 to 200 Japanese characters. Article: """'.$this->articleBody.'"""';
     }
 }
