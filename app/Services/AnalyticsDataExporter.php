@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
 
-class ExportAnalyticsData
+class AnalyticsDataExporter
 {
     public const DIR = '';
 
@@ -16,7 +16,7 @@ class ExportAnalyticsData
         $articles = DB::table('articles')->get();
 
         $csvExporter = \League\Csv\Writer::createFromPath(storage_path($fileName), 'w+');
-        $csvExporter->insertOne(['article_id', 'original_article_chars', 'summarized_article_chars']);
+        $csvExporter->insertOne(['article_id', 'original_article_length', 'summarized_article_length']);
 
         foreach ($articles as $row) {
             $originalArticleLength = $this->getOriginalArticleLength($row->article_s3_filename);
