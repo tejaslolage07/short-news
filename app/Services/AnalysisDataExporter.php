@@ -3,40 +3,50 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Storage;
 
 class AnalysisDataExporter
 {
-    public const DIR = '';
+    private const DIR = 'storage/app/';
+    private S3StorageService $s3StorageService;
+
+    public function __construct(S3StorageService $s3StorageService)
+    {
+        $this->s3StorageService = $s3StorageService;
+    }
 
     public function exportCsv(): void
     {
-        $fileName = self::DIR.'analysis.csv';
+        $filePath = self::DIR.'analysis.csv';
         $articles = DB::table('articles')->get();
 
-        $csvExporter = \League\Csv\Writer::createFromPath(storage_path($fileName), 'w+');
-        $csvExporter->insertOne(['article_id', 'original_article_length', 'summarized_article_length']);
+        $file = fopen($filePath, 'w');
+        fputcsv($file, ['article_id', 'original_article_length', 'summarized_article_length']);
 
         foreach ($articles as $row) {
-            $originalArticleLength = $this->getOriginalArticleLength($row->article_s3_filename);
             $summarizedArticleLength = $this->getSummarizedArticleLength($row->short_news);
-
-            $csvExporter->insertOne([$row->id, $originalArticleLength, $summarizedArticleLength]);
+            $originalArticleJson = $this->s3StorageService->readFromS3Bucket($row->article_s3_filename);
+            $originalArticle = json_decode($originalArticleJson, true);
+            if(!$originalArticle){
+                $this->writeRowToCsvFile($file, [$row->id, '', $summarizedArticleLength]);
+                continue;
+            }
+            $originalArticleLength = $this->getOriginalArticleLength($originalArticle['content']);
+            $this->writeRowToCsvFile($file, [$row->id, $originalArticleLength, $summarizedArticleLength]);
         }
-
-        Response::download(storage_path($fileName))->deleteFileAfterSend(true);
+        fclose($file);
     }
-
     private function getSummarizedArticleLength(string $summarizedArticle): int
     {
         return strlen($summarizedArticle);
     }
 
-    private function getOriginalArticleLength(string $s3Filename): int
+    private function writeRowToCsvFile($file, array $row): void
     {
-        $originalArticle = Storage::disk('s3')->get($s3Filename);
+        fputcsv($file, $row);
+    }
 
-        return strlen($originalArticle);
+    private function getOriginalArticleLength(string $articleContent): int
+    {
+        return strlen($articleContent);
     }
 }
