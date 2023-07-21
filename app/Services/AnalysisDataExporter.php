@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\DB;
 
 class AnalysisDataExporter
 {
-    private const DIR = 'storage/app/';
     private S3StorageService $s3StorageService;
 
     public function __construct(S3StorageService $s3StorageService)
@@ -16,37 +15,37 @@ class AnalysisDataExporter
 
     public function exportCsv(): void
     {
-        $filePath = self::DIR.'analysis.csv';
-        $articles = DB::table('articles')->get();
+        $articles = DB::table('articles')->limit(30)->get();
 
-        $file = fopen($filePath, 'w');
+        $file = fopen(storage_path('analysis.csv'), 'w');
+
         fputcsv($file, ['article_id', 'original_article_length', 'summarized_article_length']);
 
         foreach ($articles as $row) {
-            $summarizedArticleLength = $this->getSummarizedArticleLength($row->short_news);
-            $originalArticleJson = $this->s3StorageService->readFromS3Bucket($row->article_s3_filename);
-            $originalArticle = json_decode($originalArticleJson, true);
-            if(!$originalArticle){
-                $this->writeRowToCsvFile($file, [$row->id, '', $summarizedArticleLength]);
-                continue;
-            }
-            $originalArticleLength = $this->getOriginalArticleLength($originalArticle['content']);
-            $this->writeRowToCsvFile($file, [$row->id, $originalArticleLength, $summarizedArticleLength]);
+            $summarizedArticleLength = $this->getArticleLength($row->short_news);
+            $originalArticleLength = $this->getOriginalArticleLength($row->article_s3_filename);
+            $row = [$row->id, $originalArticleLength, $summarizedArticleLength];
+
+            fputcsv($file, $row);
         }
+
         fclose($file);
     }
-    private function getSummarizedArticleLength(string $summarizedArticle): int
+
+    private function getOriginalArticleLength(string $articleS3Filename): string
     {
-        return strlen($summarizedArticle);
+        $originalArticleJson = $this->s3StorageService->readFromS3Bucket($articleS3Filename);
+
+        $originalArticle = json_decode($originalArticleJson, true);
+        if (!$originalArticle) {
+            return '';
+        }
+
+        return (string) $this->getArticleLength($originalArticle['content']);
     }
 
-    private function writeRowToCsvFile($file, array $row): void
+    private function getArticleLength(string $articleContent): int
     {
-        fputcsv($file, $row);
-    }
-
-    private function getOriginalArticleLength(string $articleContent): int
-    {
-        return strlen($articleContent);
+        return mb_strlen($articleContent);
     }
 }
