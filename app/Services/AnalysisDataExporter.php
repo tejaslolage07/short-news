@@ -15,7 +15,7 @@ class AnalysisDataExporter
 
     public function exportCsv(): void
     {
-        $articles = DB::table('articles')->limit(30)->get();
+        $articles = DB::table('articles')->get();
 
         $file = fopen(storage_path('analysis.csv'), 'w');
 
