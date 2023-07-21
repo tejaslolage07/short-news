@@ -6,13 +6,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
 
-class AnalyticsDataExporter
+class AnalysisDataExporter
 {
     public const DIR = '';
 
     public function exportCsv(): void
     {
-        $fileName = self::DIR.'analytics.csv';
+        $fileName = self::DIR.'analysis.csv';
         $articles = DB::table('articles')->get();
 
         $csvExporter = \League\Csv\Writer::createFromPath(storage_path($fileName), 'w+');
