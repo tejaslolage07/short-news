@@ -17,6 +17,11 @@ class S3StorageService
     {
         $this->directory = App::environment('production') ? self::DIR : self::LOCAL_DIR;
     }
+    
+    public function readFromS3Bucket(string $filename): ?string
+    {
+        return Storage::disk('s3')->get($this->directory.$filename.self::EXT);
+    }
 
     public function writeToS3Bucket(array $dataArray): string
     {
